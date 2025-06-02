@@ -1,0 +1,46 @@
+﻿@using API.Data
+@model Nhom10ModuleDiemDanh.Models.BoMonCoSoViewModel
+
+<form id="editForm" asp-action="Edit" method="post">
+    <input type="hidden" asp-for="IdBoMonCoSo" />
+    <div class="form-group mb-3">
+        <label asp-for="IdBoMon" class="control-label">Tên bộ môn</label>
+        <select asp-for="IdBoMon" class="form-control" required>
+            <option value="">Chọn bộ môn</option>
+            @{
+                var boMons = ViewData["BoMons"] as List<QuanLyBoMon>;
+                if (boMons != null && boMons.Any())
+                {
+                    foreach (var boMon in boMons)
+                    {
+                        <option value="@boMon.IDBoMon" selected="@(Model.IdBoMon == boMon.IDBoMon ? "selected" : null)">@boMon.TenBoMon</option>
+                    }
+                }
+            }
+        </select>
+        <span asp-validation-for="IdBoMon" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="IdCoSo" class="control-label">Tên cơ sở</label>
+        <select asp-for="IdCoSo" class="form-control" required>
+            <option value="">Chọn cơ sở</option>
+            @{
+                var coSos = ViewData["CoSos"] as List<CoSo>;
+                if (coSos != null && coSos.Any())
+                {
+                    foreach (var coSo in coSos)
+                    {
+                        <option value="@coSo.IdCoSo" selected="@(Model.IdCoSo == coSo.IdCoSo ? "selected" : null)">@coSo.TenCoSo</option>
+                    }
+                }
+            }
+        </select>
+        <span asp-validation-for="IdCoSo" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <div class="form-check">
+            <input asp-for="TrangThai" class="form-check-input" type="checkbox" checked="@(Model.TrangThai == "Hoạt động")">
+            <label asp-for="TrangThai" class="form-check-label">Hoạt động</label>
+        </div>
+    </div>
+</form>

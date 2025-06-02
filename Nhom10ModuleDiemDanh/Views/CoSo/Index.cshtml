@@ -1,0 +1,317 @@
+﻿@model IEnumerable<Nhom10ModuleDiemDanh.Models.CoSoViewModel>
+
+@{
+    Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+}
+
+<h1>Quản lý cơ sở</h1>
+
+<div class="card">
+<div class="row mb-3">
+    <div class="col-md-9">
+        <form asp-action="Index" method="get">
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="text" name="tenCoSo" class="form-control" placeholder="Tìm kiếm theo tên" value="@ViewData["tenCoSo"]" />
+                </div>
+                <div class="col-md-4">
+                    <select name="trangThai" class="form-control">
+                        <option value="Tất cả trạng thái" selected="@(ViewData["trangThai"]?.ToString() == "Tất cả trạng thái" ? "selected" : null)">Tất cả trạng thái</option>
+                        <option value="Hoạt động" selected="@(ViewData["trangThai"]?.ToString() == "Hoạt động" ? "selected" : null)">Hoạt động</option>
+                        <option value="Tắt" selected="@(ViewData["trangThai"]?.ToString() == "Tắt" ? "selected" : null)">Tắt</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary" style="background-color: #42a5f5; color: white; border-color: #42a5f5;">Lọc</button>
+                </div>
+                <div class="col-md-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary" style="background-color: #bdbdbd; color: black; border-color: #bdbdbd;">Hủy lọc</a>
+                </div>
+            </div>
+        </form>
+    </div>
+        <div class="col-md-3">
+            <button type="button" class="btn btn-primary" style="background-color: #1976d2; border-color: #1976d2;" data-bs-toggle="modal" data-bs-target="#createModal">Thêm</button>
+        </div>
+</div>
+</div>
+
+<table class="table" style="margin-top:50px">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Tên cơ sở</th>
+            <th>Mã cơ sở</th>
+            <th>Trạng thái</th>
+            <th>Chức năng</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Select((value, index) => new { value, index }))
+        {
+            <tr>
+                <td>@(item.index + 1)</td>
+                <td>@item.value.TenCoSo</td>
+                <td>@item.value.MaCoSo</td>
+                <td>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input toggle-status" id="toggle-@item.value.IdCoSo" data-id="@item.value.IdCoSo" checked="@(item.value.TrangThai == "Hoạt động")">
+                        <label class="form-check-label" id="label-@item.value.IdCoSo" for="toggle-@item.value.IdCoSo">@(item.value.TrangThai)</label>
+                    </div>
+                </td>
+                <td>
+                    <a href="#" class="edit-btn" data-id="@item.value.IdCoSo" data-bs-toggle="modal" data-bs-target="#editModal">Edit<i class="fas fa-edit"></i></a> |
+                    <a href="#" class="details-btn" data-id="@item.value.IdCoSo" data-bs-toggle="modal" data-bs-target="#detailsModal">Details<i class="fas fa-info-circle"></i></a> |
+                    @* <a asp-action="Delete" asp-route-id="@item.value.IdCoSo"><i class="fas fa-trash"></i></a> *@
+                    <a asp-controller="CaHocs" asp-action="Index" @* asp-route-id="@item.value.IdCoSo" *@ class="ca-hoc-btn">
+                        <i class="fas fa-clock"></i> Ca học
+                    </a> |
+
+                    <a asp-controller="Ip" asp-action="Index" @* asp-route-id="@item.value.IdCoSo" *@ class="ip-btn">
+                        <i class="fas fa-network-wired"></i> IP
+                    </a> |
+
+                    <a asp-controller="DiaDiems" asp-action="Indexs" @* asp-route-id="@item.value.IdCoSo"  *@class="dia-diem-btn">
+                        <i class="fas fa-map-marker-alt"></i> Địa điểm
+                    </a>
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+<!-- Create Modal -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: cornflowerblue">
+                <h5 class="modal-title" id="createModalLabel">Thêm cơ sở</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="createModalBody">
+                <!-- Nội dung sẽ được load bằng AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="saveCreateBtn">Thêm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: cornflowerblue">
+                <h5 class="modal-title" id="editModalLabel">Sửa cơ sở</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="editModalBody">
+                <!-- Nội dung sẽ được load bằng AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="saveEditBtn">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: cornflowerblue">
+                <h5 class="modal-title" id="detailsModalLabel">Chi tiết cơ sở</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detailsModalBody">
+                <!-- Nội dung sẽ được load bằng AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Load Create Modal
+            $('#createModal').on('show.bs.modal', function () {
+                $.ajax({
+                    url: '@Url.Action("Create", "CoSo")',
+                    type: 'GET',
+                    success: function (data) {
+                        $('#createModalBody').html(data);
+                        // Khởi tạo validation cho form sau khi load
+                        $('#createForm').validate();
+                    },
+                    error: function () {
+                        alert('Không thể tải form thêm cơ sở.');
+                    }
+                });
+            });
+
+            // Save Create
+            $('#saveCreateBtn').click(function () {
+                if ($('#createForm').valid()) {
+                    var formData = $('#createForm').serialize();
+                    $.ajax({
+                        url: '@Url.Action("Create", "CoSo")',
+                        type: 'POST',
+                        data: formData,
+                        success: function (response) {
+                            if (response.success) {
+                                $('#createModal').modal('hide');
+                                location.reload();
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function () {
+                            alert('Đã có lỗi xảy ra khi thêm cơ sở.');
+                        }
+                    });
+                }
+            });
+
+            // Load Edit Modal
+            $('.edit-btn').click(function () {
+                var id = $(this).data('id');
+                $.ajax({
+                    url: '@Url.Action("Edit", "CoSo")/' + id,
+                    type: 'GET',
+                    success: function (data) {
+                        $('#editModalBody').html(data);
+                        // Khởi tạo validation cho form sau khi load
+                        $('#editForm').validate();
+                    },
+                    error: function () {
+                        alert('Không thể tải form sửa cơ sở.');
+                    }
+                });
+            });
+
+            // Save Edit
+            $('#saveEditBtn').click(function () {
+                if ($('#editForm').valid()) {
+                    var formData = $('#editForm').serialize();
+                    var id = $('#editForm input[name="IdCoSo"]').val();
+                    $.ajax({
+                        url: '@Url.Action("Edit", "CoSo")/' + id,
+                        type: 'POST',
+                        data: formData,
+                        success: function (response) {
+                            if (response.success) {
+                                $('#editModal').modal('hide');
+                                location.reload();
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function () {
+                            alert('Đã có lỗi xảy ra khi sửa cơ sở.');
+                        }
+                    });
+                }
+            });
+
+            // Load Details Modal
+            $('.details-btn').click(function () {
+                var id = $(this).data('id');
+                $.ajax({
+                    url: '@Url.Action("Details", "CoSo")/' + id,
+                    type: 'GET',
+                    success: function (data) {
+                        $('#detailsModalBody').html(data);
+                    },
+                    error: function () {
+                        alert('Không thể tải chi tiết cơ sở.');
+                    }
+                });
+            });
+
+            // Toggle Status
+            $('.toggle-status').on('change', function () {
+                var checkbox = $(this);
+                var id = checkbox.data('id');
+                var label = $('#label-' + id);
+                var isChecked = checkbox.is(':checked');
+
+                $.ajax({
+                    url: '@Url.Action("ToggleStatus", "CoSo")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            label.text(isChecked ? 'Hoạt động' : 'Tắt');
+                        } else {
+                            alert('Không thể cập nhật trạng thái.');
+                            checkbox.prop('checked', !isChecked);
+                        }
+                    },
+                    error: function () {
+                        alert('Đã có lỗi xảy ra khi cập nhật trạng thái.');
+                        checkbox.prop('checked', !isChecked);
+                    }
+                });
+            });
+
+                   
+        $('.ca-hoc-btn').click(function () {
+            var id = $(this).data('id');
+            $.ajax({
+                url: '@Url.Action("CaHoc", "CoSo")/' + id,
+                type: 'GET',
+                success: function (data) {
+                    $('#detailsModalBody').html(data); // Sử dụng modal details hiện có
+                    $('#detailsModal').modal('show');
+                },
+                error: function () {
+                    alert('Không thể tải thông tin ca học.');
+                }
+            });
+        });
+
+        $('.ip-btn').click(function () {
+            var id = $(this).data('id');
+            $.ajax({
+                url: '@Url.Action("Ip", "CoSo")/' + id,
+                type: 'GET',
+                success: function (data) {
+                    $('#detailsModalBody').html(data);
+                    $('#detailsModal').modal('show');
+                },
+                error: function () {
+                    alert('Không thể tải thông tin IP.');
+                }
+            });
+        });
+
+        $('.dia-diem-btn').click(function () {
+            var id = $(this).data('id');
+            $.ajax({
+                url: '@Url.Action("DiaDiem", "CoSo")/' + id,
+                type: 'GET',
+                success: function (data) {
+                    $('#detailsModalBody').html(data);
+                    $('#detailsModal').modal('show');
+                },
+                error: function () {
+                    alert('Không thể tải thông tin địa điểm.');
+                }
+            });
+        });
+
+        });
+    </script>
+}

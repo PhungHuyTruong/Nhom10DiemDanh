@@ -1,0 +1,183 @@
+﻿@Html.AntiForgeryToken()
+@{
+    Layout = null;
+}
+<main role="main" class="pb-3">
+    @RenderBody()
+</main>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - DD10</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        body {
+            background: linear-gradient(to bottom, #2196f3, #bbdefb);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .title {
+            font-size: 128px;
+            font-weight: bold;
+            text-align: center;
+            background: linear-gradient(to right, blue, rgba(99, 176, 253));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 50px 0;
+            text-shadow:none; 
+        }
+
+
+
+        .role-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+            .role-card:hover {
+                transform: translateY(-5px);
+            }
+
+        .role-img {
+            height: 150px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .role-label {
+            font-weight: 500;
+            font-size: 18px;
+        }
+
+        .role-container {
+            margin-bottom: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">DD10</div>
+
+        <div class="row text-center justify-content-center role-container">
+            <div class="row text-center justify-content-center role-container">
+                <!-- Cán bộ đào tạo -->
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="d-flex flex-column align-items-stretch">
+                        <div class="role-card">
+                            <img src="~/images/canbo.jpg" alt="Cán bộ đào tạo" class="role-img" />
+                        </div>
+                        <button type="button" class="btn btn-light w-100 mt-2" data-bs-toggle="modal" data-bs-target="#formModal">
+                            Cán bộ đào tạo
+                        </button>
+
+                    </div>
+                </div>
+
+                <!-- Phụ trách xưởng -->
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="d-flex flex-column align-items-stretch">
+                        <div class="role-card">
+                            <img src="~/images/xuong.jpg" alt="Phụ trách xưởng" class="role-img" />
+                        </div>
+                        <button type="button" class="btn btn-light w-100 mt-2" data-bs-toggle="modal" data-bs-target="#formModal">
+                            Phụ trách xưởng
+                        </button>
+
+                    </div>
+                </div>
+
+                <!-- Giảng viên -->
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="d-flex flex-column align-items-stretch">
+                        <div class="role-card">
+                            <img src="~/images/giangvien.jpg" alt="Giảng viên" class="role-img" />
+                        </div>
+                        <button type="button" class="btn btn-light w-100 mt-2" data-bs-toggle="modal" data-bs-target="#formModal">
+                            Giảng viên
+                        </button>
+
+                    </div>
+                </div>
+
+                <!-- Sinh viên -->
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="d-flex flex-column align-items-stretch">
+                        <div class="role-card">
+                            <img src="~/images/sinhvien.jpg" alt="Sinh viên" class="role-img" />
+                        </div>
+                        <button type="button" class="btn btn-light w-100 mt-2" data-bs-toggle="modal" data-bs-target="#formModal">
+                            Sinh viên
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center p-4">
+
+                <!-- Logo + Tiêu đề -->
+                <img src="~/images/fptlogo.jpg" alt="FPT Logo" style="height: 150px;" class="d-block mx-auto" />
+
+
+                <!-- Chọn cơ sở -->
+                <div class="mt-3 w-100">
+                    <select class="form-select text-center" style="max-width: 300px; margin: auto;">
+                        <option selected>Hà nội</option>
+                        <option>Đà Nẵng</option>
+                        <option>Hồ Chí Minh</option>
+                        <option>Cần Thơ</option>
+                    </select>
+                </div>
+
+                <!-- Divider SOCIAL -->
+                <div class="d-flex align-items-center my-3">
+                    <hr class="flex-grow-1">
+                    <span class="mx-2 text-muted">SOCIAL</span>
+                    <hr class="flex-grow-1">
+                </div>
+
+
+                <!-- Nút đăng nhập Google -->
+                <button type="button" class="btn btn-primary w-100 text-white fw-bold"
+                        style=" max-width: 300px; margin: auto;">
+                    <i class="bi bi-google me-2"></i>Google
+                </button>
+
+            </div>
+        </div>
+    </div>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
+
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,25 @@
+﻿@model API.Data.CaHoc
+@{
+    ViewData["Title"] = "Chi tiết ca học";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">@ViewData["Title"]</h2>
+
+    <dl class="row">
+        <dt class="col-sm-3">Tên ca học</dt>
+        <dd class="col-sm-9">@Model.TenCaHoc</dd>
+
+        <dt class="col-sm-3">Thời gian bắt đầu</dt>
+        <dd class="col-sm-9">@Model.ThoiGianBatDau</dd>
+
+        <dt class="col-sm-3">Thời gian kết thúc</dt>
+        <dd class="col-sm-9">@Model.ThoiGianKetThuc</dd>
+
+        <dt class="col-sm-3">Trạng thái</dt>
+        <dd class="col-sm-9">@((Model.TrangThai == 1) ? "Hoạt động" : "Không hoạt động")</dd>
+    </dl>
+
+    <a asp-action="Edit" asp-route-id="@Model.IdCaHoc" class="btn btn-primary">Sửa</a>
+    <a asp-action="Index" class="btn btn-secondary">Trở về</a>
+</div>

@@ -1,0 +1,41 @@
+﻿@model API.Data.QuanLyBoMon
+@{
+    Layout = null;
+}
+
+<form asp-action="Create" method="post" class="needs-validation" novalidate>
+    <!-- Thông báo lỗi chung -->
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <!-- Tên ban đào tạo -->
+    <div class="mb-3">
+        <label asp-for="TenBoMon" class="form-label text-dark fw-semibold">Tên bộ môn</label>
+        <input asp-for="TenBoMon" class="form-control" placeholder="Nhập tên bộ môn" />
+        <span asp-validation-for="TenBoMon" class="text-danger small"></span>
+    </div>
+
+    <!-- Mã ban đào tạo -->
+    <div class="mb-3">
+        <label asp-for="MaBoMon" class="form-label text-dark fw-semibold">Mã bộ môn</label>
+        <input asp-for="MaBoMon" class="form-control" placeholder="Nhập mã" />
+        <span asp-validation-for="MaBoMon" class="text-danger small"></span>
+    </div>
+
+    <!-- Email -->
+    <div class="mb-3">
+        <label asp-for="CoSoHoatDong" class="form-label text-dark fw-semibold">CSHD</label>
+        <select asp-for="CoSoHoatDong" class="form-select">
+            <option value="">-- Chọn cơ sở --</option>
+            <option value="Hà Nội">Hà Nội</option>
+            <option value="HCM">HCM</option>
+            <option value="Hải Phòng">Hải Phòng</option>
+        </select>
+        <span asp-validation-for="CoSoHoatDong" class="text-danger small"></span>
+    </div>
+
+    <!-- Nút -->
+    <div class="d-flex justify-content-end mt-4 gap-2">
+        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Hủy</button>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+    </div>
+</form>

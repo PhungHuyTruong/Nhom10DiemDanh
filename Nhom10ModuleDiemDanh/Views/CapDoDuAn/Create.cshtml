@@ -1,0 +1,25 @@
+﻿@model API.Data.CapDoDuAn
+
+<form method="post" asp-action="Create">
+    <div class="modal-body">
+        <div class="mb-3">
+            <label asp-for="TenCapDoDuAn" class="form-label" style="color: black;">Tên Cấp độ dự án:</label>
+            <input asp-for="TenCapDoDuAn" class="form-control" required />
+            <span asp-validation-for="TenCapDoDuAn" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="MaCapDoDuAn" class="form-label" style="color: black;">mã cấp độ dự án:</label>
+            <input asp-for="MaCapDoDuAn" class="form-control" required />
+            <span asp-validation-for="MaCapDoDuAn" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="MoTa" class="form-label" style="color: black;">Mô tả:</label>
+            <input asp-for="MoTa" class="form-control" required />
+            <span asp-validation-for="MoTa" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Lưu</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+    </div>
+</form>

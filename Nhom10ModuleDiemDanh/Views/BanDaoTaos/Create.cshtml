@@ -1,0 +1,36 @@
+﻿@model API.Data.BanDaoTao
+@{
+    Layout = null;
+}
+
+<form asp-action="Create" method="post" class="needs-validation" novalidate>
+    <!-- Thông báo lỗi chung -->
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <!-- Tên ban đào tạo -->
+    <div class="mb-3">
+        <label asp-for="TenBanDaoTao" class="form-label text-dark fw-semibold">Tên ban đào tạo</label>
+        <input asp-for="TenBanDaoTao" class="form-control" placeholder="Nhập tên ban đào tạo" />
+        <span asp-validation-for="TenBanDaoTao" class="text-danger small"></span>
+    </div>
+
+    <!-- Mã ban đào tạo -->
+    <div class="mb-3">
+        <label asp-for="MaBanDaoTao" class="form-label text-dark fw-semibold">Mã ban đào tạo</label>
+        <input asp-for="MaBanDaoTao" class="form-control" placeholder="Nhập mã" />
+        <span asp-validation-for="MaBanDaoTao" class="text-danger small"></span>
+    </div>
+
+    <!-- Email -->
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label text-dark fw-semibold">Email</label>
+        <input asp-for="Email" class="form-control" placeholder="Nhập email" />
+        <span asp-validation-for="Email" class="text-danger small"></span>
+    </div>
+
+    <!-- Nút -->
+    <div class="d-flex justify-content-end mt-4 gap-2">
+        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Hủy</button>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+    </div>
+</form>

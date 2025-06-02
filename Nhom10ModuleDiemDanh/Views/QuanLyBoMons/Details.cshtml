@@ -1,0 +1,23 @@
+﻿@model API.Data.QuanLyBoMon
+@{
+    Layout = null;
+}
+
+<dl class="row">
+    <dt class="col-sm-4">Tên bộ môn</dt>
+    <dd class="col-sm-8">@Model.TenBoMon</dd>
+
+    <dt class="col-sm-4">Mã bộ môn</dt>
+    <dd class="col-sm-8">@Model.MaBoMon</dd>
+
+    <dt class="col-sm-4">CSHD</dt>
+    <dd class="col-sm-8">@Model.CoSoHoatDong</dd>
+
+    <dt class="col-sm-4">Ngày tạo</dt>
+    <dd class="col-sm-8">@Model.NgayTao</dd>
+
+    <dt class="col-sm-4">Trạng thái</dt>
+    <dd class="col-sm-8">@(Model.TrangThai ? "Đang hoạt động" : "Ngừng")</dd>
+</dl>
+
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
