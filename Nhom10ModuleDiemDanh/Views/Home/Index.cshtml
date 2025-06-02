@@ -163,8 +163,6 @@
             buttons.forEach(button => {
                 button.addEventListener('click', () => {
                     const role = button.getAttribute('data-role');
-
-                    // Cán bộ đào tạo không cần chọn cơ sở
                     if (role === 'canbo') {
                         coSoContainer.style.display = 'none';
                     } else {
