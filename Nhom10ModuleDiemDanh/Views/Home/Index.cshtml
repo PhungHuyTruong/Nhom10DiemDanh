@@ -1,4 +1,4 @@
-﻿    @{
+﻿@{
     Layout = null;
 }
 <!DOCTYPE html>
@@ -26,7 +26,6 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin: 50px 0;
-            text-shadow: none;
         }
 
         .role-card {
@@ -56,6 +55,11 @@
         .role-container {
             margin-bottom: 50px;
         }
+
+        .btn-role.active {
+            border: 2px solid #0d6efd;
+            background-color: #e7f1ff;
+        }
     </style>
 </head>
 <body>
@@ -70,7 +74,8 @@
                     <div class="role-card">
                         <img src="~/images/canbo.jpg" alt="Cán bộ đào tạo" class="role-img" />
                     </div>
-                    <button type="button" class="btn btn-light w-100 mt-2" data-bs-toggle="modal" data-bs-target="#formModal" data-role="canbo">
+                    <button type="button" class="btn btn-light btn-role w-100 mt-2"
+                            data-bs-toggle="modal" data-bs-target="#formModal" data-role="canbo">
                         Cán bộ đào tạo
                     </button>
                 </div>
@@ -82,7 +87,8 @@
                     <div class="role-card">
                         <img src="~/images/xuong.jpg" alt="Phụ trách xưởng" class="role-img" />
                     </div>
-                    <button type="button" class="btn btn-light w-100 mt-2" data-bs-toggle="modal" data-bs-target="#formModal" data-role="phutrachxuong">
+                    <button type="button" class="btn btn-light btn-role w-100 mt-2"
+                            data-bs-toggle="modal" data-bs-target="#formModal" data-role="phutrachxuong">
                         Phụ trách xưởng
                     </button>
                 </div>
@@ -94,7 +100,8 @@
                     <div class="role-card">
                         <img src="~/images/giangvien.jpg" alt="Giảng viên" class="role-img" />
                     </div>
-                    <button type="button" class="btn btn-light w-100 mt-2" data-bs-toggle="modal" data-bs-target="#formModal" data-role="giangvien">
+                    <button type="button" class="btn btn-light btn-role w-100 mt-2"
+                            data-bs-toggle="modal" data-bs-target="#formModal" data-role="giangvien">
                         Giảng viên
                     </button>
                 </div>
@@ -106,7 +113,8 @@
                     <div class="role-card">
                         <img src="~/images/sinhvien.jpg" alt="Sinh viên" class="role-img" />
                     </div>
-                    <button type="button" class="btn btn-light w-100 mt-2" data-bs-toggle="modal" data-bs-target="#formModal" data-role="sinhvien">
+                    <button type="button" class="btn btn-light btn-role w-100 mt-2"
+                            data-bs-toggle="modal" data-bs-target="#formModal" data-role="sinhvien">
                         Sinh viên
                     </button>
                 </div>
@@ -148,13 +156,20 @@
 
                 <script>
                     function loginWithGoogle() {
-                        window.location.href = "/Login/Login";
+                        const selectedButton = document.querySelector('button[data-role].active');
+                        const selectedRole = selectedButton?.getAttribute('data-role');
+                        if (!selectedRole) {
+                            alert("Vui lòng chọn vai trò trước khi đăng nhập.");
+                            return;
+                        }
+                        window.location.href = `/Login/Login?role=${selectedRole}`;
                     }
                 </script>
 
             </div>
         </div>
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const buttons = document.querySelectorAll('button[data-role]');
@@ -162,17 +177,19 @@
 
             buttons.forEach(button => {
                 button.addEventListener('click', () => {
+                    // Remove active from all
+                    buttons.forEach(btn => btn.classList.remove('active'));
+
+                    // Add active to this
+                    button.classList.add('active');
+
+                    // Show/Hide cơ sở
                     const role = button.getAttribute('data-role');
-                    if (role === 'canbo') {
-                        coSoContainer.style.display = 'none';
-                    } else {
-                        coSoContainer.style.display = 'block';
-                    }
+                    coSoContainer.style.display = (role === 'canbo') ? 'none' : 'block';
                 });
             });
         });
-     </script>
-
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
