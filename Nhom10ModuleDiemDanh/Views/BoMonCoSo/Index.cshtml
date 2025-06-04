@@ -3,6 +3,8 @@
 
 @{
     Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+    var tenBoMon = ViewData["tenBoMon"]?.ToString() ?? "";
+    var idBoMon = ViewData["idBoMon"]?.ToString() ?? "";
 }
 
 <!-- TIÊU ĐỀ -->
@@ -13,12 +15,12 @@
 </div>
 
 <!-- BỘ LỌC -->
-<form method="get" class="card mb-4">
+<form method="get" class="card mb-4" id="filterForm">
     <div class="card-header fw-bold">Bộ lọc</div>
     <div class="card-body row g-3">
         <div class="col-md-3">
             <label for="tenBoMon">Tìm kiếm theo tên bộ môn:</label>
-            <input id="tenBoMon" name="tenBoMon" value="@ViewData["tenBoMon"]" type="text" class="form-control" placeholder="Nhập tên bộ môn" />
+            <input id="tenBoMon" name="tenBoMon" type="text" class="form-control" placeholder="Nhập tên bộ môn" />
         </div>
         <div class="col-md-3">
             <label for="idCoSo">Cơ sở:</label>
@@ -34,16 +36,17 @@
         </div>
         <div class="col-md-3 d-flex align-items-end gap-2">
             <button type="submit" class="btn btn-primary w-50">Lọc</button>
-            <a href="@Url.Action("Index", "BoMonCoSo", new { idBoMon = ViewData["idBoMon"] })" class="btn btn-secondary w-50">Hủy lọc</a>
+            <a href="@Url.Action("Index", "BoMonCoSo", new { tenBoMon = tenBoMon, idBoMon = idBoMon })" class="btn btn-secondary w-50">Hủy lọc</a>
         </div>
     </div>
+    <input type="hidden" id="originalTenBoMon" value="@tenBoMon" />
 </form>
 
 <!-- DANH SÁCH -->
 <div class="card" id="indexContent">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span class="fw-bold">Danh sách bộ môn cơ sở</span>
-        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createModal" data-id-bo-mon="@ViewData["idBoMon"]">+ Thêm mới</button>
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createModal" data-id-bo-mon="@idBoMon" data-ten-bo-mon="@tenBoMon">+ Thêm mới</button>
     </div>
     <div class="card-body p-0">
         <table class="table table-bordered table-hover mb-0 text-center">
@@ -161,24 +164,23 @@
             $('#createModal').on('show.bs.modal', function (e) {
                 var button = $(e.relatedTarget);
                 var idBoMon = button.data('id-bo-mon') || '';
-                // Lấy tenBoMon từ ViewData hoặc query string
-                var tenBoMon = '@ViewData["tenBoMon"]' || '';
-                if (!tenBoMon) {
-                    // Nếu ViewData không có, thử lấy từ query string
-                    var urlParams = new URLSearchParams(window.location.search);
-                    tenBoMon = urlParams.get('tenBoMon') || '';
-                }
+                var tenBoMon = button.data('ten-bo-mon') || $('#originalTenBoMon').val() || '';
                 $.ajax({
-                    url: '@Url.Action("Create", "BoMonCoSo")' + '?idBoMon=' + (idBoMon || '') + '&tenBoMon=' + encodeURIComponent(tenBoMon),
+                    url: '@Url.Action("Create", "BoMonCoSo")' + '?idBoMon=' + encodeURIComponent(idBoMon) + '&tenBoMon=' + encodeURIComponent(tenBoMon),
                     type: 'GET',
                     success: function (data) {
                         $('#createModalBody').html(data);
                         $('#createForm').validate({
                             ignore: '[name="TenCoSo"]'
                         });
+                        // Đảm bảo tenBoMon được gán đúng và readonly
+                        if (tenBoMon) {
+                            $('#createForm input[name="TenBoMon"]').val(tenBoMon);
+                            $('#createForm input[name="TenBoMon"]').prop('readonly', true);
+                        }
                     },
-                    error: function () {
-                        alert('Không thể tải form thêm bộ môn cơ sở.');
+                    error: function (xhr) {
+                        alert('Không thể tải form thêm bộ môn cơ sở: ' + xhr.responseText);
                     }
                 });
             });
@@ -190,23 +192,41 @@
                 form.removeData('unobtrusiveValidation');
                 $.validator.unobtrusive.parse(form);
 
-                var formData = form.serialize();
-                $.ajax({
-                    url: '@Url.Action("Create", "BoMonCoSo")',
-                    type: 'POST',
-                    data: formData,
-                    success: function (response) {
-                        if (response.success) {
-                            $('#createModal').modal('hide');
-                            location.reload();
-                        } else {
-                            alert(response.message);
-                        }
-                    },
-                    error: function () {
-                        alert('Đã có lỗi xảy ra khi thêm bộ môn cơ sở.');
+                if (form.valid()) {
+                    var tenBoMon = $('#createForm input[name="TenBoMon"]').val() || $('#originalTenBoMon').val() || '';
+                    var formData = form.serializeArray();
+                    if (tenBoMon) {
+                        formData.push({ name: 'TenBoMon', value: tenBoMon });
                     }
-                });
+                    console.log('Form Data:', formData); // Debug
+                    $.ajax({
+                        url: '@Url.Action("Create", "BoMonCoSo")',
+                        type: 'POST',
+                        data: formData,
+                        success: function (response) {
+                            console.log('Response:', response); // Debug
+                            if (response.success) {
+                                $('#createModal').modal('hide');
+                                var originalTenBoMon = $('#originalTenBoMon').val() || '';
+                                var idCoSo = $('#idCoSo').val() || '';
+                                var trangThai = $('#trangThai').val() || '';
+                                var queryString = '?tenBoMon=' + encodeURIComponent(originalTenBoMon) +
+                                                 '&idCoSo=' + encodeURIComponent(idCoSo) +
+                                                 '&trangThai=' + encodeURIComponent(trangThai) +
+                                                 '&idBoMon=' + encodeURIComponent('@idBoMon');
+                                window.location.href = '@Url.Action("Index", "BoMonCoSo")' + queryString;
+                            } else {
+                                alert(response.message || 'Lỗi khi thêm bộ môn cơ sở.');
+                            }
+                        },
+                        error: function (xhr) {
+                            console.log('Error:', xhr.responseText); // Debug
+                            alert('Đã có lỗi xảy ra khi thêm bộ môn cơ sở: ' + xhr.responseText);
+                        }
+                    });
+                } else {
+                    alert('Vui lòng kiểm tra dữ liệu nhập vào.');
+                }
             });
 
             // Load Edit Modal
@@ -244,10 +264,9 @@
                     success: function (response) {
                         if (response.success) {
                             $('#editModal').modal('hide');
-                            // Redirect to current page to refresh
                             window.location.href = window.location.pathname + window.location.search;
                         } else {
-                            alert(response.message);
+                            alert(response.message || 'Lỗi khi sửa bộ môn cơ sở.');
                         }
                     },
                     error: function () {
@@ -283,9 +302,9 @@
                         data: { id: id },
                         success: function (response) {
                             if (response.success) {
-                                location.reload();
+                                window.location.href = window.location.pathname + window.location.search;
                             } else {
-                                alert(response.message);
+                                alert(response.message || 'Lỗi khi xóa bộ môn cơ sở.');
                             }
                         },
                         error: function () {
@@ -295,7 +314,7 @@
                 }
             });
 
-                       // Toggle Status
+            // Toggle Status
             $(document).on('change', '.toggle-status', function () {
                 var checkbox = $(this);
                 var id = checkbox.data('id');
@@ -311,7 +330,7 @@
                                 .removeClass('bg-success bg-secondary')
                                 .addClass(isActive ? 'bg-success' : 'bg-secondary');
                         } else {
-                            alert(response.message);
+                            alert(response.message || 'Lỗi khi cập nhật trạng thái.');
                             checkbox.prop('checked', !isChecked);
                         }
                     },
@@ -320,6 +339,23 @@
                         checkbox.prop('checked', !isChecked);
                     }
                 });
+            });
+
+            // Xử lý form lọc
+            $('#filterForm').on('submit', function (e) {
+                e.preventDefault(); // Ngăn chặn submit mặc định
+                var originalTenBoMon = $('#originalTenBoMon').val() || '';
+                var tenBoMonInput = $('#tenBoMon').val() || '';
+                var tenBoMon = tenBoMonInput ? tenBoMonInput : originalTenBoMon; // Giữ originalTenBoMon nếu input trống
+                var idCoSo = $('#idCoSo').val() || '';
+                var trangThai = $('#trangThai').val() || '';
+                var idBoMon = '@idBoMon' || '';
+                var queryString = '?tenBoMon=' + encodeURIComponent(tenBoMon) +
+                                 '&idCoSo=' + encodeURIComponent(idCoSo) +
+                                 '&trangThai=' + encodeURIComponent(trangThai) +
+                                 '&idBoMon=' + encodeURIComponent(idBoMon);
+                window.location.href = '@Url.Action("Index", "BoMonCoSo")' + queryString;
+                console.log('Query String:', queryString); // Debug
             });
         });
     </script>
