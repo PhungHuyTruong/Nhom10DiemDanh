@@ -12,5 +12,6 @@ namespace Nhom10ModuleDiemDanh.Services
         Task DeleteAsync(Guid id);
         Task<List<CoSo>> GetCoSosAsync();
         Task<List<QuanLyBoMon>> GetBoMonsAsync();
+        Task ToggleStatusAsync(Guid id);
     }
 }

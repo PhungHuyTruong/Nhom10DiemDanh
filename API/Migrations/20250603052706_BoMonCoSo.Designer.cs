@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ModuleDiemDanhDbContext))]
-    [Migration("20250531114254_5")]
-    partial class _5
+    [Migration("20250603052706_BoMonCoSo")]
+    partial class BoMonCoSo
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -71,9 +71,6 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CoSoIdCoSo")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("IdBoMon")
                         .HasColumnType("uniqueidentifier");
 
@@ -91,9 +88,9 @@ namespace API.Migrations
 
                     b.HasKey("IdBoMonCoSo");
 
-                    b.HasIndex("CoSoIdCoSo");
-
                     b.HasIndex("IdBoMon");
+
+                    b.HasIndex("IdCoSo");
 
                     b.ToTable("BoMonCoSos");
                 });
@@ -922,15 +919,13 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.BoMonCoSo", b =>
                 {
-                    b.HasOne("API.Data.CoSo", "CoSo")
-                        .WithMany("BoMonCoSos")
-                        .HasForeignKey("CoSoIdCoSo")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("API.Data.QuanLyBoMon", "QuanLyBoMon")
                         .WithMany("BoMonCoSos")
                         .HasForeignKey("IdBoMon");
+
+                    b.HasOne("API.Data.CoSo", "CoSo")
+                        .WithMany("BoMonCoSos")
+                        .HasForeignKey("IdCoSo");
 
                     b.Navigation("CoSo");
 

@@ -5,98 +5,96 @@
     Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
 }
 
-<h1>Quản lý bộ môn cơ sở</h1>
-
-<div class="card">
-<div class="row mb-3">
-    <div class="col-md-3">
-        <button type="button" class="btn btn-primary" style="background-color: #1976d2; border-color: #1976d2;" data-bs-toggle="modal" data-bs-target="#createModal">Thêm</button>
-    </div>
-    <div class="col-md-9">
-        <form asp-action="Index" method="get">
-            <div class="row">
-                <div class="col-md-3">
-                    <input type="text" name="tenBoMon" class="form-control" placeholder="Tìm kiếm theo tên bộ môn" value="@ViewData["tenBoMon"]" />
-                </div>
-                <div class="col-md-3">
-                    <select name="idCoSo" class="form-control">
-                        <option value="">Tất cả cơ sở</option>
-                        @{
-                            var coSos = ViewData["CoSos"] as List<CoSo>;
-                            if (coSos != null && coSos.Any())
-                            {
-                                foreach (var coSo in coSos)
-                                {
-                                    <option value="@coSo.IdCoSo" selected="@(ViewData["idCoSo"]?.ToString() == coSo.IdCoSo.ToString() ? "selected" : null)">@coSo.TenCoSo</option>
-                                }
-                            }
-                        }
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select name="trangThai" class="form-control">
-                        <option value="Tất cả trạng thái" selected="@(ViewData["trangThai"]?.ToString() == "Tất cả trạng thái" ? "selected" : null)">Tất cả trạng thái</option>
-                        <option value="Hoạt động" selected="@(ViewData["trangThai"]?.ToString() == "Hoạt động" ? "selected" : null)">Hoạt động</option>
-                        <option value="Tắt" selected="@(ViewData["trangThai"]?.ToString() == "Tắt" ? "selected" : null)">Tắt</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-outline-primary" style="background-color: #42a5f5; color: white; border-color: #42a5f5;">Lọc</button>
-                </div>
-                <div class="col-md-1">
-                    <a asp-action="Index" class="btn btn-outline-secondary" style="background-color: #bdbdbd; color: black; border-color: #bdbdbd;">Hủy lọc</a>
-                </div>
-            </div>
-        </form>
+<!-- TIÊU ĐỀ -->
+<div class="card bg-primary text-white mb-4">
+    <div class="card-body">
+        <h2 class="card-title">Quản lý bộ môn cơ sở</h2>
     </div>
 </div>
-</div>
 
-<table class="table" style="margin-top: 50px">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Tên bộ môn</th>
-            <th>Tên cơ sở</th>
-            <th>Trạng thái</th>
-            <th>Chức năng</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Any())
-        {
-            @foreach (var item in Model.Select((value, index) => new { value, index }))
-            {
+<!-- BỘ LỌC -->
+<form method="get" class="card mb-4">
+    <div class="card-header fw-bold">Bộ lọc</div>
+    <div class="card-body row g-3">
+        <div class="col-md-3">
+            <label for="tenBoMon">Tìm kiếm theo tên bộ môn:</label>
+            <input id="tenBoMon" name="tenBoMon" value="@ViewData["tenBoMon"]" type="text" class="form-control" placeholder="Nhập tên bộ môn" />
+        </div>
+        <div class="col-md-3">
+            <label for="idCoSo">Cơ sở:</label>
+            @Html.DropDownList("idCoSo", ViewData["CoSos"] as SelectList, "Tất cả cơ sở", new { @class = "form-select" })
+        </div>
+        <div class="col-md-3">
+            <label for="trangThai">Trạng thái:</label>
+            <select id="trangThai" name="trangThai" class="form-select">
+                <option value="Tất cả trạng thái" selected="@(ViewData["trangThai"]?.ToString() == "Tất cả trạng thái")">Tất cả trạng thái</option>
+                <option value="Hoạt động" selected="@(ViewData["trangThai"]?.ToString() == "Hoạt động")">Hoạt động</option>
+                <option value="Ngừng hoạt động" selected="@(ViewData["trangThai"]?.ToString() == "Ngừng hoạt động")">Ngừng hoạt động</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary w-50">Lọc</button>
+            <a href="@Url.Action("Index", "BoMonCoSo", new { idBoMon = ViewData["idBoMon"] })" class="btn btn-secondary w-50">Hủy lọc</a>
+        </div>
+    </div>
+</form>
+
+<!-- DANH SÁCH -->
+<div class="card" id="indexContent">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">Danh sách bộ môn cơ sở</span>
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createModal" data-id-bo-mon="@ViewData["idBoMon"]">+ Thêm mới</button>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-bordered table-hover mb-0 text-center">
+            <thead class="table-light">
                 <tr>
-                    <td>@(item.index + 1)</td>
-                    <td>@item.value.TenBoMon</td>
-                    <td>@item.value.TenCoSo</td>
-                    <td>
-                        <div class="form-check form-switch">
-                            <input type="checkbox" class="form-check-input toggle-status" id="toggle-@item.value.IdBoMonCoSo" data-id="@item.value.IdBoMonCoSo" checked="@(item.value.TrangThai == "Hoạt động")">
-                            <label class="form-check-label" id="label-@item.value.IdBoMonCoSo" for="toggle-@item.value.IdBoMonCoSo">@(item.value.TrangThai)</label>
-                        </div>
-                    </td>
-                    <td>
-                        <a href="#" class="edit-btn" data-id="@item.value.IdBoMonCoSo" data-bs-toggle="modal" data-bs-target="#editModal"><i class="fas fa-edit"></i></a>
-                        <a href="#" class="details-btn" data-id="@item.value.IdBoMonCoSo" data-bs-toggle="modal" data-bs-target="#detailsModal"><i class="fas fa-info-circle"></i></a>
-                        <a asp-action="Delete" asp-route-id="@item.value.IdBoMonCoSo"><i class="fas fa-trash"></i></a>
-                    </td>
+                    <th>#</th>
+                    <th>Tên bộ môn</th>
+                    <th>Tên cơ sở</th>
+                    <th>Trạng thái</th>
+                    <th>Chức năng</th>
                 </tr>
-            }
-        }
-        else
-        {
-            <tr><td colspan="5" class="text-center">Không có dữ liệu</td></tr>
-        }
-    </tbody>
-</table>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var item in Model.Select((value, index) => new { value, index }))
+                    {
+                        <tr>
+                            <td>@(item.index + 1)</td>
+                            <td>@item.value.TenBoMon</td>
+                            <td>@(item.value.TenCoSo ?? "Tất cả cơ sở")</td>
+                            <td>
+                                <div class="form-check form-switch d-flex justify-content-center align-items-center gap-2">
+                                    <input type="checkbox" class="form-check-input toggle-status" id="toggle-@item.value.IdBoMonCoSo" data-id="@item.value.IdBoMonCoSo" @(item.value.TrangThai ? "checked" : "") />
+                                    <span class="badge rounded-pill bg-@(item.value.TrangThai ? "success" : "secondary")">
+                                        @(item.value.TrangThai ? "Hoạt động" : "Ngừng hoạt động")
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-warning btn-sm edit-btn" data-id="@item.value.IdBoMonCoSo" data-bs-toggle="modal" data-bs-target="#editModal">✏️</button>
+                                <button class="btn btn-info btn-sm details-btn" data-id="@item.value.IdBoMonCoSo" data-bs-toggle="modal" data-bs-target="#detailsModal">🔍</button>
+                                <button class="btn btn-danger btn-sm delete-btn" data-id="@item.value.IdBoMonCoSo">🗑️</button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="5" class="text-center">Không có dữ liệu</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
-<!-- Create Modal -->
+<!-- MODAL THÊM MỚI -->
 <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header" style="background-color: #0659FF;">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="createModalLabel">Thêm bộ môn cơ sở</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -111,11 +109,11 @@
     </div>
 </div>
 
-<!-- Edit Modal -->
+<!-- MODAL SỬA -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content" style="background-color: #0659FF;">
-            <div class="modal-header">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
                 <h5 class="modal-title" id="editModalLabel">Sửa bộ môn cơ sở</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -124,22 +122,22 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" id="saveEditBtn">Lưu</button>
+                <button type="button" class="btn btn-warning" id="saveEditBtn">Lưu</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Details Modal -->
+<!-- MODAL CHI TIẾT -->
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content" style="background-color: #0659FF;">
-            <div class="modal-header">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-dark">
                 <h5 class="modal-title" id="detailsModalLabel">Chi tiết bộ môn cơ sở</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="detailsModalBody">
-                <!-- Nội dung sẽ được load bằng AJAX -->
+                <!-- Nội dung sẽ được load chi tiết -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -152,18 +150,32 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
         $(document).ready(function () {
+            // Reset ô tìm kiếm
+            $('#tenBoMon').val('');
+
             // Load Create Modal
-            $('#createModal').on('show.bs.modal', function () {
+            $('#createModal').on('show.bs.modal', function (e) {
+                var button = $(e.relatedTarget);
+                var idBoMon = button.data('id-bo-mon') || '';
+                // Lấy tenBoMon từ ViewData hoặc query string
+                var tenBoMon = '@ViewData["tenBoMon"]' || '';
+                if (!tenBoMon) {
+                    // Nếu ViewData không có, thử lấy từ query string
+                    var urlParams = new URLSearchParams(window.location.search);
+                    tenBoMon = urlParams.get('tenBoMon') || '';
+                }
                 $.ajax({
-                    url: '@Url.Action("Create", "BoMonCoSo")',
+                    url: '@Url.Action("Create", "BoMonCoSo")' + '?idBoMon=' + (idBoMon || '') + '&tenBoMon=' + encodeURIComponent(tenBoMon),
                     type: 'GET',
                     success: function (data) {
                         $('#createModalBody').html(data);
-                        $('#createForm').validate();
+                        $('#createForm').validate({
+                            ignore: '[name="TenCoSo"]'
+                        });
                     },
                     error: function () {
                         alert('Không thể tải form thêm bộ môn cơ sở.');
@@ -173,36 +185,42 @@
 
             // Save Create
             $('#saveCreateBtn').click(function () {
-                if ($('#createForm').valid()) {
-                    var formData = $('#createForm').serialize();
-                    $.ajax({
-                        url: '@Url.Action("Create", "BoMonCoSo")',
-                        type: 'POST',
-                        data: formData,
-                        success: function (response) {
-                            if (response.success) {
-                                $('#createModal').modal('hide');
-                                location.reload();
-                            } else {
-                                alert(response.message);
-                            }
-                        },
-                        error: function () {
-                            alert('Đã có lỗi xảy ra khi thêm bộ môn cơ sở.');
+                var form = $('#createForm');
+                form.removeData('validator');
+                form.removeData('unobtrusiveValidation');
+                $.validator.unobtrusive.parse(form);
+
+                var formData = form.serialize();
+                $.ajax({
+                    url: '@Url.Action("Create", "BoMonCoSo")',
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        if (response.success) {
+                            $('#createModal').modal('hide');
+                            location.reload();
+                        } else {
+                            alert(response.message);
                         }
-                    });
-                }
+                    },
+                    error: function () {
+                        alert('Đã có lỗi xảy ra khi thêm bộ môn cơ sở.');
+                    }
+                });
             });
 
             // Load Edit Modal
-            $('.edit-btn').click(function () {
+            $(document).on('click', '.edit-btn', function (e) {
+                e.preventDefault();
                 var id = $(this).data('id');
                 $.ajax({
                     url: '@Url.Action("Edit", "BoMonCoSo")/' + id,
                     type: 'GET',
                     success: function (data) {
                         $('#editModalBody').html(data);
-                        $('#editForm').validate();
+                        $('#editForm').validate({
+                            ignore: '[name="TenCoSo"]'
+                        });
                     },
                     error: function () {
                         alert('Không thể tải form sửa bộ môn cơ sở.');
@@ -212,30 +230,35 @@
 
             // Save Edit
             $('#saveEditBtn').click(function () {
-                if ($('#editForm').valid()) {
-                    var formData = $('#editForm').serialize();
-                    var id = $('#editForm input[name="IdBoMonCoSo"]').val();
-                    $.ajax({
-                        url: '@Url.Action("Edit", "BoMonCoSo")/' + id,
-                        type: 'POST',
-                        data: formData,
-                        success: function (response) {
-                            if (response.success) {
-                                $('#editModal').modal('hide');
-                                location.reload();
-                            } else {
-                                alert(response.message);
-                            }
-                        },
-                        error: function () {
-                            alert('Đã có lỗi xảy ra khi sửa bộ môn cơ sở.');
+                var form = $('#editForm');
+                form.removeData('validator');
+                form.removeData('unobtrusiveValidation');
+                $.validator.unobtrusive.parse(form);
+
+                var formData = form.serialize();
+                var id = $('#editForm input[name="IdBoMonCoSo"]').val();
+                $.ajax({
+                    url: '@Url.Action("Edit", "BoMonCoSo")/' + id,
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        if (response.success) {
+                            $('#editModal').modal('hide');
+                            // Redirect to current page to refresh
+                            window.location.href = window.location.pathname + window.location.search;
+                        } else {
+                            alert(response.message);
                         }
-                    });
-                }
+                    },
+                    error: function () {
+                        alert('Đã có lỗi xảy ra khi sửa bộ môn cơ sở.');
+                    }
+                });
             });
 
             // Load Details Modal
-            $('.details-btn').click(function () {
+            $(document).on('click', '.details-btn', function (e) {
+                e.preventDefault();
                 var id = $(this).data('id');
                 $.ajax({
                     url: '@Url.Action("Details", "BoMonCoSo")/' + id,
@@ -249,22 +272,46 @@
                 });
             });
 
-            // Toggle Status
-            $('.toggle-status').on('change', function () {
+            // Delete
+            $(document).on('click', '.delete-btn', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                if (confirm('Bạn có chắc chắn muốn xóa bộ môn cơ sở này?')) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "BoMonCoSo")',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (response) {
+                            if (response.success) {
+                                location.reload();
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function () {
+                            alert('Đã có lỗi xảy ra khi xóa bộ môn cơ sở.');
+                        }
+                    });
+                }
+            });
+
+                       // Toggle Status
+            $(document).on('change', '.toggle-status', function () {
                 var checkbox = $(this);
                 var id = checkbox.data('id');
-                var label = $('#label-' + id);
                 var isChecked = checkbox.is(':checked');
-
                 $.ajax({
                     url: '@Url.Action("ToggleStatus", "BoMonCoSo")',
                     type: 'POST',
                     data: { id: id },
                     success: function (response) {
                         if (response.success) {
-                            label.text(isChecked ? 'Hoạt động' : 'Tắt');
+                            var isActive = response.trangThai === 'Hoạt động';
+                            checkbox.siblings('span').text(isActive ? 'Hoạt động' : 'Ngừng hoạt động')
+                                .removeClass('bg-success bg-secondary')
+                                .addClass(isActive ? 'bg-success' : 'bg-secondary');
                         } else {
-                            alert('Không thể cập nhật trạng thái.');
+                            alert(response.message);
                             checkbox.prop('checked', !isChecked);
                         }
                     },

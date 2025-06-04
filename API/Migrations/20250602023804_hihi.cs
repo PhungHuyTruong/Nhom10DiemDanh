@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class hoanchinh : Migration
+    public partial class hihi : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -68,6 +68,7 @@ namespace API.Migrations
                 {
                     IdHocKy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TenHocKy = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    MaHocKy = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NgayTao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     NgayCapNhat = table.Column<DateTime>(type: "datetime2", nullable: true),
                     TrangThai = table.Column<bool>(type: "bit", nullable: false)

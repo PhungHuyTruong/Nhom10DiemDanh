@@ -131,6 +131,13 @@ namespace API.Data
                 .WithOne(b => b.QuanLyBoMon)
                 .HasForeignKey(b => b.IdBoMon);
 
+            // Thêm cấu hình cho BoMonCoSo và CoSo
+            modelBuilder.Entity<BoMonCoSo>()
+                .HasOne(b => b.CoSo)
+                .WithMany(c => c.BoMonCoSos)
+                .HasForeignKey(b => b.IdCoSo)
+                .IsRequired(false); // Cho phép IdCoSo là nullable
+
             modelBuilder.Entity<VaiTroNhanVien>()
                 .HasOne(v => v.VaiTro)
                 .WithMany(v => v.VaiTroNhanViens)

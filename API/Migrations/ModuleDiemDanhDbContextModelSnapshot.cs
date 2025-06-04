@@ -68,9 +68,6 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CoSoIdCoSo")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("IdBoMon")
                         .HasColumnType("uniqueidentifier");
 
@@ -88,9 +85,9 @@ namespace API.Migrations
 
                     b.HasKey("IdBoMonCoSo");
 
-                    b.HasIndex("CoSoIdCoSo");
-
                     b.HasIndex("IdBoMon");
+
+                    b.HasIndex("IdCoSo");
 
                     b.ToTable("BoMonCoSos");
                 });
@@ -919,15 +916,13 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.BoMonCoSo", b =>
                 {
-                    b.HasOne("API.Data.CoSo", "CoSo")
-                        .WithMany("BoMonCoSos")
-                        .HasForeignKey("CoSoIdCoSo")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("API.Data.QuanLyBoMon", "QuanLyBoMon")
                         .WithMany("BoMonCoSos")
                         .HasForeignKey("IdBoMon");
+
+                    b.HasOne("API.Data.CoSo", "CoSo")
+                        .WithMany("BoMonCoSos")
+                        .HasForeignKey("IdCoSo");
 
                     b.Navigation("CoSo");
 

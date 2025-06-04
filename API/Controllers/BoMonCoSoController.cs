@@ -10,7 +10,6 @@ namespace API.Controllers
     [ApiController]
     public class BoMonCoSoController : ControllerBase
     {
-
         private readonly ModuleDiemDanhDbContext _context;
 
         public BoMonCoSoController(ModuleDiemDanhDbContext context)
@@ -18,7 +17,6 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/BoMonCoSo
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BoMonCoSoViewModel>>> GetBoMonCoSos(string? tenBoMon, Guid? idCoSo)
         {
@@ -29,10 +27,10 @@ namespace API.Controllers
 
             if (!string.IsNullOrEmpty(tenBoMon))
             {
-                query = query.Where(b => b.QuanLyBoMon.TenBoMon.Contains(tenBoMon));
+                query = query.Where(b => b.QuanLyBoMon != null && b.QuanLyBoMon.TenBoMon.Contains(tenBoMon));
             }
 
-            if (idCoSo.HasValue)
+            if (idCoSo.HasValue && idCoSo != Guid.Empty)
             {
                 query = query.Where(b => b.IdCoSo == idCoSo);
             }
@@ -43,17 +41,15 @@ namespace API.Controllers
                 IdBoMon = b.IdBoMon,
                 TenBoMon = b.QuanLyBoMon != null ? b.QuanLyBoMon.TenBoMon : "Không xác định",
                 IdCoSo = b.IdCoSo,
-                TenCoSo = b.CoSo != null ? b.CoSo.TenCoSo : "Không xác định",
+                TenCoSo = b.CoSo != null ? b.CoSo.TenCoSo : "Không xác định", // Hiển thị tên cơ sở thực tế
                 TrangThai = b.TrangThai,
                 NgayTao = b.NgayTao,
                 NgayCapNhat = b.NgayCapNhat
             }).ToListAsync();
 
-
-            return result;
+            return Ok(result);
         }
 
-        // GET: api/BoMonCoSo/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<BoMonCoSoViewModel>> GetBoMonCoSo(Guid id)
         {
@@ -80,28 +76,109 @@ namespace API.Controllers
             };
         }
 
-        // POST: api/BoMonCoSo
         [HttpPost]
         public async Task<ActionResult<BoMonCoSoViewModel>> CreateBoMonCoSo(BoMonCoSoViewModel model)
         {
-            var boMonCoSo = new BoMonCoSo
+            if (!ModelState.IsValid)
             {
-                IdBoMonCoSo = Guid.NewGuid(),
-                IdBoMon = model.IdBoMon,
-                IdCoSo = model.IdCoSo,
-                TrangThai = model.TrangThai,
-                NgayTao = DateTime.Now
-            };
+                return BadRequest(ModelState);
+            }
 
-            _context.BoMonCoSos.Add(boMonCoSo);
-            await _context.SaveChangesAsync();
+            // Lấy danh sách tất cả cơ sở từ bảng CoSos
+            var coSos = await _context.CoSos.ToListAsync();
 
-            model.IdBoMonCoSo = boMonCoSo.IdBoMonCoSo;
-            model.NgayTao = boMonCoSo.NgayTao;
-            return CreatedAtAction(nameof(GetBoMonCoSo), new { id = boMonCoSo.IdBoMonCoSo }, model);
+            // Nếu chọn "Tất cả cơ sở" (IdCoSo = null hoặc Guid.Empty), tạo bản ghi cho từng cơ sở
+            if (!model.IdCoSo.HasValue || model.IdCoSo == Guid.Empty)
+            {
+                if (!coSos.Any())
+                {
+                    return BadRequest(new { message = "Không có cơ sở nào trong hệ thống." });
+                }
+
+                // Tạo nhiều bản ghi cho từng cơ sở
+                var createdModels = new List<BoMonCoSoViewModel>();
+                foreach (var coSo in coSos)
+                {
+                    var boMonCoSo = new BoMonCoSo
+                    {
+                        IdBoMonCoSo = Guid.NewGuid(),
+                        IdBoMon = model.IdBoMon,
+                        IdCoSo = coSo.IdCoSo, // Gán IdCoSo thực tế
+                        TrangThai = model.TrangThai,
+                        NgayTao = DateTime.Now
+                    };
+
+                    _context.BoMonCoSos.Add(boMonCoSo);
+
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        return BadRequest(new { message = $"Lỗi khi thêm: {ex.InnerException?.Message}" });
+                    }
+
+                    var createdModel = new BoMonCoSoViewModel
+                    {
+                        IdBoMonCoSo = boMonCoSo.IdBoMonCoSo,
+                        IdBoMon = boMonCoSo.IdBoMon,
+                        IdCoSo = boMonCoSo.IdCoSo,
+                        TenCoSo = coSo.TenCoSo,
+                        TrangThai = boMonCoSo.TrangThai,
+                        NgayTao = boMonCoSo.NgayTao
+                    };
+
+                    // Gán TenBoMon
+                    var boMon = await _context.QuanLyBoMons.FirstOrDefaultAsync(b => b.IDBoMon == boMonCoSo.IdBoMon);
+                    createdModel.TenBoMon = boMon?.TenBoMon ?? "Không xác định";
+
+                    createdModels.Add(createdModel);
+                }
+
+                // Trả về danh sách các bản ghi vừa tạo
+                return Ok(createdModels);
+            }
+            else
+            {
+                // Nếu chọn một cơ sở cụ thể, tạo một bản ghi như hiện tại
+                var boMonCoSo = new BoMonCoSo
+                {
+                    IdBoMonCoSo = Guid.NewGuid(),
+                    IdBoMon = model.IdBoMon,
+                    IdCoSo = model.IdCoSo,
+                    TrangThai = model.TrangThai,
+                    NgayTao = DateTime.Now
+                };
+
+                _context.BoMonCoSos.Add(boMonCoSo);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException ex)
+                {
+                    return BadRequest(new { message = $"Lỗi khi thêm: {ex.InnerException?.Message}" });
+                }
+
+                model.IdBoMonCoSo = boMonCoSo.IdBoMonCoSo;
+                model.NgayTao = boMonCoSo.NgayTao;
+
+                // Gán TenCoSo dựa trên IdCoSo
+                if (boMonCoSo.IdCoSo.HasValue)
+                {
+                    var coSo = await _context.CoSos.FindAsync(boMonCoSo.IdCoSo);
+                    model.TenCoSo = coSo?.TenCoSo ?? "Không xác định";
+                }
+
+                // Gán TenBoMon
+                var boMon = await _context.QuanLyBoMons.FirstOrDefaultAsync(b => b.IDBoMon == model.IdBoMon);
+                model.TenBoMon = boMon?.TenBoMon ?? "Không xác định";
+
+                return CreatedAtAction(nameof(GetBoMonCoSo), new { id = boMonCoSo.IdBoMonCoSo }, model);
+            }
         }
 
-        // PUT: api/BoMonCoSo/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBoMonCoSo(Guid id, BoMonCoSoViewModel model)
         {
@@ -125,7 +202,6 @@ namespace API.Controllers
             return NoContent();
         }
 
-        // DELETE: api/BoMonCoSo/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBoMonCoSo(Guid id)
         {
@@ -140,14 +216,28 @@ namespace API.Controllers
             return NoContent();
         }
 
-        // GET: api/BoMonCoSo/GetCoSos
+        [HttpPut("ToggleStatus/{id}")]
+        public async Task<IActionResult> ToggleStatus(Guid id)
+        {
+            var boMonCoSo = await _context.BoMonCoSos.FindAsync(id);
+            if (boMonCoSo == null)
+            {
+                return NotFound();
+            }
+
+            boMonCoSo.TrangThai = !boMonCoSo.TrangThai;
+            boMonCoSo.NgayCapNhat = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { TrangThai = boMonCoSo.TrangThai });
+        }
+
         [HttpGet("GetCoSos")]
         public async Task<ActionResult<IEnumerable<CoSo>>> GetCoSos()
         {
             return await _context.CoSos.ToListAsync();
         }
 
-        // GET: api/BoMonCoSo/GetBoMons
         [HttpGet("GetBoMons")]
         public async Task<ActionResult<IEnumerable<QuanLyBoMon>>> GetBoMons()
         {
