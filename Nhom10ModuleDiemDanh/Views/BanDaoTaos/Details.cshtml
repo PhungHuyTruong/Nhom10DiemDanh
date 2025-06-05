@@ -1,0 +1,23 @@
+﻿@model API.Data.BanDaoTao
+@{
+    Layout = null;
+}
+
+<dl class="row">
+    <dt class="col-sm-4">Tên ban đào tạo</dt>
+    <dd class="col-sm-8">@Model.TenBanDaoTao</dd>
+
+    <dt class="col-sm-4">Mã ban đào tạo</dt>
+    <dd class="col-sm-8">@Model.MaBanDaoTao</dd>
+
+    <dt class="col-sm-4">Email</dt>
+    <dd class="col-sm-8">@Model.Email</dd>
+
+    <dt class="col-sm-4">Ngày tạo</dt>
+    <dd class="col-sm-8">@Model.NgayTao.ToString("dd/MM/yyyy")</dd>
+
+    <dt class="col-sm-4">Trạng thái</dt>
+    <dd class="col-sm-8">@(Model.TrangThai ? "Đang hoạt động" : "Ngừng")</dd>
+</dl>
+
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>

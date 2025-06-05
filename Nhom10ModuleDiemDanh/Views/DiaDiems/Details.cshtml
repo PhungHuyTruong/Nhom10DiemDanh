@@ -1,0 +1,44 @@
+﻿@model API.Data.DiaDiem
+
+@{
+    ViewData["Title"] = "Chi tiết địa điểm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2 class="text-primary">Chi tiết địa điểm</h2>
+
+    <dl class="row">
+        <dt class="col-sm-3">Tên địa điểm</dt>
+        <dd class="col-sm-9">@Model.TenDiaDiem</dd>
+
+        <dt class="col-sm-3">Vĩ độ</dt>
+        <dd class="col-sm-9">@Model.ViDo</dd>
+
+        <dt class="col-sm-3">Kinh độ</dt>
+        <dd class="col-sm-9">@Model.KinhDo</dd>
+
+        <dt class="col-sm-3">Bán kính</dt>
+        <dd class="col-sm-9">@Model.BanKinh m</dd>
+
+        <dt class="col-sm-3">Ngày tạo</dt>
+        <dd class="col-sm-9">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</dd>
+
+        <dt class="col-sm-3">Ngày cập nhật</dt>
+        <dd class="col-sm-9">@Model.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm")</dd>
+
+        <dt class="col-sm-3">Trạng thái</dt>
+        <dd class="col-sm-9">
+            @if (Model.TrangThai)
+            {
+                <span class="badge bg-success">Hoạt động</span>
+            }
+            else
+            {
+                <span class="badge bg-danger">Ngưng hoạt động</span>
+            }
+        </dd>
+    </dl>
+
+    <a asp-action="Indexs" class="btn btn-secondary">Quay lại danh sách</a>
+</div>

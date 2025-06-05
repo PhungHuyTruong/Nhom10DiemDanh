@@ -1,0 +1,172 @@
+﻿@model List<API.Data.HocKy>
+<partial name="_ValidationScriptsPartial" />
+
+@{
+    Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var searchTen = ViewBag.SearchTen as string ?? "";
+    var trangThai = ViewBag.TrangThai as bool?;
+}
+
+@* <form method="get">
+    <input type="text" name="searchTenHocKy" value="@ViewBag.SearchTenHocKy" placeholder="Tên học kỳ" />
+    <select name="trangThai">
+        <option value="">--Trạng thái--</option>
+        <option value="true" selected="@(ViewBag.TrangThai?.ToString() == "True" ? "selected" : null)">Hoạt động</option>
+        <option value="false" selected="@(ViewBag.TrangThai?.ToString() == "False" ? "selected" : null)">Ngừng</option>
+    </select>
+    <button type="submit">Lọc</button>
+</form> *@
+<h1 class="text-white" style="margin-bottom: 50px">Quản lý học kỳ</h1>
+
+<div class="card" style="height: 100px; margin-bottom: 50px;">
+    <div class="card-header fw-bold">¥ Bộ lọc</div>
+    <form method="get" class="d-flex gap-2 align-items-center mb-3" style="max-width: 600px; margin-top: 10px; margin-left: 10px">
+        <input type="text" name="searchTen" class="form-control" placeholder="Tên học kỳ" value="@searchTen" />
+        <select name="trangThai" class="form-select" style="width: 150px;">
+            <option value="">-- Trạng thái --</option>
+            <option value="true" selected="@(ViewBag.TrangThai?.ToString() == "True" ? "selected" : null)">Hoạt động</option>
+            <option value="false" selected="@(ViewBag.TrangThai?.ToString() == "False" ? "selected" : null)">Ngừng</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Lọc</button>
+    </form>
+
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center" style="height: 50px">
+        <span class="fw-bold">≡ Danh sách học kỳ</span>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalFormCreate" style="width: 10%; margin: 30px;">
+            Thêm học kỳ
+        </button>
+    </div>
+
+
+<div class="container">
+
+    <div class="table" style="margin-top: 30px">
+            <table class="table table-bordered table-hover mb-0 text-center">
+            <thead class="table-light">
+                <tr>
+                    <th class="text-nowrap">Stt</th>
+                    <th class="text-nowrap">Tên học kỳ</th>
+                    <th class="text-nowrap">Mã học kỳ</th>
+                    <th class="text-nowrap">Ngày tạo</th>
+                    <th class="text-nowrap">Trạng thái</th>
+                    <th class="text-nowrap">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                    @{
+                        int pageSize = 10; 
+                        int stt = (currentPage - 1) * pageSize + 1;
+                    }
+                @foreach (var item in Model)
+                {
+                    <tr>
+                            <td>@stt</td>
+                        <td>@item.TenHocKy</td>
+                        <td>@item.MaHocKy</td>
+                        <td>@item.NgayTao.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <form asp-action="ToggleStatus" method="post">
+                                <input type="hidden" name="id" value="@item.IdHocKy" />
+                                    <div class="form-check form-switch justify-content d-flex align-items-center gap-2">
+                                    <input class="form-check-input" type="checkbox" name="TrangThai"
+                                           onchange="this.form.submit()" @(item.TrangThai ? "checked" : "") />
+                                        <span class="badge rounded-pill @(item.TrangThai ? "bg-success text-white" : "bg-secondary text-white")">
+                                            @(item.TrangThai ? "Đang hoạt động" : "Ngừng")
+                                        </span>
+                                </div>
+                            </form>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalFormEdit_@item.IdHocKy">
+                                    <i class="bi bi-pencil-square"></i> ✏️
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal Edit -->
+                    <div class="modal fade" id="modalFormEdit_@item.IdHocKy" tabindex="-1" aria-labelledby="editModalLabel_@item.IdHocKy" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content" id="editModalContent">
+                                    <form id="editForm" asp-action="Edit" method="post">
+                                        <input type="hidden" name="IdHocKy" value="@item.IdHocKy" />
+                                        <div class="modal-header bg-primary text-white">
+                                            <h5 class="modal-title">Chỉnh sửa học kỳ</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            @await Html.PartialAsync("Edit", item)
+                                        </div>
+                                    </form>
+                            </div>
+                        </div>
+                    </div>
+                        stt++;
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    <nav>
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("Index", new { searchTen = searchTen, trangThai = trangThai, page = currentPage - 1 })">Trước</a>
+            </li>
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { searchTen = searchTen, trangThai = trangThai, page = i })">@i</a>
+                </li>
+            }
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("Index", new { searchTen = searchTen, trangThai = trangThai, page = currentPage + 1 })">Sau</a>
+            </li>
+        </ul>
+    </nav>
+
+<!-- Modal Create -->
+<div class="modal fade" id="modalFormCreate" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createModalLabel">Thêm học kỳ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @await Html.PartialAsync("Create", new API.Data.HocKy())
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+<script>
+
+    $(document).ready(function () {
+        $.validator.unobtrusive.parse($('#modalFormCreate'));
+    });
+    $('#modalFormCreate').on('shown.bs.modal', function () {
+        $.validator.unobtrusive.parse($(this));
+    });
+
+    $(document).ready(function () {
+        $.validator.unobtrusive.parse($('#modalFormEdit'));
+    });
+    $('#modalFormEdit').on('shown.bs.modal', function () {
+        $.validator.unobtrusive.parse($(this));
+    });
+
+</script>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

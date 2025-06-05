@@ -1,0 +1,18 @@
+﻿@model Nhom10ModuleDiemDanh.Models.BoMonCoSoViewModel
+
+<div class="row">
+    <div class="col-md-12">
+        <dl class="row">
+            <dt class="col-sm-4">Tên bộ môn</dt>
+            <dd class="col-sm-8">@Model.TenBoMon</dd>
+            <dt class="col-sm-4">Tên cơ sở</dt>
+            <dd class="col-sm-8">@Model.TenCoSo</dd>
+            <dt class="col-sm-4">Trạng thái</dt>
+            <dd class="col-sm-8">@(Model.TrangThai ? "Hoạt động" : "Tắt")</dd>
+            <dt class="col-sm-4">Ngày tạo</dt>
+            <dd class="col-sm-8">@Model.NgayTao.ToString("dd/MM/yyyy")</dd>
+            <dt class="col-sm-4">Ngày cập nhật</dt>
+            <dd class="col-sm-8">@(Model.NgayCapNhat?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</dd>
+        </dl>
+    </div>
+</div>

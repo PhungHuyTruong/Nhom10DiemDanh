@@ -1,0 +1,34 @@
+﻿@model API.Data.IP
+
+@{
+    Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+}
+
+<h1>Xóa IP</h1>
+
+<h4>Bạn có chắc chắn muốn xóa IP sau không?</h4>
+<hr />
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-3">Kiểu IP</dt>
+        <dd class="col-sm-9">@Model.KieuIP</dd>
+
+        <dt class="col-sm-3">Địa chỉ IP</dt>
+        <dd class="col-sm-9">@Model.IP_DaiIP</dd>
+
+        <dt class="col-sm-3">Ngày tạo</dt>
+        <dd class="col-sm-9">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</dd>
+
+        <dt class="col-sm-3">Trạng thái</dt>
+        <dd class="col-sm-9">
+            @(Model.TrangThai ? "Hoạt động" : "Tạm khóa")
+        </dd>
+    </dl>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="IdIP" />
+        <button type="submit" class="btn btn-danger">Xác nhận xóa</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </form>
+</div>

@@ -1,0 +1,52 @@
+﻿@model Nhom10ModuleDiemDanh.Models.CoSoViewModel
+
+@{
+    ViewData["Title"] = "Sửa cơ sở";
+}
+
+<h1>Sửa cơ sở</h1>
+
+<form asp-action="Edit">
+    <input type="hidden" asp-for="IdCoSo" />
+    <div class="form-group">
+        <label asp-for="TenCoSo" class="control-label"></label>
+        <input asp-for="TenCoSo" class="form-control" />
+        <span asp-validation-for="TenCoSo" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="MaCoSo" class="control-label"></label>
+        <input asp-for="MaCoSo" class="form-control" />
+        <span asp-validation-for="MaCoSo" class="text-danger"></span>
+    </div>
+    @* <div class="form-group"> *@
+    @*     <label asp-for="DiaChi" class="control-label"></label> *@
+    @*     <input asp-for="DiaChi" class="form-control" /> *@
+    @*     <span asp-validation-for="DiaChi" class="text-danger"></span> *@
+    @* </div> *@
+    @* <div class="form-group"> *@
+    @*     <label asp-for="SDT" class="control-label"></label> *@
+    @*     <input asp-for="SDT" class="form-control" /> *@
+    @*     <span asp-validation-for="SDT" class="text-danger"></span> *@
+    @* </div> *@
+    @* <div class="form-group"> *@
+    @*     <label asp-for="Email" class="control-label"></label> *@
+    @*     <input asp-for="Email" class="form-control" /> *@
+    @*     <span asp-validation-for="Email" class="text-danger"></span> *@
+    @* </div> *@
+    <div class="form-group">
+        <label asp-for="TrangThai" class="control-label"></label>
+        <select asp-for="TrangThai" class="form-control">
+            <option value="Hoạt động">Hoạt động</option>
+            <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+        </select>
+        <span asp-validation-for="TrangThai" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Lưu" class="btn btn-primary" />
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    </div>
+</form>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

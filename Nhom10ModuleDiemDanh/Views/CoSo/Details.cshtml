@@ -1,0 +1,28 @@
+﻿@model Nhom10ModuleDiemDanh.Models.CoSoViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết cơ sở";
+}
+
+<h1>Chi tiết cơ sở</h1>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Tên cơ sở</dt>
+        <dd class="col-sm-10">@Model.TenCoSo</dd>
+        <dt class="col-sm-2">Mã cơ sở</dt>
+        <dd class="col-sm-10">@Model.MaCoSo</dd>
+        @* <dt class="col-sm-2">Địa chỉ</dt> *@
+        @* <dd class="col-sm-10">@Model.DiaChi</dd> *@
+        @* <dt class="col-sm-2">SĐT</dt> *@
+        @* <dd class="col-sm-10">@Model.SDT</dd> *@
+        @* <dt class="col-sm-2">Email</dt> *@
+        @* <dd class="col-sm-10">@Model.Email</dd> *@
+        <dt class="col-sm-2">Trạng thái</dt>
+        <dd class="col-sm-10">@Model.TrangThai</dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.IdCoSo" class="btn btn-primary">Sửa</a>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</div>

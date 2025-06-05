@@ -1,0 +1,166 @@
+﻿@model IEnumerable<API.Data.DiaDiem>
+@{
+    Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+    var currentFilter = ViewData["CurrentSearch"] as string;
+    var currentStatus = ViewData["CurrentStatus"] as string;
+}
+
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .slider {
+        background-color: #28a745;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+</style>
+<h1 class="text-white" style="margin-bottom: 50px">Quản lý địa điểm</h1>
+
+<div class="card">
+    <!-- Bộ lọc -->
+    <div class="card-header fw-bold">¥ Bộ lọc</div>
+    <form method="get" asp-action="Indexs" class="row g-3 mb-3" style="margin-left: 10px; margin-top: 10px">
+        <div class="col-md-4">
+            <input type="text" name="searchString" class="form-control" placeholder="Tìm kiếm theo tên"
+                   value="@(currentFilter ?? "")" />
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">Tất cả trạng thái</option>
+                <option value="true" selected="@(currentStatus == "true" ? "selected" : null)">Hoạt động</option>
+                <option value="false" selected="@(currentStatus == "false" ? "selected" : null)">Ngưng hoạt động</option>
+            </select>
+        </div>
+        <div class="col-md-5 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Lọc</button>
+            <a asp-action="Indexs" class="btn btn-outline-secondary">Đặt lại</a>
+        </div>
+    </form>
+</div>
+
+    
+
+
+
+    <div class="card" style="margin-top: 50px">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">≡ Danh sách địa điểm</h4>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalFormCreate">
+                <i class="bi bi-plus-lg"></i> Thêm địa điểm
+            </button>
+        </div>
+    
+            <!-- Bảng -->
+        <table class="table table-bordered table-hover mb-0 text-center">
+                <thead class="table-secondary">
+                    <tr>
+                        <th>#</th>
+                        <th>Tên địa điểm</th>
+                        <th>Trạng thái</th>
+                        <th>Chức năng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        int index = 1;
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>@item.TenDiaDiem</td>
+                                <td>
+                                    <label class="switch">
+                                <input type="checkbox"
+                                @(item.TrangThai ? "checked" : "")
+                                        onchange="onStatusChange(event, '@item.IdDiaDiem')">
+                                        <span class="slider"></span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@item.IdDiaDiem" class="btn btn-sm btn-info">Xem</a>
+                                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalFormEdit_@item.IdDiaDiem">
+                                        <i class="bi bi-pencil-square"></i> Sửa
+                                    </button>
+                                    <a asp-action="Delete" asp-route-id="@item.IdDiaDiem" class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Bạn có chắc muốn xóa địa điểm này?');">Xóa</a>
+                                </td>
+                            </tr>
+                            index++;
+                            <div class="modal fade" id="modalFormEdit_@item.IdDiaDiem" tabindex="-1" aria-labelledby="editModalLabel_@item.IdDiaDiem" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <form asp-action="Edit" method="post">
+                                            <div class="modal-body">
+                                                @await Html.PartialAsync("Edit", item)
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="5">Không có địa điểm nào.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+
+<!-- Modal thêm mới -->
+<div class="modal fade" id="modalFormCreate" tabindex="-1" aria-labelledby="modalFormLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            @Html.Partial("Create", new API.Data.DiaDiem())
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+                function onStatusChange(event, id) {
+            const isChecked = event.target.checked;
+            $.post('@Url.Action("ToggleStatus", "DiaDiems")', { id: id }, function () {
+                    location.reload();
+                });
+        }
+    </script>
+}

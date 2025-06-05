@@ -1,0 +1,30 @@
+﻿@model API.Data.HocKy
+
+<form method="post" asp-action="Create">
+    <div class="modal-body">
+        <div class="mb-3">
+            <label asp-for="TenHocKy" class="form-label" style="color: black;" >Tên học kỳ:</label>
+            <input asp-for="TenHocKy" class="form-control" required />
+            <span asp-validation-for="TenHocKy" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="modal-body">
+        <div class="mb-3">
+            <label asp-for="MaHocKy" class="form-label" style="color: black;">Mã học kỳ:</label>
+            <input asp-for="MaHocKy" class="form-control" required />
+            <span asp-validation-for="MaHocKy" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Lưu</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+    </div>
+</form>
+<script>
+    $(document).ready(function () {
+        $.validator.unobtrusive.parse($('#modalFormCreate'));
+    });
+    $('#modalFormCreate').on('shown.bs.modal', function () {
+        $.validator.unobtrusive.parse($(this));
+    });
+</script>
