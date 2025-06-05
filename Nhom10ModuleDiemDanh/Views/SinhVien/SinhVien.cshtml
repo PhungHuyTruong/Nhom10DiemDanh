@@ -1,0 +1,15 @@
+﻿@{
+    Layout = "~/Views/Shared/SinhVienLayout.cshtml";
+}
+
+
+<h1>Sinh viên</h1>
+<p>Chào mừng đến với hệ thống sinh viên.</p>
+
+<button class="logout-button" onclick="logout()">Đăng xuất</button>
+
+<script>
+    function logout() {
+        window.location.href = "/Login/Logout";
+    }
+</script>

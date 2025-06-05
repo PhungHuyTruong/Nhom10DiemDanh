@@ -5,7 +5,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
 {
     public class CanBoDaoTaoController : Controller
     {
-        //[Authorize]
+        [Authorize]
         public IActionResult Index()
         {
             return View("CanBoDaoTao");
