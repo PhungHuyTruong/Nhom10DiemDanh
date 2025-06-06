@@ -68,9 +68,6 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CoSoIdCoSo")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("IdBoMon")
                         .HasColumnType("uniqueidentifier");
 
@@ -88,9 +85,9 @@ namespace API.Migrations
 
                     b.HasKey("IdBoMonCoSo");
 
-                    b.HasIndex("CoSoIdCoSo");
-
                     b.HasIndex("IdBoMon");
+
+                    b.HasIndex("IdCoSo");
 
                     b.ToTable("BoMonCoSos");
                 });
@@ -474,9 +471,6 @@ namespace API.Migrations
                     b.Property<DateTime?>("NgayCapNhat")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("NgayDienRa")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("NgayTao")
                         .HasColumnType("datetime2");
 
@@ -488,6 +482,12 @@ namespace API.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("ThoiGianBatDau")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ThoiGianKetThuc")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("TrangThai")
                         .HasColumnType("int");
@@ -925,15 +925,13 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.BoMonCoSo", b =>
                 {
-                    b.HasOne("API.Data.CoSo", "CoSo")
-                        .WithMany("BoMonCoSos")
-                        .HasForeignKey("CoSoIdCoSo")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("API.Data.QuanLyBoMon", "QuanLyBoMon")
                         .WithMany("BoMonCoSos")
                         .HasForeignKey("IdBoMon");
+
+                    b.HasOne("API.Data.CoSo", "CoSo")
+                        .WithMany("BoMonCoSos")
+                        .HasForeignKey("IdCoSo");
 
                     b.Navigation("CoSo");
 

@@ -7,6 +7,6 @@
         <dt class="col-sm-4">Mã cơ sở</dt>
         <dd class="col-sm-8">@Model.MaCoSo</dd>
         <dt class="col-sm-4">Trạng thái</dt>
-        <dd class="col-sm-8">@Model.TrangThai</dd>
+        <dd class="col-sm-8">@(Model.TrangThai == "Hoạt động" ? "Hoạt động" : "Ngừng hoạt động")</dd>
     </dl>
 </div>

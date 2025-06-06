@@ -106,6 +106,7 @@
                             <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalDelete_@item.x.IDBoMon">Delete</button>
                             <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEdit_@item.x.IDBoMon">✏️</button>
                             <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetail_@item.x.IDBoMon">🔍</button>
+                            <a asp-controller="BoMonCoSo" asp-action="Index" asp-route-idBoMon="@item.x.IDBoMon" asp-route-tenBoMon="@item.x.TenBoMon" class="btn btn-secondary btn-sm">Bộ môn cơ sở</a>
                         </td>
 
                         <div class="modal fade" id="modalEdit_@item.x.IDBoMon" tabindex="-1" aria-hidden="true">
