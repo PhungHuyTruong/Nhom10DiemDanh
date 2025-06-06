@@ -7,24 +7,26 @@ namespace Nhom10ModuleDiemDanh.Controllers
 {
     public class LoginController : Controller
     {
-        // Trang login
+
         public IActionResult Index()
         {
             return View();
         }
 
-        // ✅ ĐÃ SỬA: Thêm kiểu trả về IActionResult và return Challenge
-        // Để xử lý đăng nhập với Google đúng chuẩn ASP.NET Core
-        public IActionResult Login()
+       
+        public IActionResult Login(string role)
         {
             var props = new AuthenticationProperties
             {
-                RedirectUri = Url.Action("GoogleResponse") // Sau khi login xong, chuyển về đây
+                RedirectUri = Url.Action("GoogleResponse"),
             };
+
+            HttpContext.Session.SetString("SelectedRole", role);
+
             return Challenge(props, GoogleDefaults.AuthenticationScheme);
         }
 
-        // Xử lý khi Google trả về dữ liệu sau khi đăng nhập thành công
+
         public async Task<IActionResult> GoogleResponse()
         {
             var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -32,17 +34,37 @@ namespace Nhom10ModuleDiemDanh.Controllers
             if (!result.Succeeded || result.Principal == null)
             {
                 TempData["Error"] = "Bạn đã hủy đăng nhập hoặc có lỗi xảy ra. Vui lòng thử lại!";
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", "Home");
             }
 
-            return RedirectToAction("Index", "CanBoDaoTao");
+            var selectedRole = HttpContext.Session.GetString("SelectedRole") ?? "";
+
+            switch (selectedRole.ToLower())
+            {
+                case "canbo":
+                    return RedirectToAction("Index", "CanBoDaoTao");
+
+                case "phutrachxuong":
+                    return RedirectToAction("Index", "PhuTrachXuong");
+
+                case "giangvien":
+                    return RedirectToAction("Index", "GiangVien");
+
+                case "sinhvien":
+                    return RedirectToAction("Index", "SinhVien");
+
+                default:
+                    TempData["Error"] = "Không xác định được vai trò đăng nhập.";
+                    return RedirectToAction("Index", "Home");
+            }
         }
+
 
         // Đăng xuất
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", "Home");
         }
 
     }

@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Phụ trách xưởng";
+    ViewData["Title"] = "Sinh Viên";
     Layout = null;
 }
 
@@ -110,10 +110,8 @@
     <div class="my-container">
         <div class="sidebar">
             <div class="logo">DD10</div>
-            <a href="@Url.Action("Index", "DuAn")"><button class="menu-button">Quản lý dự án </button></a>
-            <a href="@Url.Action("Index", "NhomXuong")"><button class="menu-button">Quản lý nhóm xưởng</button></a>
-            <a href="@Url.Action("Index", "DanhSachKeHoach")"><button class="menu-button">Danh sách kế hoạch</button></a>
-            <a href="@Url.Action("Index", "QuanLySinhVien")"><button class="menu-button">Quản lý sinh viên</button></a>
+            <a href="@Url.Action("Index", "LichGiangDay")"><button class="menu-button">Lịch giảng dạy</button></a>
+            <a href="@Url.Action("Index", "NhomXuongCuaToi")"><button class="menu-button">Nhóm xưởng của tôi</button></a>
         </div>
         <div class="main-content">
             @RenderBody()
