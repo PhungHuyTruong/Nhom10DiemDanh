@@ -1,0 +1,78 @@
+﻿@model API.Data.KHNXCaHoc
+@{
+    ViewData["Title"] = "Thêm Ca Học";
+}
+
+<div class="container mt-4">
+    <h2 class="text-primary mb-4"><i class="fa fa-plus-circle me-2"></i> Thêm Ca Học</h2>
+
+    <form asp-action="Create" method="post">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label asp-for="Buoi" class="form-label">Buổi học</label>
+                <input asp-for="Buoi" class="form-control" placeholder="VD: Sáng, Chiều, Tối" />
+                <span asp-validation-for="Buoi" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="NgayHoc" class="form-label">Ngày học</label>
+                <input asp-for="NgayHoc" type="date" class="form-control" />
+                <span asp-validation-for="NgayHoc" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="ThoiGian" class="form-label">Thời gian</label>
+                <input asp-for="ThoiGian" class="form-control" placeholder="VD: 08:00 - 10:00" />
+                <span asp-validation-for="ThoiGian" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="IdCaHoc" class="form-label">Ca học</label>
+                <input asp-for="IdCaHoc" class="form-control" placeholder="Nhập ID ca học hoặc tích hợp dropdown" />
+                <span asp-validation-for="IdCaHoc" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="IdKHNX" class="form-label">Kế hoạch nhóm xưởng</label>
+                <input asp-for="IdKHNX" class="form-control" placeholder="ID kế hoạch nhóm xưởng" />
+                <span asp-validation-for="IdKHNX" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-12">
+                <label asp-for="NoiDung" class="form-label">Nội dung</label>
+                <textarea asp-for="NoiDung" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="NoiDung" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="LinkOnline" class="form-label">Link học online</label>
+                <input asp-for="LinkOnline" class="form-control" placeholder="Link Zoom, Google Meet..." />
+                <span asp-validation-for="LinkOnline" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="DiemDanhTre" class="form-label">Điểm danh trễ</label>
+                <input asp-for="DiemDanhTre" class="form-control" placeholder="VD: 5 phút, 10 phút..." />
+                <span asp-validation-for="DiemDanhTre" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+                <select asp-for="TrangThai" class="form-select">
+                    <option value="1">Hoạt động</option>
+                    <option value="0">Ngừng</option>
+                </select>
+                <span asp-validation-for="TrangThai" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i> Lưu</button>
+            <a asp-action="Index" class="btn btn-secondary ms-2">Quay lại</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

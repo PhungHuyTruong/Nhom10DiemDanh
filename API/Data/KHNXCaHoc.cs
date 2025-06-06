@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace API.Data
 {
@@ -9,23 +10,23 @@ namespace API.Data
         [Key]
         public Guid IdNXCH { get; set; } = Guid.NewGuid();
 
-        public int Buoi { get; set; }
+        public string Buoi { get; set; }
 
         public DateTime NgayHoc { get; set; }
 
         [MaxLength(100)]
         public string ThoiGian { get; set; }
 
-        public Guid IdKHNX { get; set; }
+        public Guid? IdKHNX { get; set; }
 
-        public Guid IdCaHoc { get; set; }
+        public Guid? IdCaHoc { get; set; }
 
         public string NoiDung { get; set; }
 
         [MaxLength(500)]
         public string LinkOnline { get; set; }
 
-        public bool DiemDanhTre { get; set; }
+        public string DiemDanhTre { get; set; }
 
         public DateTime NgayTao { get; set; } = DateTime.Now;
 
@@ -34,10 +35,15 @@ namespace API.Data
         public int TrangThai { get; set; }
 
         // Navigation properties
-        public virtual KeHoachNhomXuong KeHoachNhomXuong { get; set; }
-        public virtual CaHoc CaHoc { get; set; }
-        public virtual ICollection<LichGiangDay> LichGiangDays { get; set; }
-        public virtual ICollection<LichHoc> LichHocs { get; set; }
-        public ICollection<LichSuDiemDanh> LichSuDiemDanhs { get; set; }
+        [JsonIgnore]
+        public virtual KeHoachNhomXuong? KeHoachNhomXuong { get; set; }
+        [JsonIgnore]
+        public virtual CaHoc? CaHoc { get; set; }
+        [JsonIgnore]
+        public virtual ICollection<LichGiangDay> LichGiangDays { get; set; } = new List<LichGiangDay>();
+        [JsonIgnore]
+        public virtual ICollection<LichHoc> LichHocs { get; set; } = new List<LichHoc>();
+        [JsonIgnore]
+        public ICollection<LichSuDiemDanh> LichSuDiemDanhs { get; set; } = new List<LichSuDiemDanh>();
     }
 }

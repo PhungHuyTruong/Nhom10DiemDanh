@@ -1,0 +1,339 @@
+﻿@model IEnumerable<API.Data.KHNXCaHoc>
+
+@{
+    ViewData["Title"] = "Danh Sách Ca Học";
+
+    string keyword = ViewBag.Filter?.keyword as string ?? "";
+    string trangThai = ViewBag.Filter?.trangThai?.ToString() ?? "";
+    string caHoc = ViewBag.Filter?.caHoc as string ?? "";
+    string ngay = ViewBag.Filter?.ngay as string ?? "";
+}
+
+<div class="container-fluid p-4">
+    <h2 class="text-white fw-bold mb-4" style="background: linear-gradient(to right, #2193b0, #6dd5ed); padding: 15px; border-radius: 8px;">
+        Danh Sách Kế Hoạch
+    </h2>
+
+    <!-- Bộ lọc -->
+    <div class="card mb-3 shadow-sm">
+        <div class="card-header fw-bold text-primary">
+            <i class="fa fa-filter me-2"></i> Bộ lọc
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="keyword" class="form-label">Từ khóa</label>
+                    <input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm theo mô tả" value="@keyword" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="trangThai" class="form-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(trangThai) ? "selected" : null)">Tất cả trạng thái</option>
+                        <option value="1" selected="@(trangThai == "1" ? "selected" : null)">Hoạt động</option>
+                        <option value="0" selected="@(trangThai == "0" ? "selected" : null)">Ngừng</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Ca học</label>
+                    <select name="caHoc" class="form-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(caHoc) ? "selected" : null)">Tất cả ca học</option>
+                        <option value="sang" selected="@(caHoc == "sang" ? "selected" : null)">Sáng</option>
+                        <option value="chieu" selected="@(caHoc == "chieu" ? "selected" : null)">Chiều</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Ngày diễn ra</label>
+                    <input type="date" name="ngay" class="form-control" value="@ngay" />
+                </div>
+                <div class="col-md-2 text-end">
+                    <button type="submit" class="btn btn-primary w-100">Lọc</button>
+                    <a href="/KHNXCaHocs" class="btn btn-outline-secondary mt-1 w-100">Hủy lọc</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="fw-bold text-primary"><i class="fa fa-table me-2"></i> Danh sách ca học</div>
+        <div>
+            <button class="btn btn-outline-secondary btn-sm me-1"><i class="fa fa-history me-1"></i> Lịch sử import</button>
+            <button class="btn btn-outline-secondary btn-sm me-1"><i class="fa fa-download me-1"></i> Tải xuống template</button>
+            <button class="btn btn-outline-secondary btn-sm me-1"><i class="fa fa-file-import me-1"></i> Import Excel</button>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCaHocModal">
+                <i class="fa fa-plus me-1"></i> Thêm
+            </button>
+        </div>
+    </div>
+
+    <!-- Bảng danh sách -->
+    <div class="table-responsive shadow-sm">
+        <table class="table table-bordered table-hover text-center align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Buổi</th>
+                    <th>Ngày học</th>
+                    <th>Thời gian</th>
+                    <th>Ca học</th>
+                    <th>Nội dung</th>
+                    <th>Link online</th>
+                    <th>Điểm danh trễ</th>
+                    <th>Trạng thái</th>
+                    <th>Chức năng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Buoi</td>
+                            <td>@item.NgayHoc.ToString("dd/MM/yyyy")</td>
+                            <td>@item.ThoiGian</td>
+                            <td>@item.IdCaHoc</td>
+                            <td>@item.NoiDung</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(item.LinkOnline))
+                                {
+                                    <a href="@item.LinkOnline" target="_blank">Xem</a>
+                                }
+                            </td>
+                            <td>@item.DiemDanhTre</td>
+                            <td>
+                                <span class="badge @(item.TrangThai == 1 ? "bg-success" : "bg-secondary")">
+                                    @(item.TrangThai == 1 ? "Hoạt động" : "Tạm dừng")
+                                </span>
+                            </td>
+                            <td>
+                                <a href="/KHNXCaHocs/Edit/@item.IdNXCH" class="btn btn-sm btn-warning me-1">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                                <button class="btn btn-sm btn-danger" onclick="deleteCaHoc('@item.IdNXCH')">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="9">Không có dữ liệu.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal thêm -->
+    <div class="modal fade" id="addCaHocModal" tabindex="-1" aria-labelledby="addCaHocLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="createCaHocForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCaHocLabel">Thêm Ca Học</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Buổi</label>
+                            <input name="Buoi" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày học</label>
+                            <input name="NgayHoc" type="date" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Thời gian</label>
+                            <input name="ThoiGian" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nội dung</label>
+                            <input name="NoiDung" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Link online</label>
+                            <input name="LinkOnline" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Trạng thái</label>
+                            <select name="TrangThai" class="form-select">
+                                <option value="1">Hoạt động</option>
+                                <option value="0">Ngừng</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="editCaHocModal" tabindex="-1" aria-labelledby="editCaHocLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="editCaHocForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCaHocLabel">Chỉnh sửa Ca Học</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body row g-3">
+                    <input type="hidden" name="IdNXCH" />
+                    <div class="col-md-6">
+                        <label class="form-label">Buổi</label>
+                        <input name="Buoi" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Ngày học</label>
+                        <input name="NgayHoc" type="date" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Thời gian</label>
+                        <input name="ThoiGian" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nội dung</label>
+                        <input name="NoiDung" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Link online</label>
+                        <input name="LinkOnline" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Trạng thái</label>
+                        <select name="TrangThai" class="form-select">
+                            <option value="1">Hoạt động</option>
+                            <option value="0">Ngừng</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        document.getElementById("createCaHocForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            if (data.NgayHoc)
+                data.NgayHoc = new Date(data.NgayHoc).toISOString();
+
+            try {
+                const response = await fetch("/KHNXCaHocs/Create", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ""
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success !== false) {
+                    alert("Tạo ca học thành công!");
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addCaHocModal'));
+                    modal.hide();
+                    location.reload();
+                } else {
+                    alert("Lỗi: " + (result.message || "Không xác định"));
+                }
+            } catch (err) {
+                console.error("Lỗi gửi:", err);
+                alert("Lỗi kết nối máy chủ.");
+            }
+        });
+
+        async function deleteCaHoc(id) {
+            if (!confirm("Bạn có chắc chắn muốn xoá ca học này không?")) return;
+
+            try {
+                const response = await fetch('/KHNXCaHocs/Delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ""
+                    },
+                    body: JSON.stringify(id) // Gửi ID dạng string thuần
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert("Đã xoá thành công.");
+                    location.reload();
+                } else {
+                    alert("Lỗi khi xoá: " + (result.message || "Không xác định"));
+                }
+            } catch (err) {
+                alert("Lỗi kết nối máy chủ.");
+                console.error(err);
+            }
+        }
+        async function showEditModal(id) {
+            try {
+                const response = await fetch(`/KHNXCaHocs/Details/${id}`);
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const data = JSON.parse(doc.querySelector("body").innerText);
+
+                const form = document.getElementById("editCaHocForm");
+                for (const key in data) {
+                    if (form.elements[key]) {
+                        if (key === "NgayHoc" && data[key]) {
+                            form.elements[key].value = new Date(data[key]).toISOString().split('T')[0];
+                        } else {
+                            form.elements[key].value = data[key];
+                        }
+                    }
+                }
+                new bootstrap.Modal(document.getElementById("editCaHocModal")).show();
+            } catch (err) {
+                console.error("Lỗi khi tải dữ liệu:", err);
+                alert("Không tải được dữ liệu ca học.");
+            }
+        }
+
+        document.getElementById("editCaHocForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            if (data.NgayHoc)
+                data.NgayHoc = new Date(data.NgayHoc).toISOString();
+
+            try {
+                const response = await fetch(`/KHNXCaHocs/Edit/${data.IdNXCH}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ""
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success !== false) {
+                    alert("Đã cập nhật ca học!");
+                    bootstrap.Modal.getInstance(document.getElementById('editCaHocModal')).hide();
+                    location.reload();
+                } else {
+                    alert("Lỗi: " + (result.message || "Không xác định"));
+                }
+            } catch (err) {
+                console.error("Lỗi gửi:", err);
+                alert("Lỗi kết nối máy chủ.");
+            }
+        });
+    </script>
+}

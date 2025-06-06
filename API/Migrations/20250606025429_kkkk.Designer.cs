@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ModuleDiemDanhDbContext))]
-    partial class ModuleDiemDanhDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250606025429_kkkk")]
+    partial class kkkk
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -404,21 +407,19 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Buoi")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Buoi")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("CoSoIdCoSo")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("DiemDanhTre")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<bool>("DiemDanhTre")
+                        .HasColumnType("bit");
 
-                    b.Property<Guid?>("IdCaHoc")
+                    b.Property<Guid>("IdCaHoc")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("IdKHNX")
+                    b.Property<Guid>("IdKHNX")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LinkOnline")
@@ -1023,11 +1024,15 @@ namespace API.Migrations
 
                     b.HasOne("API.Data.CaHoc", "CaHoc")
                         .WithMany("KHNXCaHocs")
-                        .HasForeignKey("IdCaHoc");
+                        .HasForeignKey("IdCaHoc")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("API.Data.KeHoachNhomXuong", "KeHoachNhomXuong")
                         .WithMany("KHNXCaHocs")
-                        .HasForeignKey("IdKHNX");
+                        .HasForeignKey("IdKHNX")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("CaHoc");
 
