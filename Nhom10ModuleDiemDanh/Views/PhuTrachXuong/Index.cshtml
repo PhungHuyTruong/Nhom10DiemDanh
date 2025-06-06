@@ -1,0 +1,262 @@
+﻿@model IEnumerable<API.Data.PhuTrachXuong>
+
+@{
+    ViewData["Title"] = "Quản lý Phụ Trách Xưởng";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-6 text-primary"><i class="fas fa-users-cog me-2"></i>Quản lý Phụ Trách Xưởng</h1>
+        <a asp-action="Create" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> Thêm mới
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-gradient-primary text-white">
+            <h6 class="m-0 font-weight-bold">Bộ lọc và Tìm kiếm</h6>
+        </div>
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="searchString" class="form-label">Tìm kiếm</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" name="searchString" value="@ViewBag.CurrentFilter" placeholder="Tên/Mã NV, Email...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="coSoFilter" class="form-label">Cơ sở</label>
+                    <select class="form-select" name="coSoFilter" asp-items="ViewBag.CoSoList">
+                        <option value="">-- Tất cả --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="trangThaiFilter" class="form-label">Trạng thái</label>
+                    <select class="form-select" name="trangThaiFilter">
+                        <option value="">-- Tất cả --</option>
+                        <option value="true">Đang hoạt động</option>
+                        <option value="false">Ngừng hoạt động</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-filter me-1"></i> Lọc
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-sync-alt"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>
+                                <a asp-action="Index" asp-route-sortOrder="@ViewBag.NameSortParam">
+                                    Tên Nhân Viên <i class="fas @(ViewBag.NameSortParam == "name_desc" ? "fa-sort-down" : "fa-sort-up")"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-action="Index" asp-route-sortOrder="@ViewBag.CodeSortParam">
+                                    Mã NV <i class="fas @(ViewBag.CodeSortParam == "code_desc" ? "fa-sort-down" : "fa-sort-up")"></i>
+                                </a>
+                            </th>
+                            <th>Email FE</th>
+                            <th>Email FPT</th>
+                            <th>
+                                <a asp-action="Index" asp-route-sortOrder="@ViewBag.StatusSortParam">
+                                    Trạng Thái <i class="fas @(ViewBag.StatusSortParam == "status_desc" ? "fa-sort-down" : "fa-sort-up")"></i>
+                                </a>
+                            </th>
+                            <th>Cơ Sở</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="@(item.TrangThai ? "" : "table-secondary")">
+                                <td class="fw-bold">@Html.DisplayFor(modelItem => item.TenNhanVien)</td>
+                                <td>@Html.DisplayFor(modelItem => item.MaNhanVien)</td>
+                                <td>
+                                    <a href="mailto:@item.EmailFE" class="text-decoration-none">
+                                        <i class="fas fa-envelope me-1"></i> @Html.DisplayFor(modelItem => item.EmailFE)
+                                    </a>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.EmailFPT))
+                                    {
+                                        <a href="mailto:@item.EmailFPT" class="text-decoration-none">
+                                            <i class="fas fa-envelope me-1"></i> @Html.DisplayFor(modelItem => item.EmailFPT)
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge @(item.TrangThai ? "bg-success" : "bg-secondary")">
+                                        @(item.TrangThai ? "Hoạt động" : "Ngừng")
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (item.CoSo != null)
+                                    {
+                                        <span class="badge bg-info text-dark">
+                                            <i class="fas fa-building me-1"></i> @Html.DisplayFor(modelItem => item.CoSo.DiaChi)
+                                        </span>
+                                    }
+                                    else if (ViewBag.CoSoDictionary != null && ViewBag.CoSoDictionary.ContainsKey(item.IdCoSo))
+                                    {
+                                        <span class="badge bg-info text-dark">
+                                            <i class="fas fa-building me-1"></i> @ViewBag.CoSoDictionary[item.IdCoSo]
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a asp-action="Edit" asp-route-id="@item.IdNhanVien" class="btn btn-outline-primary" title="Sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@item.IdNhanVien" class="btn btn-outline-info" title="Chi tiết">
+                                            <i class="fas fa-info-circle"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.IdNhanVien" class="btn btn-outline-danger" title="Xóa">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phân trang -->
+            @if (ViewBag.TotalPages > 1)
+            {
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        @if (ViewBag.CurrentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-pageNumber="1" 
+                                   asp-route-searchString="@ViewBag.CurrentFilter" 
+                                   asp-route-coSoFilter="@ViewBag.CurrentCoSoFilter" 
+                                   asp-route-trangThaiFilter="@ViewBag.CurrentTrangThaiFilter">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-pageNumber="@(ViewBag.CurrentPage - 1)" 
+                                   asp-route-searchString="@ViewBag.CurrentFilter" 
+                                   asp-route-coSoFilter="@ViewBag.CurrentCoSoFilter" 
+                                   asp-route-trangThaiFilter="@ViewBag.CurrentTrangThaiFilter">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        }
+
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-pageNumber="@i" 
+                                   asp-route-searchString="@ViewBag.CurrentFilter" 
+                                   asp-route-coSoFilter="@ViewBag.CurrentCoSoFilter" 
+                                   asp-route-trangThaiFilter="@ViewBag.CurrentTrangThaiFilter">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-pageNumber="@(ViewBag.CurrentPage + 1)" 
+                                   asp-route-searchString="@ViewBag.CurrentFilter" 
+                                   asp-route-coSoFilter="@ViewBag.CurrentCoSoFilter" 
+                                   asp-route-trangThaiFilter="@ViewBag.CurrentTrangThaiFilter">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-pageNumber="@ViewBag.TotalPages" 
+                                   asp-route-searchString="@ViewBag.CurrentFilter" 
+                                   asp-route-coSoFilter="@ViewBag.CurrentCoSoFilter" 
+                                   asp-route-trangThaiFilter="@ViewBag.CurrentTrangThaiFilter">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        .table-hover tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.1) !important;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        
+        .card {
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            border-bottom: none;
+        }
+        
+        .table th {
+            white-space: nowrap;
+            position: relative;
+        }
+        
+        .table th a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .badge {
+            padding: 0.5em 0.75em;
+            font-size: 0.85em;
+            border-radius: 0.25rem;
+        }
+        
+        .btn-group-sm > .btn {
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        
+        .pagination .page-link {
+            color: #0d6efd;
+        }
+    </style>
+}

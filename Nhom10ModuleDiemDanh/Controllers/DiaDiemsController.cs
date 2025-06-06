@@ -13,7 +13,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
         public DiaDiemsController(IHttpClientFactory factory)
         {
             _client = factory.CreateClient("MyApi");
-            _client.BaseAddress = new Uri("https://localhost:7296/api/");
+            _client.BaseAddress = new Uri("http://localhost:5017/api/");
         }
 
         // GET: DiaDiems

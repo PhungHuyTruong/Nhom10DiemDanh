@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;  // Thêm dòng này nếu converter nằm trong namespace này
+
 
 namespace API.Data
 {
@@ -26,11 +28,17 @@ namespace API.Data
 
         public DateTime NgayTao { get; set; } = DateTime.Now;
         public DateTime? NgayCapNhat { get; set; } = DateTime.Now;
+      
         public bool TrangThai { get; set; } = true;
 
         // Navigation properties
-        public virtual CoSo CoSo { get; set; }
-        public virtual ICollection<DiemDanh> DiemDanhs { get; set; }
-        public virtual ICollection<NhomXuong> NhomXuongs { get; set; }
+
+
+        [JsonIgnore]
+        public virtual CoSo? CoSo { get; set; }
+        [JsonIgnore]
+        public virtual ICollection<DiemDanh>? DiemDanhs { get; set; }
+        [JsonIgnore]
+        public virtual ICollection<NhomXuong>? NhomXuongs { get; set; }
     }
 }
