@@ -1,0 +1,44 @@
+﻿@model Nhom10ModuleDiemDanh.Controllers.KeHoachNhomXuongDto
+
+@{
+    ViewData["Title"] = "Chi tiết Kế hoạch - Nhóm xưởng";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h4 class="mb-0">@ViewData["Title"]</h4>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Tên Kế hoạch</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.TenKeHoach)</dd>
+
+                <dt class="col-sm-3">Tên Nhóm xưởng</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.TenNhomXuong)</dd>
+
+                <dt class="col-sm-3">Thời gian thực tế</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.ThoiGianThucTe)</dd>
+
+                <dt class="col-sm-3">Số buổi</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.SoBuoi)</dd>
+
+                <dt class="col-sm-3">Số sinh viên</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.SoSinhVien)</dd>
+
+                <dt class="col-sm-3">Trạng thái</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.TrangThai)</dd>
+
+                <dt class="col-sm-3">Ngày tạo</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.NgayTao)</dd>
+
+                <dt class="col-sm-3">Ngày cập nhật</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.NgayCapNhat)</dd>
+            </dl>
+        </div>
+        <div class="card-footer text-center">
+            <a asp-action="Edit" asp-route-id="@Model.IdKHNX" class="btn btn-warning">Chỉnh sửa</a>
+            <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,35 @@
+﻿@model Nhom10ModuleDiemDanh.Controllers.KeHoachNhomXuongDto
+
+@{
+    ViewData["Title"] = "Xác nhận xóa";
+}
+
+<div class="container mt-4">
+    <div class="card border-danger shadow-sm">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">@ViewData["Title"]</h4>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title text-danger">Bạn có chắc chắn muốn xóa mục này không?</h5>
+            <hr />
+            <dl class="row">
+                <dt class="col-sm-3">Tên Kế hoạch</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.TenKeHoach)</dd>
+
+                <dt class="col-sm-3">Tên Nhóm xưởng</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.TenNhomXuong)</dd>
+
+                <dt class="col-sm-3">Số buổi</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.SoBuoi)</dd>
+            </dl>
+
+            <form asp-action="Delete">
+                <input type="hidden" asp-for="IdKHNX" />
+                <div class="text-center mt-4">
+                    <input type="submit" value="Xóa" class="btn btn-danger" />
+                    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,105 @@
+﻿@model API.Data.PhuTrachXuong
+@{
+    ViewData["Title"] = "Chi tiết Phụ Trách Xưởng";
+}
+
+<div class="container-fluid">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (Model == null)
+    {
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-circle"></i> Không có dữ liệu hiển thị
+        </div>
+        <a asp-action="Index" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 text-primary">
+                <i class="fas fa-id-card"></i> @ViewData["Title"]
+            </h1>
+            <div>
+                <a asp-action="Edit" asp-route-id="@Model.IdNhanVien" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Sửa
+                </a>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-list"></i> Danh sách
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-tie"></i> Thông tin chi tiết
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Mã nhân viên:</dt>
+                            <dd class="col-sm-8">@Model.MaNhanVien</dd>
+
+                            <dt class="col-sm-4">Họ và tên:</dt>
+                            <dd class="col-sm-8">@Model.TenNhanVien</dd>
+
+                            <dt class="col-sm-4">Trạng thái:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge @(Model.TrangThai ? "bg-success" : "bg-secondary")">
+                                    @(Model.TrangThai ? "Đang hoạt động" : "Ngừng hoạt động")
+                                </span>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Email FE:</dt>
+                            <dd class="col-sm-8">
+                                <a href="mailto:@Model.EmailFE" class="text-decoration-none">
+                                    <i class="fas fa-envelope"></i> @Model.EmailFE
+                                </a>
+                            </dd>
+
+                            <dt class="col-sm-4">Email FPT:</dt>
+                            <dd class="col-sm-8">
+                                @if (!string.IsNullOrEmpty(Model.EmailFPT))
+                                {
+                                    <a href="mailto:@Model.EmailFPT" class="text-decoration-none">
+                                        <i class="fas fa-envelope"></i> @Model.EmailFPT
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa có thông tin</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">Cơ sở:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.CoSo != null)
+                                {
+                                    <span class="badge bg-info text-dark">
+                                        <i class="fas fa-building"></i> @Model.CoSo.TenCoSo
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa phân công cơ sở</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

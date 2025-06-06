@@ -1,0 +1,75 @@
+﻿@model API.Data.PhuTrachXuong
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>PhuTrachXuong</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdNhanVien" />
+
+            <div class="form-group">
+                <label asp-for="TenNhanVien" class="control-label"></label>
+                <input asp-for="TenNhanVien" class="form-control" />
+                <span asp-validation-for="TenNhanVien" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="MaNhanVien" class="control-label"></label>
+                <input asp-for="MaNhanVien" class="form-control" />
+                <span asp-validation-for="MaNhanVien" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EmailFE" class="control-label"></label>
+                <input asp-for="EmailFE" class="form-control" />
+                <span asp-validation-for="EmailFE" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EmailFPT" class="control-label"></label>
+                <input asp-for="EmailFPT" class="form-control" />
+                <span asp-validation-for="EmailFPT" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="IdCoSo" class="control-label"></label>
+                <select asp-for="IdCoSo" class="form-control" asp-items="ViewBag.IdCoSo">
+                    <option value="">-- Chọn cơ sở --</option>
+                </select>
+                <span asp-validation-for="IdCoSo" class="text-danger"></span>
+
+                <!-- Debug: Kiểm tra dữ liệu nhận được -->
+                <div style="color: blue; margin-top: 10px;">
+                    @if (ViewBag.IdCoSo != null)
+                    {
+                        foreach (var item in (ViewBag.IdCoSo as SelectList))
+                        {
+                            <div>@item.Value - @item.Text</div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

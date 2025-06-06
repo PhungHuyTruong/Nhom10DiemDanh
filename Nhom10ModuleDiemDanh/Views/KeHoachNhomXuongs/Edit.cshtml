@@ -1,0 +1,65 @@
+﻿@model Nhom10ModuleDiemDanh.Controllers.KeHoachNhomXuongDto
+
+@{
+    ViewData["Title"] = "Chỉnh sửa Kế hoạch - Nhóm xưởng";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="IdKHNX" />
+                        <input type="hidden" asp-for="IdKeHoach" />
+                        <input type="hidden" asp-for="IdNhomXuong" />
+
+                        <div class="form-group mb-3">
+                            <label class="control-label">Kế hoạch</label>
+                            <input asp-for="TenKeHoach" class="form-control" readonly />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="control-label">Nhóm xưởng</label>
+                            <input asp-for="TenNhomXuong" class="form-control" readonly />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="ThoiGianThucTe" class="control-label">Thời gian thực tế</label>
+                            <input asp-for="ThoiGianThucTe" class="form-control" />
+                            <span asp-validation-for="ThoiGianThucTe" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 form-group mb-3">
+                                <label asp-for="SoBuoi" class="control-label">Số buổi</label>
+                                <input asp-for="SoBuoi" class="form-control" />
+                                <span asp-validation-for="SoBuoi" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 form-group mb-3">
+                                <label asp-for="SoSinhVien" class="control-label">Số sinh viên</label>
+                                <input asp-for="SoSinhVien" class="form-control" />
+                                <span asp-validation-for="SoSinhVien" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="TrangThai" class="control-label">Trạng thái</label>
+                            <input asp-for="TrangThai" class="form-control" />
+                            <span asp-validation-for="TrangThai" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mt-4 text-center">
+                            <input type="submit" value="Lưu thay đổi" class="btn btn-warning" />
+                            <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

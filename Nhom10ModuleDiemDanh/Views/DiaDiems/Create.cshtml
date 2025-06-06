@@ -1,48 +1,43 @@
 ﻿@model API.Data.DiaDiem
 
-@{
-    ViewData["Title"] = "Create";
-}
-
-<h4>Thêm Dia Diem</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="TenDiaDiem" class="control-label"></label>
-                <input asp-for="TenDiaDiem" class="form-control" />
-                <span asp-validation-for="TenDiaDiem" class="text-danger"></span>
+<div class="minimal-form">
+    <center><h3> Thêm địa điểm</h3></center>
+    <form asp-action="Create" method="post">
+        <input asp-for="TenDiaDiem" class="form-control mb-1" placeholder="Tên*" required>
+        <div class="row g-1 mb-1">
+            <div class="col-6">
+                <input asp-for="ViDo" class="form-control" placeholder="Vĩ độ*" required>
             </div>
-            <div class="form-group">
-                <label asp-for="ViDo" class="control-label"></label>
-                <input asp-for="ViDo" class="form-control" />
-                <span asp-validation-for="ViDo" class="text-danger"></span>
+            <div class="col-6">
+                <input asp-for="KinhDo" class="form-control" placeholder="Kinh độ*" required>
             </div>
-            <div class="form-group">
-                <label asp-for="KinhDo" class="control-label"></label>
-                <input asp-for="KinhDo" class="form-control" />
-                <span asp-validation-for="KinhDo" class="text-danger"></span>
+        </div>
+        <input asp-for="BanKinh" class="form-control mb-1" placeholder="Bán kính (m)*" required>
+        <div class="d-flex justify-content-between mt-2">
+            <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary">←</button>
+            <div>
+                <label class="form-check-label small me-2">Kích hoạt</label>
+                <input asp-for="TrangThai" class="form-check-input me-2">
+                <button type="submit" class="btn btn-sm btn-primary">Thêm </button>
             </div>
-            <div class="form-group">
-                <label asp-for="BanKinh" class="control-label"></label>
-                <input asp-for="BanKinh" class="form-control" />
-                <span asp-validation-for="BanKinh" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="TrangThai" /> @Html.DisplayNameFor(model => model.TrangThai)
-                </label>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 
-<div>
-    <a asp-action="Indexs">Back to List</a>
-</div>
+<style>
+    .minimal-form {
+        max-width: 400px;
+        margin: 10px;
+    }
 
+        .minimal-form .form-control {
+            padding: 0.4rem 0.7rem;
+            font-size: 0.9rem;
+            height: calc(1.5em + 0.4rem);
+        }
+
+        .minimal-form .btn-sm {
+            padding: 0.15rem 0.5rem;
+            font-size: 0.7rem;
+        }
+</style>
