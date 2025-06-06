@@ -236,18 +236,16 @@ namespace API.Migrations
                     IdCoSo = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     NgayTao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     NgayCapNhat = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    TrangThai = table.Column<bool>(type: "bit", nullable: false),
-                    CoSoIdCoSo = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    TrangThai = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_BoMonCoSos", x => x.IdBoMonCoSo);
                     table.ForeignKey(
-                        name: "FK_BoMonCoSos_CoSos_CoSoIdCoSo",
-                        column: x => x.CoSoIdCoSo,
+                        name: "FK_BoMonCoSos_CoSos_IdCoSo",
+                        column: x => x.IdCoSo,
                         principalTable: "CoSos",
-                        principalColumn: "IdCoSo",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "IdCoSo");
                     table.ForeignKey(
                         name: "FK_BoMonCoSos_QuanLyBoMons_IdBoMon",
                         column: x => x.IdBoMon,
@@ -643,14 +641,14 @@ namespace API.Migrations
                 column: "VaiTroIdVaiTro");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BoMonCoSos_CoSoIdCoSo",
-                table: "BoMonCoSos",
-                column: "CoSoIdCoSo");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_BoMonCoSos_IdBoMon",
                 table: "BoMonCoSos",
                 column: "IdBoMon");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BoMonCoSos_IdCoSo",
+                table: "BoMonCoSos",
+                column: "IdCoSo");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CoSos_CaHocIdCaHoc",

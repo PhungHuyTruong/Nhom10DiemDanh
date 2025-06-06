@@ -16,7 +16,9 @@ namespace API.Data
 
         public string NoiDung { get; set; }
 
-        public DateTime NgayDienRa { get; set; }
+        public DateTime ThoiGianBatDau { get; set; }
+
+        public DateTime ThoiGianKetThuc { get; set; }
 
         public int TrangThai { get; set; }
 

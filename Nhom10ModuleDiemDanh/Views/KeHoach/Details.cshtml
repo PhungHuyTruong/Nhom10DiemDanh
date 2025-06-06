@@ -1,0 +1,20 @@
+﻿@model KeHoachViewModel
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-4">Tên kế hoạch</dt>
+        <dd class="col-sm-8">@Model.TenKeHoach</dd>
+        <dt class="col-sm-4">Tên dự án</dt>
+        <dd class="col-sm-8">@(Model.TenDuAn ?? "Chưa có")</dd>
+        <dt class="col-sm-4">Nội dung</dt>
+        <dd class="col-sm-8">@Model.NoiDung</dd>
+        <dt class="col-sm-4">Bộ môn</dt>
+        <dd class="col-sm-8">@(Model.TenBoMon ?? "Chưa có")</dd>
+        <dt class="col-sm-4">Cấp độ</dt>
+        <dd class="col-sm-8">@(Model.TenCapDoDuAn ?? "Chưa có")</dd>
+        <dt class="col-sm-4">Thời gian diễn ra</dt>
+        <dd class="col-sm-8">@Model.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm") - @Model.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm")</dd>
+        <dt class="col-sm-4">Trạng thái</dt>
+        <dd class="col-sm-8">@(Model.TrangThai == 1 ? "Hoạt động" : "Ngừng hoạt động")</dd>
+    </dl>
+</div>

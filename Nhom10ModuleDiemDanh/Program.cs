@@ -45,11 +45,16 @@ builder.Services.AddHttpClient<IBoMonCoSoService, BoMonCoSoService>(client =>
     client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7296/");
 });
 
+builder.Services.AddHttpClient<IKeHoachService, KeHoachService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7296/"); // Ð?t BaseAddress cho KeHoachService
+});
 
 builder.Services.AddHttpClient("MyApi", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7296/api/");
 });
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

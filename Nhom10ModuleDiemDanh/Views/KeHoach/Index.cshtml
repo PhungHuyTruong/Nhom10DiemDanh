@@ -1,0 +1,388 @@
+﻿@using Nhom10ModuleDiemDanh.Models
+@model IEnumerable<KeHoachViewModel>
+
+@{
+    Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+    var tuKhoa = ViewData["tuKhoa"]?.ToString() ?? "";
+    var trangThai = ViewData["trangThai"]?.ToString() ?? "Tất cả trạng thái";
+    var idBoMon = ViewData["idBoMon"]?.ToString() ?? "";
+    var idCapDoDuAn = ViewData["idCapDoDuAn"]?.ToString() ?? "";
+    var idHocKy = ViewData["idHocKy"]?.ToString() ?? "";
+    var namHoc = ViewData["namHoc"]?.ToString() ?? "";
+}
+
+<!-- TIÊU ĐỀ -->
+<div class="card bg-primary text-white mb-4">
+    <div class="card-body">
+        <h2 class="card-title">Quản lý kế hoạch</h2>
+    </div>
+</div>
+
+<!-- BỘ LỌC -->
+<form method="get" class="card mb-4" id="filterForm">
+    <div class="card-header fw-bold">Bộ lọc</div>
+    <div class="card-body row g-3">
+        <div class="col-md-3">
+            <label for="tuKhoa">Từ khóa:</label>
+            <input id="tuKhoa" name="tuKhoa" type="text" class="form-control" value="@tuKhoa" placeholder="Tìm kiếm theo kế hoạch" />
+        </div>
+        <div class="col-md-2">
+            <label for="trangThai">Trạng thái:</label>
+            <select id="trangThai" name="trangThai" class="form-select">
+                <option value="Tất cả trạng thái" selected="@(trangThai == "Tất cả trạng thái")">Tất cả trạng thái</option>
+                <option value="Hoạt động" selected="@(trangThai == "Hoạt động")">Hoạt động</option>
+                <option value="Ngừng hoạt động" selected="@(trangThai == "Ngừng hoạt động")">Ngừng hoạt động</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="idBoMon">Bộ môn:</label>
+            @Html.DropDownList("idBoMon", ViewData["BoMons"] as SelectList, "Tất cả bộ môn", new { @class = "form-select" })
+        </div>
+        <div class="col-md-2">
+            <label for="idCapDoDuAn">Cấp độ dự án:</label>
+            @Html.DropDownList("idCapDoDuAn", ViewData["CapDoDuAns"] as SelectList, "Tất cả cấp độ dự án", new { @class = "form-select" })
+        </div>
+        <div class="col-md-2">
+            <label for="idHocKy">Học kỳ:</label>
+            @Html.DropDownList("idHocKy", ViewData["HocKys"] as SelectList, "Tất cả học kỳ", new { @class = "form-select" })
+        </div>
+        <div class="col-md-1">
+            <label for="namHoc">Năm học:</label>
+            <input id="namHoc" name="namHoc" type="text" class="form-control" value="@namHoc" placeholder="Năm học" />
+        </div>
+        <div class="col-md-2 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary w-50">Lọc</button>
+            <a href="@Url.Action("Index", "KeHoach")" class="btn btn-secondary w-50">Hủy lọc</a>
+        </div>
+    </div>
+</form>
+
+<!-- DANH SÁCH KẾ HOẠCH -->
+<div class="card" id="indexContent">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">Danh sách kế hoạch</span>
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">+ Tạo kế hoạch mới</button>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-bordered table-hover mb-0 text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Tên kế hoạch</th>
+                    <th>Tên dự án</th>
+                    <th>Nội dung</th>
+                    <th>Bộ môn</th>
+                    <th>Cấp độ</th>
+                    <th>Thời gian diễn ra</th>
+                    <th>Trạng thái</th>
+                    <th>Chức năng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var item in Model.Select((value, index) => new { value, index }))
+                    {
+                        <tr>
+                            <td>@(item.index + 1)</td>
+                            <td>@item.value.TenKeHoach</td>
+                            <td>@(item.value.TenDuAn ?? "Chưa có")</td>
+                            <td>@item.value.NoiDung</td>
+                            <td>@(item.value.TenBoMon ?? "Chưa có")</td>
+                            <td>@(item.value.TenCapDoDuAn ?? "Chưa có")</td>
+                            <td>@item.value.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm") - @item.value.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <div class="form-check form-switch d-flex justify-content-center align-items-center gap-2">
+                                    <input type="checkbox" class="form-check-input toggle-status" id="toggle-@item.value.IdKeHoach" data-id="@item.value.IdKeHoach" @(item.value.TrangThai == 1 ? "checked" : "") />
+                                    <span class="badge rounded-pill bg-@(item.value.TrangThai == 1 ? "success" : "secondary")">
+                                        @(item.value.TrangThai == 1 ? "Hoạt động" : "Ngừng hoạt động")
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-info btn-sm details-btn" data-id="@item.value.IdKeHoach" data-bs-toggle="modal" data-bs-target="#detailsModal">🔍</button>
+                                <button class="btn btn-warning btn-sm edit-btn" data-id="@item.value.IdKeHoach" data-bs-toggle="modal" data-bs-target="#editModal">✏️</button>
+                                <button class="btn btn-danger btn-sm delete-btn" data-id="@item.value.IdKeHoach">🗑️</button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="9" class="text-center">Không có dữ liệu</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL TẠO KẾ HOẠCH MỚI -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createModalLabel">Tạo kế hoạch mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="createModalBody">
+                <!-- Nội dung sẽ được load bằng AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="saveCreateBtn">Thêm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SỬA -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="editModalLabel">Sửa kế hoạch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="editModalBody">
+                <!-- Nội dung sẽ được load bằng AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-warning" id="saveEditBtn">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CHI TIẾT -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-dark">
+                <h5 class="modal-title" id="detailsModalLabel">Chi tiết kế hoạch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detailsModalBody">
+                <!-- Nội dung sẽ được load chi tiết -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Load Create Modal
+            $('#createModal').on('show.bs.modal', function () {
+                $.ajax({
+                    url: '@Url.Action("Create", "KeHoach")',
+                    type: 'GET',
+                    success: function (data) {
+                        $('#createModalBody').html(data);
+                        $.ajax({
+                            url: 'https://localhost:7296/api/DuAn',
+                            type: 'GET',
+                            success: function (duAns) {
+                                var select = $('#IdDuAn');
+                                select.empty();
+                                select.append('<option value="">Chọn dự án</option>');
+                                $.each(duAns, function (i, item) {
+                                    if (item.trangThai) {
+                                        select.append('<option value="' + item.idDuAn + '">' + item.tenDuAn + '</option>');
+                                    }
+                                });
+                            },
+                            error: function () {
+                                alert('Không thể tải danh sách dự án.');
+                            }
+                        });
+                        $('#createForm').validate();
+                    },
+                    error: function () {
+                        alert('Không thể tải form tạo kế hoạch.');
+                    }
+                });
+            });
+
+            // Save Create
+            $('#saveCreateBtn').click(function () {
+                var form = $('#createForm');
+                form.removeData('validator');
+                form.removeData('unobtrusiveValidation');
+                $.validator.unobtrusive.parse(form);
+
+                if (form.valid()) {
+                    var formData = form.serialize();
+                    $.ajax({
+                        url: '@Url.Action("Create", "KeHoach")',
+                        type: 'POST',
+                        data: formData,
+                        success: function (response) {
+                            if (response.success) {
+                                $('#createModal').modal('hide');
+                                window.location.reload();
+                            } else {
+                                alert(response.message || 'Lỗi khi tạo kế hoạch.');
+                            }
+                        },
+                        error: function () {
+                            alert('Đã có lỗi xảy ra khi tạo kế hoạch.');
+                        }
+                    });
+                }
+            });
+
+            // Load Edit Modal
+            $('.edit-btn').click(function () {
+                var id = $(this).data('id');
+                $.ajax({
+                    url: '@Url.Action("Edit", "KeHoach")/' + id,
+                    type: 'GET',
+                    success: function (data) {
+                        $('#editModalBody').html(data);
+                        $.ajax({
+                            url: 'https://localhost:7296/api/DuAn',
+                            type: 'GET',
+                            success: function (duAns) {
+                                var select = $('#IdDuAn');
+                                select.empty();
+                                select.append('<option value="">Chọn dự án</option>');
+                                $.each(duAns, function (i, item) {
+                                    if (item.trangThai) {
+                                        select.append('<option value="' + item.idDuAn + '">' + item.tenDuAn + '</option>');
+                                    }
+                                });
+                                select.val($('#IdDuAn').data('selected'));
+                            },
+                            error: function () {
+                                alert('Không thể tải danh sách dự án.');
+                            }
+                        });
+                        $('#editForm').validate();
+                    },
+                    error: function () {
+                        alert('Không thể tải form sửa kế hoạch.');
+                    }
+                });
+            });
+
+            // Save Edit
+            $('#saveEditBtn').click(function () {
+                var form = $('#editForm');
+                form.removeData('validator');
+                form.removeData('unobtrusiveValidation');
+                $.validator.unobtrusive.parse(form);
+
+                if (form.valid()) {
+                    var formData = form.serialize();
+                    var id = $('#editForm input[name="IdKeHoach"]').val();
+                    $.ajax({
+                        url: '@Url.Action("Edit", "KeHoach")/' + id,
+                        type: 'POST',
+                        data: formData,
+                        success: function (response) {
+                            if (response.success) {
+                                $('#editModal').modal('hide');
+                                window.location.reload();
+                            } else {
+                                alert(response.message || 'Lỗi khi sửa kế hoạch.');
+                            }
+                        },
+                        error: function () {
+                            alert('Đã có lỗi xảy ra khi sửa kế hoạch.');
+                        }
+                    });
+                }
+            });
+
+            // Load Details Modal
+            $('.details-btn').click(function () {
+                var id = $(this).data('id');
+                $.ajax({
+                    url: '@Url.Action("Details", "KeHoach")/' + id,
+                    type: 'GET',
+                    success: function (data) {
+                        $('#detailsModalBody').html(data);
+                    },
+                    error: function () {
+                        alert('Không thể tải chi tiết kế hoạch.');
+                    }
+                });
+            });
+
+            // Delete
+            $('.delete-btn').click(function () {
+                var id = $(this).data('id');
+                if (confirm('Bạn có chắc chắn muốn xóa kế hoạch này?')) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "KeHoach")',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (response) {
+                            if (response.success) {
+                                window.location.reload();
+                            } else {
+                                alert(response.message || 'Lỗi khi xóa kế hoạch.');
+                            }
+                        },
+                        error: function () {
+                            alert('Đã có lỗi xảy ra khi xóa kế hoạch.');
+                        }
+                    });
+                }
+            });
+
+            // Toggle Status
+            $('.toggle-status').on('change', function () {
+                var checkbox = $(this);
+                var id = checkbox.data('id');
+                var isChecked = checkbox.is(':checked');
+                $.ajax({
+                    url: '@Url.Action("ToggleStatus", "KeHoach")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            checkbox.siblings('span').text(response.trangThai)
+                                .removeClass('bg-success bg-secondary')
+                                .addClass(response.trangThai === 'Hoạt động' ? 'bg-success' : 'bg-secondary');
+                        } else {
+                            alert(response.message || 'Lỗi khi cập nhật trạng thái.');
+                            checkbox.prop('checked', !isChecked);
+                        }
+                    },
+                    error: function () {
+                        alert('Đã có lỗi xảy ra khi cập nhật trạng thái.');
+                        checkbox.prop('checked', !isChecked);
+                    }
+                });
+            });
+
+            // Xử lý form lọc
+            $('#filterForm').on('submit', function (e) {
+                e.preventDefault();
+                var tuKhoa = $('#tuKhoa').val() || '';
+                var trangThai = $('#trangThai').val() || '';
+                var idBoMon = $('#idBoMon').val() || '';
+                var idCapDoDuAn = $('#idCapDoDuAn').val() || '';
+                var idHocKy = $('#idHocKy').val() || '';
+                var namHoc = $('#namHoc').val() || '';
+                var queryString = '?tuKhoa=' + encodeURIComponent(tuKhoa) +
+                                 '&trangThai=' + encodeURIComponent(trangThai) +
+                                 '&idBoMon=' + encodeURIComponent(idBoMon) +
+                                 '&idCapDoDuAn=' + encodeURIComponent(idCapDoDuAn) +
+                                 '&idHocKy=' + encodeURIComponent(idHocKy) +
+                                 '&namHoc=' + encodeURIComponent(namHoc);
+                window.location.href = '@Url.Action("Index", "KeHoach")' + queryString;
+            });
+        });
+    </script>
+}
