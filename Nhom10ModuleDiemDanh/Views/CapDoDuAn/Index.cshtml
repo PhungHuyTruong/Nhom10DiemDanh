@@ -69,25 +69,21 @@
                                 </form>
                             </td>
                             <td>
-                                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalFormEdit_@item.IdCDDA">
-                                    <i class="bi bi-pencil-square"></i> ✏️
-                                </button>
+                                <button class="btn btn-warning" onclick="openEditModal('@item.IdCDDA')">✏️</button>
                             </td>
                         </tr>
 
                         <!-- Modal Edit -->
-                        <div class="modal fade" id="modalFormEdit_@item.IdCDDA" tabindex="-1" aria-labelledby="editModalLabel_@item.IdCDDA" aria-hidden="true">
+                        <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
-                                    <form asp-action="Edit" method="post">
-                                        <div class="modal-header bg-primary text-white">
-                                            <h5 class="modal-title" id="editModalLabel_@item.IdCDDA">Chỉnh sửa cấp độ</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            @await Html.PartialAsync("Edit", item)
-                                        </div>
-                                    </form>
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title">Chỉnh sửa CDDA</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body" id="editModalBody">
+                                        <!-- Nội dung form edit sẽ được load vào đây -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -133,12 +129,58 @@
 
 <script>
     $(document).ready(function () {
-            $.validator.unobtrusive.parse($('#modalFormCreate'));
-        });
-        $('#modalFormCreate').on('shown.bs.modal', function () {
-            $.validator.unobtrusive.parse($(this));
-        });</script>
+        $.validator.unobtrusive.parse($('#modalFormCreate'));
+    });
+    $('#modalFormCreate').on('shown.bs.modal', function () {
+        $.validator.unobtrusive.parse($(this));
+    });
+
+    $(document).ready(function () {
+        $.validator.unobtrusive.parse($('#modalFormEdit'));
+    });
+    $('#modalFormEdit').on('shown.bs.modal', function () {
+        $.validator.unobtrusive.parse($(this));
+    });
+    </script>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Mở modal và load nội dung từ Edit
+        function openEditModal(id) {
+            $.get(`/CapDoDuAn/Edit/${id}`, function (html) {
+                $('#editModalBody').html(html);
+                $('#editModal').modal('show');
+                $.validator.unobtrusive.parse($('#editForm'));
+            });
+        }
+
+        // Submit form với AJAX
+                $(document).on('submit', '#editForm', function (e) {
+            e.preventDefault();
+            const form = $(this);
+
+            $.ajax({
+                url: form.attr('action'),
+                type: form.attr('method'),
+                data: form.serialize(),
+                success: function (result) {
+                    if (result.success) {
+                        $('#editModal').modal('hide');
+                        location.reload();  // reload trang để dữ liệu cập nhật
+                    } else {
+                        // Nếu trả về html lỗi (partial view)
+                        $('#editModalBody').html(result);
+                        $.validator.unobtrusive.parse($('#editForm'));
+                    }
+                }
+            });
+        });
+
+    </script>
 }

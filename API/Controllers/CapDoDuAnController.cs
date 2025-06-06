@@ -47,6 +47,8 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] CapDoDuAn updatedCapDo)
         {
+            if (!ModelState.IsValid)
+                return View(updatedCapDo);
             var capDo = await _diemDanhDbContext.CapDoDuAns.FindAsync(id);
             if (capDo == null) return NotFound();
 

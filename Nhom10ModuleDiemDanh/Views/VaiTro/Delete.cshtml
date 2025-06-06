@@ -1,0 +1,20 @@
+﻿@model API.Data.VaiTro
+
+@{
+    ViewData["Title"] = "Xóa Vai Trò";
+}
+
+<h2 class="text-danger">Xác nhận xóa</h2>
+
+<h4>Bạn có chắc muốn xóa vai trò sau?</h4>
+<hr />
+<dl class="row">
+    <dt class="col-sm-3">Tên vai trò</dt>
+    <dd class="col-sm-9">@Model.TenVaiTro</dd>
+</dl>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" asp-for="IdVaiTro" />
+    <button type="submit" class="btn btn-danger">Xóa</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

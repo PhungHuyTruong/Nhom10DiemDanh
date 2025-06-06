@@ -90,15 +90,23 @@ namespace Nhom10ModuleDiemDanh.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(CapDoDuAn model)
         {
+            if (!ModelState.IsValid)
+            {
+                return PartialView("Edit", model);
+            }
             var json = JsonSerializer.Serialize(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _client.PutAsync($"CapDoDuAn/{model.IdCDDA}", content);
 
             if (response.IsSuccessStatusCode)
-                return RedirectToAction("Index");
+            {
+                // Trả về json báo thành công
+                return Json(new { success = true });
+            }
 
-            return View(model);
+            ModelState.AddModelError("", "Cập nhật thất bại.");
+            return PartialView("Edit", model);
         }
 
         [HttpPost]

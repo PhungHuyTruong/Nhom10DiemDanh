@@ -1,0 +1,33 @@
+﻿@model List<API.Data.VaiTro>
+
+@{
+    Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Thêm vai trò</a>
+</p>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Tên vai trò</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.TenVaiTro</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.IdVaiTro" class="btn btn-sm btn-warning">Sửa</a>
+                    <a asp-action="Delete" asp-route-id="@item.IdVaiTro" class="btn btn-sm btn-danger"
+                       onclick="return confirm('Bạn có chắc muốn xóa vai trò này?');">Xóa</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

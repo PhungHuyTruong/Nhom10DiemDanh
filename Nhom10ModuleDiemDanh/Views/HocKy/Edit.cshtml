@@ -1,8 +1,11 @@
 ﻿@model API.Data.HocKy
 
+@{
+    Layout = null;
+}
 
 
-<form method="post" asp-action="Edit">
+<form id="editForm" method="post" asp-action="Edit">
     <input type="hidden" asp-for="IdHocKy" />
     <div class="modal-body">
         <div class="mb-3">
@@ -32,3 +35,39 @@
     });
 
 </script>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Mở modal và load nội dung từ Edit
+        function openEditModal(id) {
+            $.get(`/HocKy/Edit/${id}`, function (html) {
+                $('#editModalBody').html(html);
+                $('#editModal').modal('show');
+                $.validator.unobtrusive.parse($('#editForm'));
+            });
+        }
+
+        // Submit form với AJAX
+                $(document).on('submit', '#editForm', function (e) {
+            e.preventDefault();
+            const form = $(this);
+
+            $.ajax({
+                url: form.attr('action'),
+                type: form.attr('method'),
+                data: form.serialize(),
+                success: function (result) {
+                    if (result.success) {
+                        $('#editModal').modal('hide');
+                        location.reload();  // reload trang để dữ liệu cập nhật
+                    } else {
+                        // Nếu trả về html lỗi (partial view)
+                        $('#editModalBody').html(result);
+                        $.validator.unobtrusive.parse($('#editForm'));
+                    }
+                }
+            });
+        });
+
+    </script>
+}

@@ -82,29 +82,26 @@
                             </form>
                         </td>
                         <td>
-                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalFormEdit_@item.IdHocKy">
-                                    <i class="bi bi-pencil-square"></i> ✏️
-                            </button>
+                                <button class="btn btn-warning" onclick="openEditModal('@item.IdHocKy')">✏️</button>
+
                         </td>
                     </tr>
 
                     <!-- Modal Edit -->
-                    <div class="modal fade" id="modalFormEdit_@item.IdHocKy" tabindex="-1" aria-labelledby="editModalLabel_@item.IdHocKy" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content" id="editModalContent">
-                                    <form id="editForm" asp-action="Edit" method="post">
-                                        <input type="hidden" name="IdHocKy" value="@item.IdHocKy" />
-                                        <div class="modal-header bg-primary text-white">
-                                            <h5 class="modal-title">Chỉnh sửa học kỳ</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            @await Html.PartialAsync("Edit", item)
-                                        </div>
-                                    </form>
+                        <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title">Chỉnh sửa học kỳ</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body" id="editModalBody">
+                                        <!-- Nội dung form edit sẽ được load vào đây -->
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+
                         stt++;
                 }
             </tbody>
@@ -169,4 +166,37 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Mở modal và load nội dung từ Edit
+        function openEditModal(id) {
+            $.get(`/HocKy/Edit/${id}`, function (html) {
+                $('#editModalBody').html(html);
+                $('#editModal').modal('show');
+                $.validator.unobtrusive.parse($('#editForm'));
+            });
+        }
+
+        // Submit form với AJAX
+                $(document).on('submit', '#editForm', function (e) {
+            e.preventDefault();
+            const form = $(this);
+
+            $.ajax({
+                url: form.attr('action'),
+                type: form.attr('method'),
+                data: form.serialize(),
+                success: function (result) {
+                    if (result.success) {
+                        $('#editModal').modal('hide');
+                        location.reload();  // reload trang để dữ liệu cập nhật
+                    } else {
+                        // Nếu trả về html lỗi (partial view)
+                        $('#editModalBody').html(result);
+                        $.validator.unobtrusive.parse($('#editForm'));
+                    }
+                }
+            });
+        });
+
+    </script>
 }

@@ -21,36 +21,6 @@ namespace API.Controllers
             return Ok(data);
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] bool? trangThai, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
-        //{
-        //    var query = _diemDanhDbContext.hocKy.AsQueryable();
-
-        //    if (!string.IsNullOrEmpty(search))
-        //    {
-        //        query = query.Where(x => x.TenHocKy.Contains(search));
-        //    }
-
-        //    if (trangThai.HasValue)
-        //    {
-        //        query = query.Where(x => x.TrangThai == trangThai.Value);
-        //    }
-
-        //    var totalItems = await query.CountAsync();
-        //    var data = await query
-        //        .OrderByDescending(x => x.NgayTao)
-        //        .Skip((page - 1) * pageSize)
-        //        .Take(pageSize)
-        //        .ToListAsync();
-
-        //    return Ok(new
-        //    {
-        //        TotalItems = totalItems,
-        //        Page = page,
-        //        PageSize = pageSize,
-        //        Items = data
-        //    });
-        //}
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)

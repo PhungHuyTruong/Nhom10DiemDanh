@@ -13,6 +13,9 @@ namespace API.Data
         [StringLength(100, ErrorMessage = "Tên học kỳ không được vượt quá 100 ký tự")]
         [RegularExpression(@"^[a-zA-Z0-9]+$", ErrorMessage = "Tên học kỳ không được chứa khoảng trắng hoặc ký tự đặc biệt")]
         public string TenHocKy { get; set; }
+        [Required(ErrorMessage = "Tên học kỳ không được để trống")]
+        [StringLength(100, ErrorMessage = "Tên học kỳ không được vượt quá 100 ký tự")]
+        [RegularExpression(@"^[a-zA-Z0-9]+$", ErrorMessage = "Tên học kỳ không được chứa khoảng trắng hoặc ký tự đặc biệt")]
         public string MaHocKy { get; set; }
         public DateTime NgayTao { get; set; } = DateTime.Now;
         public DateTime? NgayCapNhat { get; set; }
