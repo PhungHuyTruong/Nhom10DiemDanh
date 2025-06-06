@@ -61,7 +61,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
         public async Task<IActionResult> Create(Guid? idBoMon = null, string tenBoMon = "bm2")
         {
             var model = new BoMonCoSoViewModel
-            {
+            { 
                 IdBoMon = idBoMon,
                 TenBoMon = tenBoMon,
                 TrangThai = true,

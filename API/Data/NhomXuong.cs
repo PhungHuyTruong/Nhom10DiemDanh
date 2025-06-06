@@ -23,13 +23,13 @@ namespace API.Data
         public int TrangThai { get; set; } = 1;
 
         // Navigation properties
-        public virtual DuAn DuAn { get; set; }
-        public virtual QuanLyBoMon QuanLyBoMon { get; set; }
-        public virtual PhuTrachXuong PhuTrachXuong { get; set; }
-        public virtual ICollection<SinhVien> SinhViens { get; set; }
-        public virtual ICollection<DiemDanh> DiemDanhs { get; set; }
-        public virtual ICollection<LichHoc> LichHocs { get; set; }
-        public virtual ICollection<LichGiangDay> LichGiangDays { get; set; }
-        public virtual ICollection<KeHoachNhomXuong> KeHoachNhomXuongs { get; set; }
+        public virtual DuAn? DuAn { get; set; }
+        public virtual QuanLyBoMon? QuanLyBoMon { get; set; }
+        public virtual PhuTrachXuong? PhuTrachXuong { get; set; }
+        public virtual ICollection<SinhVien>? SinhViens { get; set; }
+        public virtual ICollection<DiemDanh>? DiemDanhs { get; set; }
+        public virtual ICollection<LichHoc>? LichHocs { get; set; }
+        public virtual ICollection<LichGiangDay>? LichGiangDays { get; set; }
+        public virtual ICollection<KeHoachNhomXuong>? KeHoachNhomXuongs { get; set; }
     }
 }

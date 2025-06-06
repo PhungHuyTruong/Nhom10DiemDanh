@@ -1,0 +1,194 @@
+﻿@model IEnumerable<API.Data.NhomXuong>
+@{
+    Layout = "~/Views/Shared/PhuTrachXuongLayout.cshtml";
+}
+
+<!-- TIÊU ĐỀ -->
+<div class="card bg-primary text-white mb-4">
+    <div class="card-body">
+        <h2 class="card-title">Quản lý nhóm xưởng</h2>
+    </div>
+</div>
+
+<!-- BỘ LỌC -->
+<form method="get" class="card mb-4">
+    <div class="card-header fw-bold">Bộ lọc</div>
+    <div class="card-body row g-3">
+        <div class="col-md-6">
+            <label for="search">Tìm kiếm tên nhóm xưởng:</label>
+            <input id="search" name="search" value="@ViewBag.Search" type="text" class="form-control" placeholder="Nhập tên nhóm xưởng" />
+        </div>
+        <div class="col-md-4">
+            <label for="status">Trạng thái</label>
+            <select id="status" name="status" class="form-select">
+                @if (ViewBag.Status == "")
+                {
+                    @:
+                    <option value="" selected>Tất cả</option>
+                }
+                else
+                {
+                    @:
+                    <option value="">Tất cả</option>
+                }
+
+                @if (ViewBag.Status == "active")
+                {
+                    @:
+                    <option value="active" selected>Đang hoạt động</option>
+                }
+                else
+                {
+                    @:
+                    <option value="active">Đang hoạt động</option>
+                }
+
+                @if (ViewBag.Status == "inactive")
+                {
+                    @:
+                    <option value="inactive" selected>Ngừng</option>
+                }
+                else
+                {
+                    @:
+                    <option value="inactive">Ngừng</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Lọc</button>
+        </div>
+    </div>
+</form>
+
+<!-- DANH SÁCH -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">Danh sách nhóm xưởng</span>
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreate">+ Thêm mới</button>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-bordered table-hover mb-0 text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Tên nhóm xưởng</th>
+                    <th>Dự án</th>
+                    <th>Bộ môn</th>
+                    <th>Giảng viên phụ trách</th>
+                    <th>Mô tả</th>
+                    <th>Trạng thái</th>
+                    <th>Chức năng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Select((x, i) => new { x, i }))
+                {
+                    <tr>
+                        <td>@(item.i + 1)</td>
+                        <td>@item.x.TenNhomXuong</td>
+                        <td>@item.x.DuAn?.TenDuAn ?? "Không có"</td>
+                        <td>@item.x.QuanLyBoMon?.MaBoMon ?? "Không có"</td>
+                        <td>@item.x.PhuTrachXuong?.TenNhanVien ?? "Không có"</td>
+                        <td>@item.x.MoTa</td>
+                        <td>
+                            <form asp-action="ToggleStatus" method="post">
+                                <input type="hidden" name="id" value="@item.x.IdNhomXuong" />
+                                <div class="form-check form-switch d-flex justify-content-center align-items-center gap-2">
+                                    <input class="form-check-input" type="checkbox" onchange="this.form.submit()" @(item.x.TrangThai == 1 ? "checked" : "") />
+                                    <span class="badge bg-@(item.x.TrangThai == 1 ? "success" : "secondary")">
+                                        @(item.x.TrangThai == 1 ? "Đang hoạt động" : "Ngừng")
+                                    </span>
+                                </div>
+                            </form>
+                        </td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEdit_@item.x.IdNhomXuong">✏️</button>
+                            <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetail_@item.x.IdNhomXuong">🔍</button>
+                        </td>
+
+                        <!-- MODAL CHI TIẾT & SỬA -->
+                        <div class="modal fade" id="modalEdit_@item.x.IdNhomXuong" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-body">
+                                        @await Html.PartialAsync("Edit", item.x)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="modalDetail_@item.x.IdNhomXuong" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-body">
+                                        @await Html.PartialAsync("Details", item.x)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </tr>
+                }
+            </tbody>
+
+            <!-- PHÂN TRANG -->
+            <tfoot>
+                <tr>
+                    <td colspan="8">
+                        <nav>
+                            <ul class="pagination justify-content-center my-3">
+                                @{
+                                    var p = ViewBag.Pagination;
+                                    int currentPage = p.currentPage;
+                                    int totalPages = p.totalPages;
+                                    string search = ViewBag.Search ?? "";
+                                    string status = ViewBag.Status ?? "";
+
+                                    if (currentPage > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1, search, status })">◀</a>
+                                        </li>
+                                    }
+
+                                    for (int i = 1; i <= totalPages; i++)
+                                    {
+                                        <li class="page-item @(i == currentPage ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("Index", new { page = i, search, status })">@i</a>
+                                        </li>
+                                    }
+
+                                    if (currentPage < totalPages)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1, search, status })">▶</a>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </nav>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL THÊM MỚI -->
+<div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm nhóm xưởng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                @await Html.PartialAsync("Create", new API.Data.NhomXuong())
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Html.Partial("_ValidationScriptsPartial")
+}
