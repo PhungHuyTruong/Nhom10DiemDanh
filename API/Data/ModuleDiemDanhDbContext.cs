@@ -176,9 +176,11 @@ namespace API.Data
                 .HasForeignKey(lsdd => lsdd.IdNXCH)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<CoSo>()
-                .Property(c => c.IdCaHoc)
-                .IsRequired(false);
+            modelBuilder.Entity<CaHoc>()
+     .HasOne(c => c.CoSo)
+     .WithMany(cs => cs.CaHocs)
+     .HasForeignKey(c => c.CoSoId)
+     .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

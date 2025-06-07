@@ -29,6 +29,10 @@ namespace API.Data
         [Display(Name = "Trạng thái")]
         [Range(0, 1, ErrorMessage = "Trạng thái chỉ có thể là 0 (Tạm ngưng) hoặc 1 (Hoạt động)")]
         public int TrangThai { get; set; } = 1;
+        public Guid? CoSoId { get; set; }
+
+        [JsonIgnore]
+        public virtual CoSo? CoSo { get; set; }
 
         [JsonIgnore]
         public virtual ICollection<DiemDanh>? DiemDanhs { get; set; }
@@ -39,8 +43,7 @@ namespace API.Data
         [JsonIgnore]
         public virtual ICollection<KHNXCaHoc>? KHNXCaHocs { get; set; }
 
-        [JsonIgnore]
-        public virtual ICollection<CoSo>? CoSos { get; set; }
+        
 
         // ✅ Validate logic nghiệp vụ: thời gian bắt đầu < kết thúc
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

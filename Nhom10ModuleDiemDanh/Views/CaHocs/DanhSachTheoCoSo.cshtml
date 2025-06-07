@@ -1,0 +1,44 @@
+﻿@model IEnumerable<API.Data.CaHoc>
+@{
+    ViewData["Title"] = "Ca học theo cơ sở";
+}
+
+
+
+<a asp-action="Create" asp-route-coSoId="@ViewBag.CoSoId" class="btn btn-success mb-3">➕ Thêm ca học</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Tên ca</th>
+            <th>Giờ học</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var ca in Model)
+            {
+                <tr>
+                    <td>@ca.TenCaHoc</td>
+                    <td>@ca.ThoiGianBatDau - @ca.ThoiGianKetThuc</td>
+                    <td>@(ca.TrangThai == 1 ? "Hoạt động" : "Tạm ngưng")</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@ca.IdCaHoc">📝 Sửa</a> |
+                        <form asp-action="Delete" method="post" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@ca.IdCaHoc" />
+                            <button type="submit" class="btn btn-link text-danger" onclick="return confirm('Xoá ca học này?')">🗑 Xoá</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="4" class="text-center text-muted">Không có dữ liệu ca học.</td></tr>
+        }
+    </tbody>
+</table>
