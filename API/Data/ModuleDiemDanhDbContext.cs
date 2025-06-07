@@ -5,6 +5,10 @@ namespace API.Data
 {
     public class ModuleDiemDanhDbContext : DbContext
     {
+        public ModuleDiemDanhDbContext()
+        {
+            
+        }
         public ModuleDiemDanhDbContext(DbContextOptions<ModuleDiemDanhDbContext> options) : base(options)
         {
         }
@@ -179,6 +183,11 @@ namespace API.Data
             modelBuilder.Entity<CoSo>()
                 .Property(c => c.IdCaHoc)
                 .IsRequired(false);
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+           optionsBuilder.UseSqlServer("Server=DESKTOP-0O61DM6\\TRUNGTT;Database=nhom10diemdanh;Trusted_Connection=True;TrustServerCertificate=True");
         }
     }
 }

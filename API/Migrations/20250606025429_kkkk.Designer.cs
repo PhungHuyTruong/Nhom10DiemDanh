@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ModuleDiemDanhDbContext))]
-    partial class ModuleDiemDanhDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250606025429_kkkk")]
+    partial class kkkk
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -413,13 +416,14 @@ namespace API.Migrations
                     b.Property<bool>("DiemDanhTre")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("IdCaHoc")
+                    b.Property<Guid>("IdCaHoc")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("IdKHNX")
+                    b.Property<Guid>("IdKHNX")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LinkOnline")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -433,8 +437,8 @@ namespace API.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("NoiDung")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ThoiGian")
                         .IsRequired()
@@ -1020,11 +1024,15 @@ namespace API.Migrations
 
                     b.HasOne("API.Data.CaHoc", "CaHoc")
                         .WithMany("KHNXCaHocs")
-                        .HasForeignKey("IdCaHoc");
+                        .HasForeignKey("IdCaHoc")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("API.Data.KeHoachNhomXuong", "KeHoachNhomXuong")
                         .WithMany("KHNXCaHocs")
-                        .HasForeignKey("IdKHNX");
+                        .HasForeignKey("IdKHNX")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("CaHoc");
 
