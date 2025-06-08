@@ -52,6 +52,43 @@ namespace AppView.Controllers
 
             return View(danhSach);
         }
+        public async Task<IActionResult> DanhSachTheoCoSo(Guid id)
+        {
+            List<CaHoc> danhSach = new(); // luôn khởi tạo
+
+            try
+            {
+                using (var http = new HttpClient())
+                {
+                    var response = await http.GetAsync($"{_apiBase}/by-coso/{id}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var json = await response.Content.ReadAsStringAsync();
+                        danhSach = JsonConvert.DeserializeObject<List<CaHoc>>(json) ?? new List<CaHoc>();
+                    }
+                    else
+                    {
+                        TempData["Error"] = "API không trả về dữ liệu.";
+                    }
+
+                    // Lấy tên cơ sở
+                    var coSoRes = await http.GetAsync($"https://localhost:7296/api/CoSo/{id}");
+                    if (coSoRes.IsSuccessStatusCode)
+                    {
+                        var csJson = await coSoRes.Content.ReadAsStringAsync();
+                        var csResult = JsonConvert.DeserializeObject<ApiResponse<CoSo>>(csJson);
+                        ViewBag.TenCoSo = csResult?.data?.TenCoSo ?? "(Không rõ)";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Lỗi khi tải ca học theo cơ sở: {ex.Message}";
+            }
+
+            ViewBag.CoSoId = id;
+            return View("DanhSachTheoCoSo", danhSach);
+        }
 
         public async Task<IActionResult> Details(Guid? id)
         {

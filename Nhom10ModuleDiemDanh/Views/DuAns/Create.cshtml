@@ -1,0 +1,30 @@
+﻿@model API.Data.DuAn
+
+<form id="form-create-duan" asp-action="Create" method="post">
+    <div class="mb-3">
+        <label asp-for="TenDuAn" class="form-label"></label>
+        <input asp-for="TenDuAn" class="form-control" />
+        <span asp-validation-for="TenDuAn" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="CapDoDuAn" class="form-label"></label>
+        <input asp-for="CapDoDuAn" class="form-control" />
+        <span asp-validation-for="CapDoDuAn" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="MoTa" class="form-label"></label>
+        <input asp-for="MoTa" class="form-control" />
+        <span asp-validation-for="MoTa" class="text-danger"></span>
+    </div>
+    <div class="form-check mb-3">
+        <input asp-for="TrangThai" class="form-check-input" />
+        <label asp-for="TrangThai" class="form-check-label"></label>
+    </div>
+    <button type="submit" class="btn btn-primary">Lưu</button>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

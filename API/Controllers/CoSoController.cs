@@ -46,7 +46,7 @@ namespace API.Controllers
                 TrangThai = c.TrangThai ? "Hoạt động" : "Tắt",
                 IdDiaDiem = c.IdDiaDiem,
                 IdIP = c.IdIP,
-                IdCaHoc = c.IdCaHoc
+                
             }).ToListAsync();
 
             return Ok(coSoViewModels);
@@ -73,7 +73,7 @@ namespace API.Controllers
                 TrangThai = coSo.TrangThai ? "Hoạt động" : "Tắt",
                 IdDiaDiem = coSo.IdDiaDiem,
                 IdIP = coSo.IdIP,
-                IdCaHoc = coSo.IdCaHoc
+                
             };
 
             return Ok(coSoViewModel);
@@ -97,7 +97,7 @@ namespace API.Controllers
                 TrangThai = model.TrangThai == "Hoạt động",
                 IdDiaDiem = model.IdDiaDiem,
                 IdIP = model.IdIP,
-                IdCaHoc = model.IdCaHoc
+                
             };
 
             _context.CoSos.Add(coSo);
@@ -129,7 +129,7 @@ namespace API.Controllers
             coSo.TrangThai = model.TrangThai == "Hoạt động";
             coSo.IdDiaDiem = model.IdDiaDiem;
             coSo.IdIP = model.IdIP;
-            coSo.IdCaHoc = model.IdCaHoc;
+            
             coSo.NgayCapNhat = DateTime.Now;
 
             await _context.SaveChangesAsync();
