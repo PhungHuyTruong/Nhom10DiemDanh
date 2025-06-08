@@ -1,0 +1,35 @@
+﻿@model API.Data.LichGiangDay
+
+@{
+    ViewData["Title"] = "Xóa Lịch Giảng Dạy";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<h4>Bạn có chắc chắn muốn xóa lịch giảng dạy này?</h4>
+<hr />
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-3">Hình thức giảng dạy</dt>
+        <dd class="col-sm-9">@Model.HTGiangDay</dd>
+
+        <dt class="col-sm-3">Ngày tạo</dt>
+        <dd class="col-sm-9">@Model.NgayTao.ToString("dd/MM/yyyy")</dd>
+
+        <dt class="col-sm-3">Điểm danh</dt>
+        <dd class="col-sm-9">@((Model.TTDiemDanh) ? "✔️ Có" : "❌ Không")</dd>
+
+        <dt class="col-sm-3">Điểm danh muộn</dt>
+        <dd class="col-sm-9">@((Model.TTDiemDanhMuon) ? "✔️ Có" : "❌ Không")</dd>
+
+        <dt class="col-sm-3">Trạng thái</dt>
+        <dd class="col-sm-9">@((Model.TrangThai == 1) ? "Hoạt động" : "Không hoạt động")</dd>
+    </dl>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="IdLichDay" />
+        <button type="submit" class="btn btn-danger">Xóa</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </form>
+</div>

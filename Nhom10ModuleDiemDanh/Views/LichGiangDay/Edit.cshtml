@@ -1,0 +1,68 @@
+﻿@model API.Data.LichGiangDay
+
+@{
+    ViewData["Title"] = "Chỉnh sửa Lịch Giảng Dạy";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="IdLichDay" />
+
+    <div class="form-group">
+        <label asp-for="HTGiangDay" class="control-label">Hình thức giảng dạy</label>
+        <input asp-for="HTGiangDay" class="form-control" />
+        <span asp-validation-for="HTGiangDay" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdNXCH" class="control-label">ID Ca Học</label>
+        <input asp-for="IdNXCH" class="form-control" />
+        <span asp-validation-for="IdNXCH" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdNhomXuong" class="control-label">ID Nhóm Xưởng</label>
+        <input asp-for="IdNhomXuong" class="form-control" />
+        <span asp-validation-for="IdNhomXuong" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdDuAn" class="control-label">ID Dự Án</label>
+        <input asp-for="IdDuAn" class="form-control" />
+        <span asp-validation-for="IdDuAn" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdDiaDiem" class="control-label">ID Địa Điểm</label>
+        <input asp-for="IdDiaDiem" class="form-control" />
+        <span asp-validation-for="IdDiaDiem" class="text-danger"></span>
+    </div>
+
+    <div class="form-group form-check">
+        <input asp-for="TTDiemDanh" class="form-check-input" type="checkbox" />
+        <label asp-for="TTDiemDanh" class="form-check-label">Điểm danh</label>
+    </div>
+
+    <div class="form-group form-check">
+        <input asp-for="TTDiemDanhMuon" class="form-check-input" type="checkbox" />
+        <label asp-for="TTDiemDanhMuon" class="form-check-label">Điểm danh muộn</label>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="TrangThai" class="control-label">Trạng thái</label>
+        <select asp-for="TrangThai" class="form-control">
+            <option value="1" selected="@(Model.TrangThai == 1)">Hoạt động</option>
+            <option value="0" selected="@(Model.TrangThai == 0)">Không hoạt động</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-2">Cập nhật</button>
+    <a asp-action="Index" class="btn btn-secondary mt-2">Quay lại</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,66 @@
+﻿@model API.Data.LichGiangDay
+
+@{
+    ViewData["Title"] = "Tạo mới Lịch Giảng Dạy";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="HTGiangDay" class="control-label">Hình thức giảng dạy</label>
+        <input asp-for="HTGiangDay" class="form-control" />
+        <span asp-validation-for="HTGiangDay" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdNXCH" class="control-label">ID Ca Học</label>
+        <input asp-for="IdNXCH" class="form-control" />
+        <span asp-validation-for="IdNXCH" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdNhomXuong" class="control-label">ID Nhóm Xưởng</label>
+        <input asp-for="IdNhomXuong" class="form-control" />
+        <span asp-validation-for="IdNhomXuong" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdDuAn" class="control-label">ID Dự Án (nếu có)</label>
+        <input asp-for="IdDuAn" class="form-control" />
+        <span asp-validation-for="IdDuAn" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdDiaDiem" class="control-label">ID Địa Điểm</label>
+        <input asp-for="IdDiaDiem" class="form-control" />
+        <span asp-validation-for="IdDiaDiem" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="TTDiemDanh" class="control-label">Điểm danh</label>
+        <input asp-for="TTDiemDanh" class="form-check-input" type="checkbox" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="TTDiemDanhMuon" class="control-label">Điểm danh muộn</label>
+        <input asp-for="TTDiemDanhMuon" class="form-check-input" type="checkbox" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="TrangThai" class="control-label">Trạng thái</label>
+        <select asp-for="TrangThai" class="form-control">
+            <option value="1">Hoạt động</option>
+            <option value="0">Không hoạt động</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-success mt-2">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary mt-2">Hủy</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
