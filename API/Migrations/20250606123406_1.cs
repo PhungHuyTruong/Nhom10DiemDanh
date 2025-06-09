@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class hihi : Migration
+    public partial class _1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -68,7 +68,7 @@ namespace API.Migrations
                 {
                     IdHocKy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TenHocKy = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    MaHocKy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MaHocKy = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     NgayTao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     NgayCapNhat = table.Column<DateTime>(type: "datetime2", nullable: true),
                     TrangThai = table.Column<bool>(type: "bit", nullable: false)
@@ -286,7 +286,8 @@ namespace API.Migrations
                     TenKeHoach = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     IdDuAn = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     NoiDung = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    NgayDienRa = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ThoiGianBatDau = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ThoiGianKetThuc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TrangThai = table.Column<int>(type: "int", nullable: false),
                     NgayTao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     NgayCapNhat = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -403,16 +404,16 @@ namespace API.Migrations
                 columns: table => new
                 {
                     IdSinhVien = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TenSinhVien = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MaSinhVien = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IdNhomXuong = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TrangThai = table.Column<int>(type: "int", nullable: false),
+                    TenSinhVien = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    MaSinhVien = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    IdNhomXuong = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    TrangThai = table.Column<bool>(type: "bit", nullable: false),
                     NgayTao = table.Column<DateTime>(type: "datetime2", nullable: true),
                     NgayCapNhat = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IdVaiTro = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    NhomXuongIdNhomXuong = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    VaiTroIdVaiTro = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    IdVaiTro = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    NhomXuongIdNhomXuong = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    VaiTroIdVaiTro = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -421,14 +422,12 @@ namespace API.Migrations
                         name: "FK_SinhViens_NhomXuongs_NhomXuongIdNhomXuong",
                         column: x => x.NhomXuongIdNhomXuong,
                         principalTable: "NhomXuongs",
-                        principalColumn: "IdNhomXuong",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "IdNhomXuong");
                     table.ForeignKey(
                         name: "FK_SinhViens_VaiTros_VaiTroIdVaiTro",
                         column: x => x.VaiTroIdVaiTro,
                         principalTable: "VaiTros",
-                        principalColumn: "IdVaiTro",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "IdVaiTro");
                 });
 
             migrationBuilder.CreateTable(
@@ -436,14 +435,14 @@ namespace API.Migrations
                 columns: table => new
                 {
                     IdNXCH = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Buoi = table.Column<int>(type: "int", nullable: false),
+                    Buoi = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NgayHoc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ThoiGian = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    IdKHNX = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IdCaHoc = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IdKHNX = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IdCaHoc = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     NoiDung = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LinkOnline = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    DiemDanhTre = table.Column<bool>(type: "bit", nullable: false),
+                    DiemDanhTre = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NgayTao = table.Column<DateTime>(type: "datetime2", nullable: false),
                     NgayCapNhat = table.Column<DateTime>(type: "datetime2", nullable: true),
                     TrangThai = table.Column<int>(type: "int", nullable: false),
@@ -456,8 +455,7 @@ namespace API.Migrations
                         name: "FK_KHNXCaHocs_CaHocs_IdCaHoc",
                         column: x => x.IdCaHoc,
                         principalTable: "CaHocs",
-                        principalColumn: "IdCaHoc",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "IdCaHoc");
                     table.ForeignKey(
                         name: "FK_KHNXCaHocs_CoSos_CoSoIdCoSo",
                         column: x => x.CoSoIdCoSo,
@@ -467,8 +465,7 @@ namespace API.Migrations
                         name: "FK_KHNXCaHocs_KeHoachNhomXuongs_IdKHNX",
                         column: x => x.IdKHNX,
                         principalTable: "KeHoachNhomXuongs",
-                        principalColumn: "IdKHNX",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "IdKHNX");
                 });
 
             migrationBuilder.CreateTable(

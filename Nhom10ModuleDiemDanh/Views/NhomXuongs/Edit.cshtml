@@ -1,0 +1,48 @@
+﻿@model API.Data.NhomXuong
+@{
+    Layout = null;
+}
+
+<form asp-action="Edit" asp-route-id="@Model.IdNhomXuong" method="post">
+    <input type="hidden" asp-for="IdNhomXuong" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <!-- Tên nhóm xưởng -->
+    <div class="form-group mb-3">
+        <label asp-for="TenNhomXuong" class="form-label">Tên nhóm xưởng</label>
+        <input asp-for="TenNhomXuong" class="form-control" />
+        <span asp-validation-for="TenNhomXuong" class="text-danger small"></span>
+    </div>
+
+    <!-- Mô tả -->
+    <div class="form-group mb-3">
+        <label asp-for="MoTa" class="form-label">Mô tả</label>
+        <textarea asp-for="MoTa" class="form-control"></textarea>
+        <span asp-validation-for="MoTa" class="text-danger small"></span>
+    </div>
+
+    <!-- Giảng viên -->
+    <div class="form-group mb-3">
+        <label asp-for="IdPhuTrachXuong" class="form-label">Giảng viên phụ trách</label>
+        <select asp-for="IdPhuTrachXuong" class="form-select" asp-items="ViewBag.GiangViens">
+            <option value="">-- Chọn giảng viên --</option>
+        </select>
+        <span asp-validation-for="IdPhuTrachXuong" class="text-danger small"></span>
+    </div>
+
+    <!-- Dự án -->
+    <div class="form-group mb-3">
+        <label asp-for="IdDuAn" class="form-label">Dự án</label>
+        <select asp-for="IdDuAn" class="form-select" asp-items="ViewBag.DuAns">
+            <option value="">-- Chọn dự án --</option>
+        </select>
+        <span asp-validation-for="IdDuAn" class="text-danger small"></span>
+    </div>
+
+    <!-- Nút -->
+    <div class="mt-3 d-flex justify-content-end gap-2">
+        <button type="submit" class="btn btn-warning">Cập nhật</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+    </div>
+</form>

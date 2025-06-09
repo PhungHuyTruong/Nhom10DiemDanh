@@ -1,0 +1,46 @@
+﻿@model API.Data.NhomXuong
+@{
+    Layout = null;
+}
+
+<form asp-action="Create" method="post" class="needs-validation" novalidate>
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <!-- Tên nhóm xưởng -->
+    <div class="mb-3">
+        <label asp-for="TenNhomXuong" class="form-label fw-semibold">Tên nhóm xưởng</label>
+        <input asp-for="TenNhomXuong" class="form-control" placeholder="Nhập tên nhóm xưởng" />
+        <span asp-validation-for="TenNhomXuong" class="text-danger small"></span>
+    </div>
+
+    <!-- Mô tả -->
+    <div class="mb-3">
+        <label asp-for="MoTa" class="form-label fw-semibold">Mô tả</label>
+        <textarea asp-for="MoTa" class="form-control" placeholder="Nhập mô tả..."></textarea>
+        <span asp-validation-for="MoTa" class="text-danger small"></span>
+    </div>
+
+    <!-- Giảng viên phụ trách -->
+    <div class="mb-3">
+        <label asp-for="IdPhuTrachXuong" class="form-label fw-semibold">Giảng viên giảng dạy</label>
+        <select asp-for="IdPhuTrachXuong" class="form-select" asp-items="ViewBag.GiangViens">
+            <option value="">-- Chọn giảng viên --</option>
+        </select>
+        <span asp-validation-for="IdPhuTrachXuong" class="text-danger small"></span>
+    </div>
+
+    <!-- Dự án -->
+    <div class="mb-3">
+        <label asp-for="IdDuAn" class="form-label fw-semibold">Dự án</label>
+        <select asp-for="IdDuAn" class="form-select" asp-items="ViewBag.DuAns">
+            <option value="">-- Chọn dự án --</option>
+        </select>
+        <span asp-validation-for="IdDuAn" class="text-danger small"></span>
+    </div>
+
+    <!-- Nút -->
+    <div class="d-flex justify-content-end mt-4 gap-2">
+        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Hủy</button>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+    </div>
+</form>

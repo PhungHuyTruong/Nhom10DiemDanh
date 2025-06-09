@@ -1,4 +1,5 @@
-﻿@model API.Data.QuanLyBoMon
+﻿
+@model API.Data.QuanLyBoMon
 @{
     Layout = null;
 }
@@ -23,13 +24,7 @@
 
     <!-- Email -->
     <div class="mb-3">
-        <label asp-for="CoSoHoatDong" class="form-label text-dark fw-semibold">CSHD</label>
-        <select asp-for="CoSoHoatDong" class="form-select">
-            <option value="">-- Chọn cơ sở --</option>
-            <option value="Hà Nội">Hà Nội</option>
-            <option value="HCM">HCM</option>
-            <option value="Hải Phòng">Hải Phòng</option>
-        </select>
+        <input type="hidden" asp-for="CoSoHoatDong" value="Chưa có" />
         <span asp-validation-for="CoSoHoatDong" class="text-danger small"></span>
     </div>
 

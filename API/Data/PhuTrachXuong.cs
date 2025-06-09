@@ -23,8 +23,7 @@ namespace API.Data
         [MaxLength(100)]
         public string EmailFPT { get; set; }
 
-        [Required]
-        public Guid IdCoSo { get; set; }
+        public Guid? IdCoSo { get; set; }
 
         public DateTime NgayTao { get; set; } = DateTime.Now;
         public DateTime? NgayCapNhat { get; set; } = DateTime.Now;
@@ -33,7 +32,10 @@ namespace API.Data
 
         // Navigation properties
 
+        public Guid? IdVaiTro { get; set; }
 
+        [JsonIgnore]
+        public virtual VaiTro? VaiTro { get; set; }
         [JsonIgnore]
         public virtual CoSo? CoSo { get; set; }
         [JsonIgnore]

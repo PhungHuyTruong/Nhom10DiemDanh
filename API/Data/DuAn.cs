@@ -18,11 +18,11 @@ namespace API.Data
         public bool TrangThai { get; set; } = true;
 
         // Navigation properties
-        public virtual CapDoDuAn CapDoDuAn { get; set; }
-        public virtual QuanLyBoMon QuanLyBoMon { get; set; }
-        public virtual HocKy HocKy { get; set; }
-        public virtual ICollection<NhomXuong> NhomXuongs { get; set; }
-        public virtual ICollection<LichGiangDay> LichGiangDays { get; set; }
-        public virtual ICollection<LichHoc> LichHocs { get; set; } = new List<LichHoc>();
+        public virtual CapDoDuAn? CapDoDuAn { get; set; }
+        public virtual QuanLyBoMon? QuanLyBoMon { get; set; }
+        public virtual HocKy? HocKy { get; set; }
+        public virtual ICollection<NhomXuong>? NhomXuongs { get; set; }
+        public virtual ICollection<LichGiangDay>? LichGiangDays { get; set; }
+        public virtual ICollection<LichHoc>? LichHocs { get; set; } = new List<LichHoc>();
     }
 }

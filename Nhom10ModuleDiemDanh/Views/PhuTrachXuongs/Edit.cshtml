@@ -1,69 +1,60 @@
-﻿@model API.Data.PhuTrachXuong
+﻿@using API.Data
+@model API.Data.PhuTrachXuong
 
 @{
-    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+    var coSoList = ViewBag.CoSoList as SelectList;
 }
 
-<h1>Create</h1>
+<h1>Edit</h1>
 
 <h4>PhuTrachXuong</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="IdNhanVien" />
 
             <div class="form-group">
-                <label asp-for="TenNhanVien" class="control-label"></label>
+                <label asp-for="TenNhanVien"></label>
                 <input asp-for="TenNhanVien" class="form-control" />
                 <span asp-validation-for="TenNhanVien" class="text-danger"></span>
             </div>
 
             <div class="form-group">
-                <label asp-for="MaNhanVien" class="control-label"></label>
+                <label asp-for="MaNhanVien"></label>
                 <input asp-for="MaNhanVien" class="form-control" />
                 <span asp-validation-for="MaNhanVien" class="text-danger"></span>
             </div>
 
             <div class="form-group">
-                <label asp-for="EmailFE" class="control-label"></label>
+                <label asp-for="EmailFE"></label>
                 <input asp-for="EmailFE" class="form-control" />
                 <span asp-validation-for="EmailFE" class="text-danger"></span>
             </div>
 
             <div class="form-group">
-                <label asp-for="EmailFPT" class="control-label"></label>
+                <label asp-for="EmailFPT"></label>
                 <input asp-for="EmailFPT" class="form-control" />
                 <span asp-validation-for="EmailFPT" class="text-danger"></span>
             </div>
 
             <div class="form-group">
-                <label asp-for="IdCoSo" class="control-label"></label>
-                <select asp-for="IdCoSo" class="form-control" asp-items="ViewBag.IdCoSo">
+                <label asp-for="IdCoSo"></label>
+                <select asp-for="IdCoSo" class="form-control" asp-items="coSoList">
                     <option value="">-- Chọn cơ sở --</option>
                 </select>
                 <span asp-validation-for="IdCoSo" class="text-danger"></span>
             </div>
-
-            <!-- Debug: Hiển thị dữ liệu từ ViewBag.IdCoSo -->
-            <div style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
-                <h5>Danh sách cơ sở nhận được:</h5>
-                @if (ViewBag.IdCoSo != null)
-                {
-                    foreach (var item in (ViewBag.IdCoSo as SelectList))
-                    {
-                        <div>@item.Value - @item.Text</div>
-                    }
-                }
-                else
-                {
-                    <div style="color: red;">Không có dữ liệu cơ sở!</div>
-                }
-            </div>
-
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <label for="IdVaiTro">Vai trò</label>
+                <select asp-for="IdVaiTro" class="form-control" asp-items="ViewBag.VaiTroList">
+                    <option value="">-- Chọn vai trò --</option>
+                </select>
+                <span asp-validation-for="IdVaiTro" class="text-danger"></span>
             </div>
+
+            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
         </form>
     </div>
 </div>
@@ -77,3 +68,4 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
+

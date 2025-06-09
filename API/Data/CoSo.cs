@@ -22,7 +22,7 @@ namespace API.Data
         // Navigation properties
         public virtual DiaDiem? DiaDiem { get; set; }
         public virtual IP? IP { get; set; }
-        public virtual CaHoc? CaHoc { get; set; }
+        public virtual ICollection<CaHoc> CaHocs { get; set; } = new List<CaHoc>();
         public virtual ICollection<PhuTrachXuong> PhuTrachXuongs { get; set; }
         public virtual ICollection<BoMonCoSo> BoMonCoSos { get; set; }
         public virtual ICollection<KHNXCaHoc> KHNXCaHocs { get; set; }

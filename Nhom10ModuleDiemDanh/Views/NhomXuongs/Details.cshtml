@@ -1,0 +1,26 @@
+﻿@model API.Data.NhomXuong
+@{
+    Layout = null;
+}
+
+<dl class="row">
+    <dt class="col-sm-4">Tên nhóm xưởng</dt>
+    <dd class="col-sm-8">@Model.TenNhomXuong</dd>
+
+    <dt class="col-sm-4">Mô tả</dt>
+    <dd class="col-sm-8">@Model.MoTa</dd>
+
+    <dt class="col-sm-4">Giảng viên phụ trách</dt>
+    <dd class="col-sm-8">@Model.PhuTrachXuong?.TenNhanVien</dd>
+
+    <dt class="col-sm-4">Dự án</dt>
+    <dd class="col-sm-8">@Model.DuAn?.TenDuAn</dd>
+
+    <dt class="col-sm-4">Ngày tạo</dt>
+    <dd class="col-sm-8">@Model.NgayTao.ToString("dd/MM/yyyy")</dd>
+
+    <dt class="col-sm-4">Trạng thái</dt>
+    <dd class="col-sm-8">@(Model.TrangThai == 1 ? "Đang hoạt động" : "Ngừng")</dd>
+</dl>
+
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>

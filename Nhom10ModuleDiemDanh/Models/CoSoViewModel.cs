@@ -11,6 +11,6 @@
         public string TrangThai { get; set; }
         public Guid? IdDiaDiem { get; set; }
         public Guid? IdIP { get; set; }
-        public Guid? IdCaHoc { get; set; }
+        //public Guid? IdCaHoc { get; set; }
     }
 }

@@ -69,7 +69,12 @@
                             <td>
                                 <a href="#" class="btn btn-warning btn-sm edit-btn" data-id="@item.value.IdCoSo" data-bs-toggle="modal" data-bs-target="#editModal">✏️</a>
                                 <a href="#" class="btn btn-info btn-sm details-btn" data-id="@item.value.IdCoSo" data-bs-toggle="modal" data-bs-target="#detailsModal">🔍</a>
-                                <a asp-controller="CaHocs" asp-action="Index" class="btn btn-success btn-sm ca-hoc-btn" title="Ca học"><i class="fas fa-clock"></i> Ca học</a>
+                                @* <a asp-controller="CaHocs" asp-action="DanhSachTheoCoSo" asp-route-id="@item.value.IdCoSo" class="btn btn-outline-primary">
+                                    <i class="fas fa-clock"></i> Ca học
+                                </a>  *@
+                                <a asp-controller="CaHocs" asp-action="Index" class="btn btn-success">
+                                    <i class="fas fa-clock"></i> Ca học
+                                </a>
                                 <a asp-controller="Ip" asp-action="Index" class="btn btn-info btn-sm ip-btn" title="IP"><i class="fas fa-network-wired"></i> IP</a>
                                 <a asp-controller="DiaDiems" asp-action="Indexs" class="btn btn-warning btn-sm dia-diem-btn" title="Địa điểm"><i class="fas fa-map-marker-alt"></i> Địa điểm</a>
                             </td>
@@ -147,10 +152,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
         $(document).ready(function () {
-            // AJAX create
+            // Load Create Modal
             $('#createModal').on('show.bs.modal', function () {
                 $.ajax({
                     url: '@Url.Action("Create", "CoSo")',
@@ -165,6 +169,7 @@
                 });
             });
 
+            // Save Create
             $('#saveCreateBtn').click(function () {
                 if ($('#createForm').valid()) {
                     var formData = $('#createForm').serialize();
@@ -187,7 +192,7 @@
                 }
             });
 
-            // AJAX edit
+            // Load Edit Modal
             $('.edit-btn').click(function () {
                 var id = $(this).data('id');
                 $.ajax({
@@ -203,6 +208,7 @@
                 });
             });
 
+            // Save Edit
             $('#saveEditBtn').click(function () {
                 if ($('#editForm').valid()) {
                     var formData = $('#editForm').serialize();
@@ -226,7 +232,7 @@
                 }
             });
 
-            // AJAX details
+            // Load Details Modal
             $('.details-btn').click(function () {
                 var id = $(this).data('id');
                 $.ajax({
@@ -241,7 +247,7 @@
                 });
             });
 
-            // Toggle trạng thái
+            // Toggle Status
             $('.toggle-status').on('change', function () {
                 var checkbox = $(this);
                 var id = checkbox.data('id');

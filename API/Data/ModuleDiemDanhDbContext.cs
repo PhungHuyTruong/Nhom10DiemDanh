@@ -190,11 +190,12 @@ namespace API.Data
             modelBuilder.Entity<CoSo>()
                 .Property(c => c.IdCaHoc)
                 .IsRequired(false);
-        }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-           optionsBuilder.UseSqlServer("Server=DESKTOP-0O61DM6\\TRUNGTT;Database=diemdanhnhom10;Trusted_Connection=True;TrustServerCertificate=True");
+            modelBuilder.Entity<PhuTrachXuong>()
+                .HasOne(pt => pt.VaiTro)
+                .WithMany(vt => vt.PhuTrachXuongs)
+                .HasForeignKey(pt => pt.IdVaiTro)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

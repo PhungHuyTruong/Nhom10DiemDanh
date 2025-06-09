@@ -37,7 +37,7 @@ namespace API.Controllers
                     x.MaBoMon.ToLower().Contains(search) ||
                     x.TenBoMon.ToLower().Contains(search));
             }
-            if(!string.IsNullOrWhiteSpace(status))
+            if (!string.IsNullOrWhiteSpace(status))
             {
                 if (status == "active")
                     query = query.Where(x => x.TrangThai == true);
@@ -45,10 +45,28 @@ namespace API.Controllers
                     query = query.Where(x => x.TrangThai == false);
             }
             var totalItems = await query.CountAsync();
-            var data = await query.OrderByDescending(x => x.NgayTao)
-                                  .Skip((page - 1) * pageSize)
-                                  .Take(pageSize)
-                                  .ToListAsync();
+            var data = await query
+                    .OrderByDescending(x => x.NgayTao)
+                    .Skip((page - 1) * pageSize)
+                     .Take(pageSize)
+                     .Select(x => new
+                     {
+                         x.IDBoMon,
+                         x.MaBoMon,
+                         x.TenBoMon,
+                         // 🔥 Lấy danh sách tên cơ sở hoạt động từ bảng BoMonCoSo
+                         CoSoHoatDong = string.Join(", ", _context.BoMonCoSos
+                        .Where(bcs => bcs.IdBoMon == x.IDBoMon)
+                        .Include(bcs => bcs.CoSo)
+                        .Select(bcs => bcs.CoSo.TenCoSo)
+                        .Distinct()
+                         ),
+                         x.NgayTao,
+                         x.NgayCapNhat,
+                         x.TrangThai
+                     })
+                    .ToListAsync();
+
             return Ok(new
             {
                 data,
@@ -98,9 +116,13 @@ namespace API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] QuanLyBoMon quanLyBoMon)
         {
-           quanLyBoMon.IDBoMon = Guid.NewGuid();
+            quanLyBoMon.IDBoMon = Guid.NewGuid();
             quanLyBoMon.NgayTao = DateTime.Now;
             quanLyBoMon.TrangThai = true; // Default to active status
+            if (string.IsNullOrEmpty(quanLyBoMon.CoSoHoatDong))
+            {
+                quanLyBoMon.CoSoHoatDong = "Chưa có";
+            }
             _context.QuanLyBoMons.Add(quanLyBoMon);
             await _context.SaveChangesAsync();
             return RedirectToAction("Index");

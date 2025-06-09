@@ -20,14 +20,8 @@
         <span asp-validation-for="MaBoMon" class="text-danger"></span>
     </div>
 
-    <div class="form-group">
-        <label asp-for="CoSoHoatDong" class="form-label text-dark fw-semibold">Cơ sở hoạt động</label>
-        <select asp-for="CoSoHoatDong" class="form-select">
-            <option value="">-- Chọn cơ sở --</option>
-            <option value="Hà Nội" selected="@("Hà Nội" == Model.CoSoHoatDong)">Hà Nội</option>
-            <option value="HCM" selected="@("HCM" == Model.CoSoHoatDong)">HCM</option>
-            <option value="Hải Phòng" selected="@("Hải Phòng" == Model.CoSoHoatDong)">Hải Phòng</option>
-        </select>
+    <div class="mb-3">
+        <input type="hidden" asp-for="CoSoHoatDong" value="Chưa có" />
         <span asp-validation-for="CoSoHoatDong" class="text-danger small"></span>
     </div>
 

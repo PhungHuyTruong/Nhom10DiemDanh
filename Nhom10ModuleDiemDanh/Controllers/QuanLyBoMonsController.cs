@@ -89,6 +89,10 @@ namespace Nhom10ModuleDiemDanh.Controllers
             }
             using (HttpClient client = new HttpClient())
             {
+                if (string.IsNullOrEmpty(quanLyBoMon.CoSoHoatDong))
+                {
+                    quanLyBoMon.CoSoHoatDong = "Chưa có";
+                }
                 StringContent content = new StringContent(JsonConvert.SerializeObject(quanLyBoMon), Encoding.UTF8, "application/json");
                 using (var response = await client.PostAsync(apiUrl, content))
                 {
@@ -96,11 +100,11 @@ namespace Nhom10ModuleDiemDanh.Controllers
                     {
                         return RedirectToAction(nameof(Index));
                     }
- 
+
                 }
             }
 
-            return RedirectToAction("Index");
+            return View(quanLyBoMon);
         }
 
         // GET: QuanLyBoMonsController/Edit/5
@@ -198,7 +202,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
             qlbm.TrangThai = !qlbm.TrangThai;
             qlbm.NgayCapNhat = DateTime.Now;
 
-            using(var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient())
             {
                 var json = JsonConvert.SerializeObject(qlbm);
                 var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
@@ -214,6 +218,6 @@ namespace Nhom10ModuleDiemDanh.Controllers
                 }
             }
         }
-       
+
     }
 }

@@ -1,0 +1,91 @@
+﻿@using API.Data
+@model API.Data.PhuTrachXuong
+
+
+@{
+    Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+    var coSoList = ViewBag.CoSoList as List<API.Data.CoSo>;
+}
+
+<h1>Create</h1>
+
+<h4>PhuTrachXuong</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create" method="post">
+            <div class="form-group">
+                <label asp-for="TenNhanVien"></label>
+                <input asp-for="TenNhanVien" class="form-control" />
+                <span asp-validation-for="TenNhanVien" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="MaNhanVien"></label>
+                <input asp-for="MaNhanVien" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EmailFE"></label>
+                <input asp-for="EmailFE" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EmailFPT"></label>
+                <input asp-for="EmailFPT" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="IdCoSo"></label>
+                <select asp-for="IdCoSo" class="form-control" asp-items="ViewBag.CoSoList">
+                    <option value="">-- Chọn cơ sở --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="IdVaiTro">Vai trò</label>
+                <select asp-for="IdVaiTro" class="form-control" asp-items="ViewBag.VaiTroList">
+                    <option value="">-- Chọn vai trò --</option>
+                </select>
+                <span asp-validation-for="IdVaiTro" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Tạo mới</button>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+                $('#form-create').submit(function(e) {
+          e.preventDefault(); // ngăn submit form truyền thống
+
+          const data = {
+            // lấy dữ liệu từ các input
+            name: $('#name').val(),
+            ...
+          };
+
+          fetch('/api/PhuTrachXuongs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          })
+          .then(res => res.json())
+          .then(data => {
+            // Xử lý sau khi tạo thành công
+            alert('Tạo thành công');
+            window.location.href = '/PhuTrachXuongs'; // chuyển trang
+          })
+          .catch(err => alert('Lỗi khi tạo'));
+        });
+    </script>
+}
+
