@@ -1,8 +1,8 @@
 ﻿using API.Data;
+using API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,71 +19,83 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/IPs
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<IP>>> GetIPs()
+        // Lấy danh sách cơ sở
+        [HttpGet("cosos")]
+        public async Task<IActionResult> GetCoSos()
         {
-            return await _context.IPs.ToListAsync();
+            var coSos = await _context.CoSos
+                .Select(cs => new CoSoViewModel
+                {
+                    IdCoSo = cs.IdCoSo,
+                    TenCoSo = cs.TenCoSo,
+                    MaCoSo = cs.MaCoSo,
+                    DiaChi = cs.DiaChi,
+                    SDT = cs.SDT,
+                    Email = cs.Email,
+                    TrangThai = cs.TrangThai ? "Hoạt động" : "Tắt",
+                    IdDiaDiem = cs.IdDiaDiem,
+                    IdCaHoc = cs.IdCaHoc,
+                    IPs = cs.IPs.Select(ip => new IPViewModel
+                    {
+                        IdIP = ip.IdIP,
+                        KieuIP = ip.KieuIP,
+                        IP_DaiIP = ip.IP_DaiIP,
+                        NgayTao = ip.NgayTao,
+                        NgayCapNhat = ip.NgayCapNhat,
+                        TrangThai = ip.TrangThai,
+                        IdCoSo = ip.IdCoSo
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(coSos);
         }
 
-        // GET: api/IPs/5
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var list = await _context.IPs
+                .Select(ip => new IPDto
+                {
+                    IdIP = ip.IdIP,
+                    KieuIP = ip.KieuIP,
+                    IP_DaiIP = ip.IP_DaiIP,
+                    NgayTao = ip.NgayTao,
+                    NgayCapNhat = ip.NgayCapNhat,
+                    TrangThai = ip.TrangThai,
+                    IdCoSo = ip.IdCoSo
+                }).ToListAsync();
+
+            return Ok(list);
+        }
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<IP>> GetIP(Guid id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             var ip = await _context.IPs.FindAsync(id);
+            if (ip == null) return NotFound();
 
-            if (ip == null)
+            var dto = new IPDto
             {
-                return NotFound();
-            }
+                IdIP = ip.IdIP,
+                KieuIP = ip.KieuIP,
+                IP_DaiIP = ip.IP_DaiIP,
+                NgayTao = ip.NgayTao,
+                NgayCapNhat = ip.NgayCapNhat,
+                TrangThai = ip.TrangThai,
+                IdCoSo = ip.IdCoSo
+            };
 
-            return ip;
+            return Ok(dto);
         }
 
-        // PUT: api/IPs/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutIP(Guid id, IP ip)
-        {
-            if (id != ip.IdIP)
-            {
-                return BadRequest();
-            }
-
-            var existingIP = await _context.IPs.FindAsync(id);
-            if (existingIP == null)
-            {
-                return NotFound();
-            }
-
-            existingIP.KieuIP = ip.KieuIP;
-            existingIP.IP_DaiIP = ip.IP_DaiIP;
-            existingIP.TrangThai = ip.TrangThai;
-            existingIP.NgayCapNhat = DateTime.Now;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!IPExists(id))
-                {
-                    return NotFound();
-                }
-                throw;
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/IPs
-        // POST: api/IPs
         [HttpPost]
-        public async Task<ActionResult<IP>> PostIP(IP ip)
+        public async Task<IActionResult> Create(IPDto dto)
         {
-            if (ip == null || string.IsNullOrEmpty(ip.KieuIP) || string.IsNullOrEmpty(ip.IP_DaiIP))
+            if (!await _context.CoSos.AnyAsync(cs => cs.IdCoSo == dto.IdCoSo))
             {
-                return BadRequest("KieuIP and IP_DaiIP are required.");
+                ModelState.AddModelError("IdCoSo", "Cơ sở không tồn tại.");
+                return BadRequest(ModelState);
             }
 
             if (!ModelState.IsValid)
@@ -91,52 +103,90 @@ namespace API.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Tự tạo IdIP nếu chưa có
-            if (ip.IdIP == Guid.Empty)
+            var ip = new IP
             {
-                ip.IdIP = Guid.NewGuid();
-            }
-
-            ip.NgayTao = DateTime.Now;
+                IdIP = Guid.NewGuid(),
+                KieuIP = dto.KieuIP,
+                IP_DaiIP = dto.IP_DaiIP,
+                NgayTao = DateTime.Now,
+                TrangThai = dto.TrangThai,
+                IdCoSo = dto.IdCoSo
+            };
 
             _context.IPs.Add(ip);
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (IPExists(ip.IdIP))
-                {
-                    return Conflict();
-                }
-                throw;
-            }
-
-            return CreatedAtAction(nameof(GetIP), new { id = ip.IdIP }, ip);
-        }
-
-
-        // DELETE: api/IPs/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteIP(Guid id)
-        {
-            var ip = await _context.IPs.FindAsync(id);
-            if (ip == null)
-            {
-                return NotFound();
-            }
-
-            _context.IPs.Remove(ip);
             await _context.SaveChangesAsync();
 
+            dto.IdIP = ip.IdIP;
+            dto.NgayTao = ip.NgayTao;
+
+            return CreatedAtAction(nameof(GetById), new { id = dto.IdIP }, dto);
+        }
+
+        [HttpPost("{idCoSo}")]
+        public async Task<IActionResult> CreateWithCoSo(Guid idCoSo, IPDto dto)
+        {
+            if (!await _context.CoSos.AnyAsync(cs => cs.IdCoSo == idCoSo))
+            {
+                ModelState.AddModelError("IdCoSo", "Cơ sở không tồn tại.");
+                return BadRequest(ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var ip = new IP
+            {
+                IdIP = Guid.NewGuid(),
+                KieuIP = dto.KieuIP,
+                IP_DaiIP = dto.IP_DaiIP,
+                NgayTao = DateTime.Now,
+                TrangThai = dto.TrangThai,
+                IdCoSo = idCoSo
+            };
+
+            _context.IPs.Add(ip);
+            await _context.SaveChangesAsync();
+
+            dto.IdIP = ip.IdIP;
+            dto.NgayTao = ip.NgayTao;
+            dto.IdCoSo = ip.IdCoSo;
+
+            return CreatedAtAction(nameof(GetById), new { id = dto.IdIP }, dto);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, IPDto dto)
+        {
+            if (!await _context.CoSos.AnyAsync(cs => cs.IdCoSo == dto.IdCoSo))
+            {
+                ModelState.AddModelError("IdCoSo", "Cơ sở không tồn tại.");
+                return BadRequest(ModelState);
+            }
+
+            var ip = await _context.IPs.FindAsync(id);
+            if (ip == null) return NotFound();
+
+            ip.KieuIP = dto.KieuIP;
+            ip.IP_DaiIP = dto.IP_DaiIP;
+            ip.NgayCapNhat = DateTime.Now;
+            ip.TrangThai = dto.TrangThai;
+            ip.IdCoSo = dto.IdCoSo;
+
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
-        private bool IPExists(Guid id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
         {
-            return _context.IPs.Any(e => e.IdIP == id);
+            var ip = await _context.IPs.FindAsync(id);
+            if (ip == null) return NotFound();
+
+            _context.IPs.Remove(ip);
+            await _context.SaveChangesAsync();
+            return NoContent();
         }
     }
 }

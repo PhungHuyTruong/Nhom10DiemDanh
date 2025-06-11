@@ -2,44 +2,64 @@
 
 @{
     Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+    var idCoSo = ViewBag.IdCoSo as Guid? ?? Guid.Empty;
 }
 
-<h1>Danh sách IP</h1>
+<h2 class="mb-3">Danh sách IP của cơ sở @idCoSo</h2>
 
 <p>
-    <a asp-action="Create" class="btn btn-primary">Thêm mới IP</a>
+    <a asp-action="Create" asp-route-idCoSo="@idCoSo" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Thêm mới IP
+    </a>
+    <a asp-controller="CoSo" asp-action="Index" class="btn btn-secondary ms-2">
+        ← Quay lại danh sách cơ sở
+    </a>
 </p>
 
-<table class="table table-bordered table-striped">
-    <thead>
+<table class="table table-bordered table-striped align-middle">
+    <thead class="table-dark">
         <tr>
             <th>Kiểu IP</th>
             <th>Địa chỉ IP</th>
             <th>Trạng thái</th>
-            <th>Hành động</th>
+            <th style="width: 160px;">Hành động</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @if (!Model.Any())
         {
             <tr>
-                <td>@item.KieuIP</td>
-                <td>@item.IP_DaiIP</td>
-                <td>
-                    @if (item.TrangThai)
-                    {
-                        <span class="badge bg-success">Hoạt động</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Tạm khóa</span>
-                    }
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.IdIP" class="btn btn-sm btn-warning">Sửa</a>
-                    <a asp-action="Delete" asp-route-id="@item.IdIP" class="btn btn-sm btn-danger" onclick="return confirm('Xác nhận xóa IP này?');">Xóa</a>
-                </td>
+                <td colspan="4" class="text-center text-muted">Không có IP nào được cấu hình cho cơ sở này.</td>
             </tr>
+        }
+        else
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.KieuIP</td>
+                    <td>@item.IP_DaiIP</td>
+                    <td>
+                        @if (item.TrangThai)
+                        {
+                            <span class="badge bg-success">Hoạt động</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Tạm khóa</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.IdIP" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Sửa
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@item.IdIP" class="btn btn-sm btn-danger"
+                           onclick="return confirm('Xác nhận xóa IP này?');">
+                            <i class="fas fa-trash-alt"></i> Xóa
+                        </a>
+                    </td>
+                </tr>
+            }
         }
     </tbody>
 </table>

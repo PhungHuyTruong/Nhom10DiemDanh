@@ -2,32 +2,96 @@
 
 @{
     Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+    ViewData["Title"] = "Thêm mới IP";
 }
 
 <h1>Thêm mới IP</h1>
 
-<form asp-action="Create" method="post">
+<form id="createIpForm">
     <div class="mb-3">
-        <label asp-for="KieuIP" class="form-label"></label>
-        <input asp-for="KieuIP" class="form-control" />
-        <span asp-validation-for="KieuIP" class="text-danger"></span>
+        <label for="IdCoSo" class="form-label">Cơ sở</label>
+        <select id="IdCoSo" name="IdCoSo" class="form-control" required>
+            <option value="">-- Chọn cơ sở --</option>
+        </select>
+        <span class="text-danger" id="IdCoSoError"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="IP_DaiIP" class="form-label"></label>
-        <input asp-for="IP_DaiIP" class="form-control" />
-        <span asp-validation-for="IP_DaiIP" class="text-danger"></span>
+        <label for="KieuIP" class="form-label">Kiểu IP</label>
+        <input id="KieuIP" name="KieuIP" class="form-control" required />
+        <span class="text-danger" id="KieuIPError"></span>
+    </div>
+
+    <div class="mb-3">
+        <label for="IP_DaiIP" class="form-label">Địa chỉ IP</label>
+        <input id="IP_DaiIP" name="IP_DaiIP" class="form-control" required />
+        <span class="text-danger" id="IP_DaiIPError"></span>
     </div>
 
     <div class="form-check mb-3">
-        <input asp-for="TrangThai" class="form-check-input" />
-        <label asp-for="TrangThai" class="form-check-label"></label>
+        <input id="TrangThai" name="TrangThai" type="checkbox" class="form-check-input" checked />
+        <label for="TrangThai" class="form-check-label">Trạng thái</label>
     </div>
 
     <button type="submit" class="btn btn-primary">Lưu</button>
-    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    <a asp-action="Index" asp-route-id="@ViewBag.IdCoSo" class="btn btn-secondary">Hủy</a>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var idCoSo = "@ViewBag.IdCoSo";
+
+            // Lấy danh sách cơ sở từ API
+            $.getJSON("/api/IPs/cosos", function (data) {
+                var select = $("#IdCoSo");
+                $.each(data, function (index, item) {
+                    select.append(`<option value="${item.idCoSo}" ${item.idCoSo === idCoSo ? 'selected' : ''}>${item.tenCoSo}</option>`);
+                });
+                if (idCoSo && $("#IdCoSo option[value='" + idCoSo + "']").length === 0) {
+                    select.append(`<option value="${idCoSo}" selected>Không tìm thấy cơ sở</option>`);
+                }
+            }).fail(function () {
+                $("#IdCoSo").append(`<option value="" selected>Lỗi tải danh sách cơ sở</option>`);
+            });
+
+            // Xử lý submit form qua API
+            $("#createIpForm").submit(function (e) {
+                e.preventDefault();
+                var formData = {
+                    KieuIP: $("#KieuIP").val().trim(),
+                    IP_DaiIP: $("#IP_DaiIP").val().trim(),
+                    TrangThai: $("#TrangThai").is(":checked"),
+                    IdCoSo: $("#IdCoSo").val()
+                };
+
+                if (!formData.KieuIP || !formData.IP_DaiIP || !formData.IdCoSo) {
+                    $("#KieuIPError").text(!formData.KieuIP ? "Kiểu IP là bắt buộc." : "");
+                    $("#IP_DaiIPError").text(!formData.IP_DaiIP ? "Địa chỉ IP là bắt buộc." : "");
+                    $("#IdCoSoError").text(!formData.IdCoSo ? "Cơ sở là bắt buộc." : "");
+                    return;
+                }
+
+                var apiUrl = idCoSo ? `/api/IPs/${idCoSo}` : "/api/IPs";
+
+                $.ajax({
+                    url: apiUrl,
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        window.location.href = "/IP/Index/" + formData.IdCoSo;
+                    },
+                    error: function (xhr) {
+                        var errors = xhr.responseJSON?.errors || {};
+                        $("#IdCoSoError").text(errors.IdCoSo?.[0] || "");
+                        $("#KieuIPError").text(errors.KieuIP?.[0] || "");
+                        $("#IP_DaiIPError").text(errors.IP_DaiIP?.[0] || "");
+                    }
+                });
+            });
+        });
+    </script>
 }

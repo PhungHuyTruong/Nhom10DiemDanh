@@ -8,9 +8,9 @@
         public string? DiaChi { get; set; }
         public string? SDT { get; set; }
         public string? Email { get; set; }
-        public string TrangThai { get; set; } // "Hoạt động" hoặc "Tắt"
+        public string? TrangThai { get; set; } // "Hoạt động" hoặc "Tắt"
         public Guid? IdDiaDiem { get; set; }
-        public Guid? IdIP { get; set; }
         public Guid? IdCaHoc { get; set; }
+        public List<IPViewModel> IPs { get; set; } = new List<IPViewModel>();
     }
 }

@@ -155,7 +155,7 @@ namespace API.Data
             modelBuilder.Entity<LichHoc>()
                 .HasOne(l => l.DuAn)
                 .WithMany(d => d.LichHocs)
-                .HasForeignKey(l => l.IDHocKy) 
+                .HasForeignKey(l => l.IDHocKy)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<LichHoc>()
@@ -179,6 +179,12 @@ namespace API.Data
             modelBuilder.Entity<CoSo>()
                 .Property(c => c.IdCaHoc)
                 .IsRequired(false);
+            modelBuilder.Entity<IP>()
+    .HasOne(ip => ip.CoSo)
+    .WithMany(cs => cs.IPs)
+    .HasForeignKey(ip => ip.IdCoSo)
+    .OnDelete(DeleteBehavior.Cascade); // hoặc Restrict
+
         }
     }
 }

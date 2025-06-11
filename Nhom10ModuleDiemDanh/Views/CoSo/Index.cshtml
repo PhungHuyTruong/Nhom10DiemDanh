@@ -63,15 +63,15 @@
                     <a href="#" class="edit-btn" data-id="@item.value.IdCoSo" data-bs-toggle="modal" data-bs-target="#editModal">Edit<i class="fas fa-edit"></i></a> |
                     <a href="#" class="details-btn" data-id="@item.value.IdCoSo" data-bs-toggle="modal" data-bs-target="#detailsModal">Details<i class="fas fa-info-circle"></i></a> |
                     @* <a asp-action="Delete" asp-route-id="@item.value.IdCoSo"><i class="fas fa-trash"></i></a> *@
-                    <a asp-controller="CaHocs" asp-action="Index" @* asp-route-id="@item.value.IdCoSo" *@ class="ca-hoc-btn">
+                    <a asp-controller="CaHocs" asp-action="Index" class="ca-hoc-btn">
                         <i class="fas fa-clock"></i> Ca học
                     </a> |
 
-                    <a asp-controller="Ip" asp-action="Index" @* asp-route-id="@item.value.IdCoSo" *@ class="ip-btn">
+                    <a asp-controller="IP" asp-action="Index" asp-route-id="@item.value.IdCoSo" class="ip-btn">
                         <i class="fas fa-network-wired"></i> IP
                     </a> |
 
-                    <a asp-controller="DiaDiems" asp-action="Indexs" @* asp-route-id="@item.value.IdCoSo"  *@class="dia-diem-btn">
+                    <a asp-controller="DiaDiems" asp-action="Indexs" class="dia-diem-btn">
                         <i class="fas fa-map-marker-alt"></i> Địa điểm
                     </a>
                 </td>

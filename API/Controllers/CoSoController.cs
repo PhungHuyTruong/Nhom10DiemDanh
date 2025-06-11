@@ -1,8 +1,11 @@
 ﻿using API.Data;
 using API.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -19,10 +22,10 @@ namespace API.Controllers
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CoSoViewModel>>> GetCoSos(
-     [FromQuery] string tenCoSo = null,
-     [FromQuery] string trangThai = null)
+            [FromQuery] string tenCoSo = null,
+            [FromQuery] string trangThai = null)
         {
-            var coSos = _context.CoSos.AsQueryable();
+            var coSos = _context.CoSos.Include(c => c.IPs).AsQueryable();
 
             if (!string.IsNullOrEmpty(tenCoSo))
             {
@@ -45,8 +48,14 @@ namespace API.Controllers
                 Email = c.Email,
                 TrangThai = c.TrangThai ? "Hoạt động" : "Tắt",
                 IdDiaDiem = c.IdDiaDiem,
-                IdIP = c.IdIP,
-                IdCaHoc = c.IdCaHoc
+                IdCaHoc = c.IdCaHoc,
+
+                IPs = c.IPs.Select(ip => new IPViewModel
+                {
+                    IdIP = ip.IdIP,
+                    KieuIP = ip.KieuIP,
+                    IP_DaiIP = ip.IP_DaiIP
+                }).ToList()
             }).ToListAsync();
 
             return Ok(coSoViewModels);
@@ -55,7 +64,7 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CoSoViewModel>> GetCoSo(Guid id)
         {
-            var coSo = await _context.CoSos.FirstOrDefaultAsync(c => c.IdCoSo == id);
+            var coSo = await _context.CoSos.Include(c => c.IPs).FirstOrDefaultAsync(c => c.IdCoSo == id);
 
             if (coSo == null)
             {
@@ -72,8 +81,14 @@ namespace API.Controllers
                 Email = coSo.Email,
                 TrangThai = coSo.TrangThai ? "Hoạt động" : "Tắt",
                 IdDiaDiem = coSo.IdDiaDiem,
-                IdIP = coSo.IdIP,
-                IdCaHoc = coSo.IdCaHoc
+                IdCaHoc = coSo.IdCaHoc,
+
+                IPs = coSo.IPs.Select(ip => new IPViewModel
+                {
+                    IdIP = ip.IdIP,
+                    KieuIP = ip.KieuIP,
+                    IP_DaiIP = ip.IP_DaiIP
+                }).ToList()
             };
 
             return Ok(coSoViewModel);
@@ -96,7 +111,6 @@ namespace API.Controllers
                 Email = model.Email,
                 TrangThai = model.TrangThai == "Hoạt động",
                 IdDiaDiem = model.IdDiaDiem,
-                IdIP = model.IdIP,
                 IdCaHoc = model.IdCaHoc
             };
 
@@ -104,6 +118,9 @@ namespace API.Controllers
             await _context.SaveChangesAsync();
 
             model.IdCoSo = coSo.IdCoSo;
+
+            // Lưu ý: IPs của CoSo sẽ tạo riêng (nếu cần), không tạo cùng CoSo ở đây.
+
             return CreatedAtAction(nameof(GetCoSo), new { id = coSo.IdCoSo }, model);
         }
 
@@ -128,9 +145,10 @@ namespace API.Controllers
             coSo.Email = model.Email;
             coSo.TrangThai = model.TrangThai == "Hoạt động";
             coSo.IdDiaDiem = model.IdDiaDiem;
-            coSo.IdIP = model.IdIP;
             coSo.IdCaHoc = model.IdCaHoc;
             coSo.NgayCapNhat = DateTime.Now;
+
+            // Lưu ý: Update IPs riêng nếu cần.
 
             await _context.SaveChangesAsync();
             return NoContent();

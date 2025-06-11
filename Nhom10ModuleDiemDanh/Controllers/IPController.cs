@@ -1,118 +1,147 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-using System.Text;
-using API.Data;
+﻿using API.Data;
+using API.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Nhom10ModuleDiemDanh.Controllers
 {
     public class IPController : Controller
     {
-        private readonly HttpClient _client;
+        private readonly ModuleDiemDanhDbContext _context;
 
-        public IPController(IHttpClientFactory factory)
+        public IPController(ModuleDiemDanhDbContext context)
         {
-            var client = factory.CreateClient("MyApi");
-            client.BaseAddress = new Uri("https://localhost:7296/api/");
-            _client = client;
+            _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(Guid id)
         {
-            var response = await _client.GetAsync("IPs");
+            var data = await _context.IPs
+                .Where(ip => ip.IdCoSo == id)
+                .Select(ip => new IP
+                {
+                    IdIP = ip.IdIP,
+                    KieuIP = ip.KieuIP,
+                    IP_DaiIP = ip.IP_DaiIP,
+                    NgayTao = ip.NgayTao,
+                    NgayCapNhat = ip.NgayCapNhat,
+                    TrangThai = ip.TrangThai,
+                    IdCoSo = ip.IdCoSo
+                })
+                .ToListAsync();
 
-            if (!response.IsSuccessStatusCode)
-            {
-                return View(new List<IP>());
-            }
-
-            var json = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return View(new List<IP>());
-            }
-
-            var data = JsonSerializer.Deserialize<List<IP>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            return View(data);
+            ViewBag.IdCoSo = id; // để hiển thị trong View nếu cần
+            return View(data ?? new List<IP>());
         }
 
-        public IActionResult Create() => View();
+        public IActionResult Create(Guid? idCoSo)
+        {
+            ViewBag.IdCoSo = idCoSo;
+            return View(new IP());
+        }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(IP model)
         {
-            // Kiểm tra trước khi gửi
             if (string.IsNullOrWhiteSpace(model.KieuIP) || string.IsNullOrWhiteSpace(model.IP_DaiIP))
             {
                 ModelState.AddModelError(string.Empty, "KieuIP and IP_DaiIP are required.");
                 return View(model);
             }
 
-            var json = JsonSerializer.Serialize(model);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _client.PostAsync("IPs", content);
-
-            if (response.IsSuccessStatusCode)
+            var ip = new IP
             {
-                return RedirectToAction("Index");
-            }
-            else
-            {
-                // Lấy lỗi từ response để debug
-                var errorMsg = await response.Content.ReadAsStringAsync();
-                ModelState.AddModelError(string.Empty, $"API error: {errorMsg}");
-                return RedirectToAction("Index");
-            }
+                IdIP = Guid.NewGuid(),
+                KieuIP = model.KieuIP,
+                IP_DaiIP = model.IP_DaiIP,
+                NgayTao = DateTime.Now,
+                TrangThai = model.TrangThai,
+                IdCoSo = model.IdCoSo
+            };
+
+            _context.IPs.Add(ip);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", new { id = model.IdCoSo });
         }
-
 
         public async Task<IActionResult> Edit(Guid id)
         {
-            var response = await _client.GetAsync($"IPs/{id}");
-            if (!response.IsSuccessStatusCode)
+            var ip = await _context.IPs.FindAsync(id);
+            if (ip == null)
             {
                 return NotFound();
             }
-
-            var json = await response.Content.ReadAsStringAsync();
-            var ip = JsonSerializer.Deserialize<IP>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             return View(ip);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, IP model)
         {
-            var json = JsonSerializer.Serialize(model);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            if (id != model.IdIP)
+            {
+                return BadRequest();
+            }
 
-            var response = await _client.PutAsync($"IPs/{id}", content);
-            if (response.IsSuccessStatusCode)
-                return RedirectToAction("Index");
-
-            return View(model);
-        }
-
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            var response = await _client.GetAsync($"IPs/{id}");
-            if (!response.IsSuccessStatusCode)
+            var ip = await _context.IPs.FindAsync(id);
+            if (ip == null)
             {
                 return NotFound();
             }
 
-            var json = await response.Content.ReadAsStringAsync();
-            var ip = JsonSerializer.Deserialize<IP>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            ip.KieuIP = model.KieuIP;
+            ip.IP_DaiIP = model.IP_DaiIP;
+            ip.NgayCapNhat = DateTime.Now;
+            ip.TrangThai = model.TrangThai;
+            ip.IdCoSo = model.IdCoSo;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await _context.IPs.AnyAsync(e => e.IdIP == id))
+                {
+                    return NotFound();
+                }
+                throw;
+            }
+
+            return RedirectToAction("Index", new { id = model.IdCoSo });
+        }
+
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var ip = await _context.IPs.FindAsync(id);
+            if (ip == null)
+            {
+                return NotFound();
+            }
 
             return View(ip);
         }
 
         [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var response = await _client.DeleteAsync($"IPs/{id}");
-            return RedirectToAction("Index");
-        }
+            var ip = await _context.IPs.FindAsync(id);
+            if (ip == null)
+            {
+                return NotFound();
+            }
 
+            _context.IPs.Remove(ip);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index", new { id = ip.IdCoSo });
+        }
     }
 }
