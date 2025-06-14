@@ -11,7 +11,7 @@ namespace Nhom10ModuleDiemDanh.Services
         public BoMonCoSoService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _apiBaseUrl = configuration["ApiBaseUrl"] ?? "https://localhost:7296/";
+            _apiBaseUrl = configuration["ApiBaseUrl"] ?? "https://localhost:5017/";
             _httpClient.BaseAddress = new Uri(_apiBaseUrl);
         }
 

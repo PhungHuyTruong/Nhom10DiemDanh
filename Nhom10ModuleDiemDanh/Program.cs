@@ -15,6 +15,13 @@ builder.Services.AddHttpClient("ApiClient", client =>
     client.BaseAddress = new Uri("http://localhost:5017/api/");
     client.Timeout = TimeSpan.FromSeconds(30);
 });
+builder.Services.AddSession(options =>
+{
+    // Cài đặt thời gian timeout cho session, ví dụ 20 phút
+    options.IdleTimeout = TimeSpan.FromMinutes(20);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 // Add authentication
 builder.Services.AddAuthentication(options =>
@@ -44,6 +51,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 

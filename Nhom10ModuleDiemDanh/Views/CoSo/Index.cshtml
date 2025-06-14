@@ -78,6 +78,14 @@
                     <a asp-controller="DiaDiems" asp-action="Indexs" class="dia-diem-btn">
                         <i class="fas fa-map-marker-alt"></i> Địa điểm
                     </a>
+                    @* sửa ở đây *@
+                    <a asp-controller="DiaDiems"
+                       asp-action="ListByCoSo"
+                       asp-route-idCoSo="@item.value.IdCoSo"
+                       class="btn btn-outline-info"
+                       target="_self">
+                        <i class="fas fa-map-marker-alt"></i> Địa điểm
+                    </a>
                 </td>
             </tr>
         }

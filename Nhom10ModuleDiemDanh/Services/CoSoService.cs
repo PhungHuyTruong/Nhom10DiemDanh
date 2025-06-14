@@ -10,7 +10,7 @@ namespace Nhom10ModuleDiemDanh.Services
         public CoSoService(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("https://localhost:7296/"); // Thay đổi port nếu cần
+            _httpClient.BaseAddress = new Uri("https://localhost:5017/"); // Thay đổi port nếu cần
         }
 
         public async Task<List<CoSoViewModel>> GetCoSosAsync(string tenCoSo, string trangThai)

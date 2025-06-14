@@ -176,9 +176,37 @@ namespace API.Data
                 .HasForeignKey(lsdd => lsdd.IdNXCH)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<CoSo>()
-                .Property(c => c.IdCaHoc)
-                .IsRequired(false);
+            modelBuilder.Entity<CoSo>(entity =>
+            {
+                // Cấu hình khóa chính
+                entity.HasKey(e => e.IdCoSo);
+
+                // Cấu hình độ dài chuỗi nếu chưa dùng DataAnnotation
+                entity.Property(e => e.TenCoSo).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.MaCoSo).HasMaxLength(50);
+                entity.Property(e => e.DiaChi).HasMaxLength(500);
+                entity.Property(e => e.SDT).HasMaxLength(20);
+                entity.Property(e => e.Email).HasMaxLength(100);
+
+                // 1 CoSo có nhiều DiaDiem
+                entity.HasMany(e => e.DiaDiems)
+                      .WithOne(d => d.CoSos) // navigation ở phía DiaDiem
+                      .HasForeignKey(d => d.IdCoSo)
+                      .IsRequired(false); // nếu IdCoSo trong DiaDiem là nullable
+
+                // 1 CoSo có 1 IP
+                entity.HasOne(e => e.IP)
+                      .WithMany() // nếu class IP không có navigation ngược
+                      .HasForeignKey(e => e.IdIP)
+                      .IsRequired(false);
+
+                // 1 CoSo có 1 CaHoc
+                entity.HasOne(e => e.CaHoc)
+                      .WithMany() // nếu class CaHoc không có navigation ngược
+                      .HasForeignKey(e => e.IdCaHoc)
+                      .IsRequired(false);
+            });
+
         }
     }
 }

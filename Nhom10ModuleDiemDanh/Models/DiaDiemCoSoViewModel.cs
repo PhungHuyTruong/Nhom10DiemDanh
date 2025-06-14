@@ -1,9 +1,8 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace API.Data
+namespace Nhom10ModuleDiemDanh.Models
 {
-    public class DiaDiem
+    public class DiaDiemCoSoViewModel
     {
         [Key]
         public Guid IdDiaDiem { get; set; } = Guid.NewGuid();
@@ -21,10 +20,5 @@ namespace API.Data
         public DateTime? NgayCapNhat { get; set; }
 
         public bool TrangThai { get; set; } = true;
-
-
-        // Navigation properties
-        public virtual CoSo? CoSos { get; set; }
-        public virtual ICollection<LichGiangDay>? LichGiangDays { get; set; }
     }
 }
