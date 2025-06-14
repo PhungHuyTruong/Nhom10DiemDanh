@@ -10,5 +10,6 @@ namespace Nhom10ModuleDiemDanh.Services
         Task UpdateKeHoach(KeHoachViewModel model);
         Task DeleteKeHoach(Guid id);
         Task ToggleStatus(Guid id);
+        Task<IEnumerable<dynamic>> GetDuAnList(); // Thêm phương thức này
     }
 }

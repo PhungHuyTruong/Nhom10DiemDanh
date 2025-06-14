@@ -1,4 +1,6 @@
-﻿using Nhom10ModuleDiemDanh.Models;
+﻿using API.Data;
+using Microsoft.EntityFrameworkCore;
+using Nhom10ModuleDiemDanh.Models;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -11,11 +13,13 @@ namespace Nhom10ModuleDiemDanh.Services
     public class KeHoachService : IKeHoachService
     {
         private readonly HttpClient _httpClient;
+        private readonly ModuleDiemDanhDbContext _context;
         private readonly string _apiBaseUrl = "https://localhost:7296/";
 
-        public KeHoachService(HttpClient httpClient)
+        public KeHoachService(HttpClient httpClient, ModuleDiemDanhDbContext context)
         {
             _httpClient = httpClient;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public async Task<IEnumerable<KeHoachViewModel>> GetAllKeHoachs(string tuKhoa = "", string trangThai = "", string idBoMon = "", string idCapDoDuAn = "", string idHocKy = "", string namHoc = "")
@@ -29,27 +33,24 @@ namespace Nhom10ModuleDiemDanh.Services
             if (!string.IsNullOrEmpty(namHoc)) queryParams.Add($"namHoc={Uri.EscapeDataString(namHoc)}");
 
             var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
-            var response = await _httpClient.GetAsync($"{_apiBaseUrl}{queryString}");
+            var response = await _httpClient.GetAsync($"{_apiBaseUrl}KeHoach{queryString}");
 
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
                 return JsonSerializer.Deserialize<IEnumerable<KeHoachViewModel>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             }
-
             return new List<KeHoachViewModel>();
         }
 
         public async Task<KeHoachViewModel> GetKeHoachById(Guid id)
         {
-            var response = await _httpClient.GetAsync($"{_apiBaseUrl}/{id}");
-
+            var response = await _httpClient.GetAsync($"{_apiBaseUrl}KeHoach/{id}");
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
                 return JsonSerializer.Deserialize<KeHoachViewModel>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             }
-
             return null;
         }
 
@@ -57,11 +58,12 @@ namespace Nhom10ModuleDiemDanh.Services
         {
             var json = JsonSerializer.Serialize(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync(_apiBaseUrl, content);
+            var response = await _httpClient.PostAsync(_apiBaseUrl + "KeHoach", content);
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception("Không thể tạo kế hoạch.");
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception("Không thể tạo kế hoạch: " + error);
             }
         }
 
@@ -69,31 +71,48 @@ namespace Nhom10ModuleDiemDanh.Services
         {
             var json = JsonSerializer.Serialize(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PutAsync($"{_apiBaseUrl}/{model.IdKeHoach}", content);
+            var response = await _httpClient.PutAsync($"{_apiBaseUrl}KeHoach/{model.IdKeHoach}", content);
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception("Không thể cập nhật kế hoạch.");
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception("Không thể cập nhật kế hoạch: " + error);
             }
         }
 
         public async Task DeleteKeHoach(Guid id)
         {
-            var response = await _httpClient.DeleteAsync($"{_apiBaseUrl}/{id}");
-
+            var response = await _httpClient.DeleteAsync($"{_apiBaseUrl}KeHoach/{id}");
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception("Không thể xóa kế hoạch.");
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception("Không thể xóa kế hoạch: " + error);
             }
         }
 
         public async Task ToggleStatus(Guid id)
         {
-            var response = await _httpClient.PostAsync($"{_apiBaseUrl}/ToggleStatus/{id}", null);
-
+            var response = await _httpClient.PostAsync($"{_apiBaseUrl}KeHoach/ToggleStatus/{id}", null);
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception("Không thể cập nhật trạng thái.");
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception("Không thể cập nhật trạng thái: " + error);
+            }
+        }
+
+        public async Task<IEnumerable<dynamic>> GetDuAnList()
+        {
+            try
+            {
+                var duAns = await _context.DuAns
+                    .Where(d => d.TrangThai) // Chỉ lấy dự án có trạng thái true
+                    .Select(d => new { idDuAn = d.IdDuAn, tenDuAn = d.TenDuAn })
+                    .ToListAsync();
+                return duAns;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi truy vấn danh sách dự án: " + ex.Message);
             }
         }
     }

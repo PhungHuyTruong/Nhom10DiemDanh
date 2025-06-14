@@ -54,14 +54,17 @@ builder.Services.AddHttpClient<IBoMonCoSoService, BoMonCoSoService>(client =>
 
 builder.Services.AddHttpClient<IKeHoachService, KeHoachService>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7296/"); // �?t BaseAddress cho KeHoachService
+    client.BaseAddress = new Uri("https://localhost:7286/");
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 });
+
+builder.Services.AddScoped<IKeHoachService, KeHoachService>();
 
 //builder.Services.AddHttpClient("MyApi", client =>
 //{
 //    client.BaseAddress = new Uri("https://localhost:7296/api/");
 //});
-
+ 
 
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(options =>

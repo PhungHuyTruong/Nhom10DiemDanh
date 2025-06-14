@@ -81,19 +81,51 @@ namespace Nhom10ModuleDiemDanh.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(KeHoachViewModel model)
+        public async Task<IActionResult> Create([FromBody] KeHoachViewModel model)
         {
-            if (ModelState.IsValid)
+            try
             {
+                if (model == null)
+                {
+                    return Json(new { success = false, message = "Dữ liệu không được để trống" });
+                }
+
+                if (string.IsNullOrEmpty(model.TenKeHoach))
+                {
+                    return Json(new { success = false, message = "Tên kế hoạch không được để trống" });
+                }
+
+                if (string.IsNullOrEmpty(model.NoiDung))
+                {
+                    return Json(new { success = false, message = "Nội dung không được để trống" });
+                }
+
                 if (model.ThoiGianBatDau >= model.ThoiGianKetThuc)
                 {
-                    ModelState.AddModelError("", "Thời gian kết thúc phải lớn hơn thời gian bắt đầu.");
-                    return View(model);
+                    return Json(new { success = false, message = "Thời gian kết thúc phải lớn hơn thời gian bắt đầu" });
                 }
+
                 await _keHoachService.CreateKeHoach(model);
                 return Json(new { success = true });
             }
-            return View(model);
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi khi tạo kế hoạch: " + ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetDuAnList()
+        {
+            try
+            {
+                var duAns = await _keHoachService.GetDuAnList();
+                return Json(duAns);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi khi lấy danh sách dự án: " + ex.Message });
+            }
         }
 
         public async Task<IActionResult> Edit(Guid id)

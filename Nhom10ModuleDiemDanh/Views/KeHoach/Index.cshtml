@@ -180,63 +180,77 @@
 
     <script>
         $(document).ready(function () {
-            // Load Create Modal
+            // Khởi tạo validation
+            var $createForm = $('#createForm');
+            $createForm.removeData('validator');
+            $createForm.removeData('unobtrusiveValidation');
+            $.validator.unobtrusive.parse($createForm);
+
             $('#createModal').on('show.bs.modal', function () {
                 $.ajax({
                     url: '@Url.Action("Create", "KeHoach")',
                     type: 'GET',
                     success: function (data) {
                         $('#createModalBody').html(data);
+                        // Gọi phương thức GetDuAnList từ service
                         $.ajax({
-                            url: 'https://localhost:7296/api/DuAn',
+                            url: '@Url.Action("GetDuAnList", "KeHoach")',
                             type: 'GET',
+                            timeout: 5000,
                             success: function (duAns) {
                                 var select = $('#IdDuAn');
                                 select.empty();
-                                select.append('<option value="">Chọn dự án</option>');
-                                $.each(duAns, function (i, item) {
-                                    if (item.trangThai) {
-                                        select.append('<option value="' + item.idDuAn + '">' + item.tenDuAn + '</option>');
-                                    }
-                                });
+                                select.append('<option value="">Chọn dự án...</option>');
+                                if (duAns && Array.isArray(duAns)) {
+                                    $.each(duAns, function (i, item) {
+                                        var id = item.idDuAn || item.IdDuAn;
+                                        var name = item.tenDuAn || item.TenDuAn;
+                                        if (id && name) {
+                                            select.append('<option value="' + id + '">' + name + '</option>');
+                                        }
+                                    });
+                                } else {
+                                    console.log('Dữ liệu trả về không hợp lệ:', duAns);
+                                }
                             },
-                            error: function () {
-                                alert('Không thể tải danh sách dự án.');
+                            error: function (xhr, status, error) {
+                                console.log('Lỗi API GetDuAnList:', status, error, xhr.responseText);
+                                alert('Không thể tải danh sách dự án. Kiểm tra console.');
                             }
                         });
-                        $('#createForm').validate();
+                        $createForm.validate();
                     },
-                    error: function () {
+                    error: function (xhr, status, error) {
+                        console.log('Lỗi tải form:', status, error, xhr.responseText);
                         alert('Không thể tải form tạo kế hoạch.');
                     }
                 });
             });
 
-            // Save Create
             $('#saveCreateBtn').click(function () {
                 var form = $('#createForm');
-                form.removeData('validator');
-                form.removeData('unobtrusiveValidation');
-                $.validator.unobtrusive.parse(form);
-
                 if (form.valid()) {
                     var formData = form.serialize();
                     $.ajax({
                         url: '@Url.Action("Create", "KeHoach")',
                         type: 'POST',
                         data: formData,
+                        timeout: 5000,
                         success: function (response) {
-                            if (response.success) {
+                            if (response && response.success) {
                                 $('#createModal').modal('hide');
                                 window.location.reload();
                             } else {
-                                alert(response.message || 'Lỗi khi tạo kế hoạch.');
+                                alert(response ? response.message : 'Lỗi khi tạo kế hoạch.');
                             }
                         },
-                        error: function () {
-                            alert('Đã có lỗi xảy ra khi tạo kế hoạch.');
+                        error: function (xhr, status, error) {
+                            console.log('Lỗi AJAX Create:', status, error, xhr.responseText);
+                            alert('Đã có lỗi xảy ra khi tạo kế hoạch. Kiểm tra console.');
                         }
                     });
+                } else {
+                    console.log('Form không hợp lệ:', form.validate().errorList);
                 }
             });
 
