@@ -1,0 +1,30 @@
+﻿@model API.Data.IP
+
+@{
+    ViewData["Title"] = "Tạo IP";
+}
+
+
+<form asp-action="Create" method="post">
+    @* ID cơ sở quan trọng để quay lại danh sách *@
+    <input type="hidden" asp-for="IdCoSo" />
+
+    <div class="form-group">
+        <label asp-for="KieuIP" style="color:black"></label>
+        <input asp-for="KieuIP" class="form-control" />
+        <span asp-validation-for="KieuIP" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IP_DaiIP" style="color:black"></label>
+        <input asp-for="IP_DaiIP" class="form-control" />
+        <span asp-validation-for="IP_DaiIP" class="text-danger"></span>
+    </div>
+
+    <div class="text-danger">
+        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+    </div>
+
+    <button type="submit" class="btn btn-success">Lưu</button>
+    <a asp-action="Index" asp-route-coSoId="@Model.IdCoSo" class="btn btn-secondary">Quay lại</a>
+</form>

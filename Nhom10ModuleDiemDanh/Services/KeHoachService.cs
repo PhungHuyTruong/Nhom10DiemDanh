@@ -33,7 +33,7 @@ namespace Nhom10ModuleDiemDanh.Services
             if (!string.IsNullOrEmpty(namHoc)) queryParams.Add($"namHoc={Uri.EscapeDataString(namHoc)}");
 
             var queryString = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
-            var response = await _httpClient.GetAsync($"{_apiBaseUrl}KeHoach{queryString}");
+            var response = await _httpClient.GetAsync($"{_apiBaseUrl}api/KeHoach{queryString}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -45,7 +45,7 @@ namespace Nhom10ModuleDiemDanh.Services
 
         public async Task<KeHoachViewModel> GetKeHoachById(Guid id)
         {
-            var response = await _httpClient.GetAsync($"{_apiBaseUrl}KeHoach/{id}");
+            var response = await _httpClient.GetAsync($"{_apiBaseUrl}api/KeHoach/{id}");
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
@@ -56,9 +56,17 @@ namespace Nhom10ModuleDiemDanh.Services
 
         public async Task CreateKeHoach(KeHoachViewModel model)
         {
-            var json = JsonSerializer.Serialize(model);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync(_apiBaseUrl + "KeHoach", content);
+            var form = new MultipartFormDataContent
+            {
+                { new StringContent(model.TenKeHoach ?? ""), "TenKeHoach" },
+                { new StringContent(model.NoiDung ?? ""), "NoiDung" },
+                { new StringContent(model.IdDuAn.ToString()), "IdDuAn" },
+                { new StringContent(model.ThoiGianBatDau.ToString("o")), "ThoiGianBatDau" },
+                { new StringContent(model.ThoiGianKetThuc.ToString("o")), "ThoiGianKetThuc" },
+                { new StringContent(model.TrangThai.ToString()), "TrangThai" }
+            };
+
+            var response = await _httpClient.PostAsync(_apiBaseUrl + "api/KeHoach", form);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -67,11 +75,26 @@ namespace Nhom10ModuleDiemDanh.Services
             }
         }
 
+
         public async Task UpdateKeHoach(KeHoachViewModel model)
         {
-            var json = JsonSerializer.Serialize(model);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PutAsync($"{_apiBaseUrl}KeHoach/{model.IdKeHoach}", content);
+            var form = new MultipartFormDataContent
+            {
+                { new StringContent(model.IdKeHoach.ToString()), "IdKeHoach" },
+                { new StringContent(model.TenKeHoach ?? ""), "TenKeHoach" },
+                { new StringContent(model.NoiDung ?? ""), "NoiDung" },
+                { new StringContent(model.IdDuAn.ToString()), "IdDuAn" },
+                { new StringContent(model.ThoiGianBatDau.ToString("o")), "ThoiGianBatDau" },
+                { new StringContent(model.ThoiGianKetThuc.ToString("o")), "ThoiGianKetThuc" },
+                { new StringContent(model.TrangThai.ToString()), "TrangThai" }
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Put, $"{_apiBaseUrl}api/KeHoach/{model.IdKeHoach}")
+            {
+                Content = form
+            };
+
+            var response = await _httpClient.SendAsync(request);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -80,9 +103,10 @@ namespace Nhom10ModuleDiemDanh.Services
             }
         }
 
+
         public async Task DeleteKeHoach(Guid id)
         {
-            var response = await _httpClient.DeleteAsync($"{_apiBaseUrl}KeHoach/{id}");
+            var response = await _httpClient.DeleteAsync($"{_apiBaseUrl}api/KeHoach/{id}");
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();
@@ -92,7 +116,7 @@ namespace Nhom10ModuleDiemDanh.Services
 
         public async Task ToggleStatus(Guid id)
         {
-            var response = await _httpClient.PostAsync($"{_apiBaseUrl}KeHoach/ToggleStatus/{id}", null);
+            var response = await _httpClient.PostAsync($"{_apiBaseUrl}api/KeHoach/ToggleStatus/{id}", null);
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();

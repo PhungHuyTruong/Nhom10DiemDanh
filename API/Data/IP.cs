@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace API.Data
 {
@@ -17,7 +19,13 @@ namespace API.Data
         public DateTime NgayTao { get; set; } = DateTime.Now;
         public DateTime? NgayCapNhat { get; set; }
         public bool TrangThai { get; set; } = true;
+        // FK bắt buộc để biết IP thuộc CoSo nào
+        [Required]
+        [ForeignKey("CoSo")]
+        public Guid? IdCoSo { get; set; }
 
-        public virtual ICollection<CoSo>? CoSos { get; set; }
+        // Navigation property
+        [JsonIgnore]
+        public virtual CoSo? CoSo { get; set; }
     }
 }

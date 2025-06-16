@@ -5,51 +5,88 @@
 }
 
 <div class="container-fluid">
-    <a href="/PhuTrachXuongs/Create" class="btn btn-primary">
+    @* <a href="/PhuTrachXuongs/Create" class="btn btn-primary">
         <i class="fas fa-plus me-1"></i> Thêm
-    </a>
+    </a> *@
 
     <div class="card shadow mb-4">
-        <div class="card-header py-3 bg-gradient-primary text-white">
-            <h6 class="m-0 font-weight-bold">Bộ lọc và Tìm kiếm</h6>
-        </div>
-        <div class="card-body">
-            <form asp-action="Index" method="get" class="row g-3">
-                <div class="col-md-4">
-                    <label for="searchString" class="form-label">Tìm kiếm</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-search"></i></span>
-                        <input type="text" class="form-control" name="searchString" value="@ViewBag.CurrentFilter" placeholder="Tên/Mã NV, Email...">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <label for="coSoFilter" class="form-label">Cơ sở</label>
-                    <select class="form-select" name="coSoFilter" asp-items="ViewBag.CoSoList">
-                        <option value="">-- Tất cả --</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="trangThaiFilter" class="form-label">Trạng thái</label>
-                    <select class="form-select" name="trangThaiFilter">
-                        <option value="">-- Tất cả --</option>
-                        <option value="true">Đang hoạt động</option>
-                        <option value="false">Ngừng hoạt động</option>
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">
-                        <i class="fas fa-filter me-1"></i> Lọc
-                    </button>
-                    <a asp-action="Index" class="btn btn-outline-secondary">
-                        <i class="fas fa-sync-alt"></i>
-                    </a>
-                </div>
-            </form>
-        </div>
+    <div class="card-header py-3 bg-gradient-primary">
+        <h6 class="m-0 font-weight-bold">Bộ lọc và Tìm kiếm</h6>
     </div>
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3">
+            <!-- Tìm kiếm theo mã phụ trách -->
+            <div class="col-md-4">
+                <label for="searchMa" class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" name="searchMa"
+                           value="@ViewBag.SearchMa" placeholder="Mã phụ trách...">
+                </div>
+            </div>
+
+            <!-- Lọc theo cơ sở nếu có -->
+@*             <div class="col-md-3">
+                <label for="coSoFilter" class="form-label">Cơ sở</label>
+                <select class="form-select" name="coSoFilter" asp-items="ViewBag.CoSoList">
+                    <option value="">-- Tất cả --</option>
+                </select>
+            </div> *@
+
+            <!-- Lọc theo trạng thái -->
+            <div class="col-md-5">
+                    @{
+                        bool? trangThai = ViewBag.TrangThai as bool?;
+                    }
+
+                    <div class="col-md-3">
+                        <label for="trangThai" class="form-label">Trạng thái</label>
+                        <select class="form-select" name="trangThai">
+                            <option value="">-- Tất cả --</option>
+
+                            @if (trangThai == true)
+                            {
+                                <option value="true" selected>Đang hoạt động</option>
+                            }
+                            else
+                            {
+                                <option value="true">Đang hoạt động</option>
+                            }
+
+                            @if (trangThai == false)
+                            {
+                                <option value="false" selected>Ngừng hoạt động</option>
+                            }
+                            else
+                            {
+                                <option value="false">Ngừng hoạt động</option>
+                            }
+                        </select>
+                    </div>
+            </div>
+
+            <!-- Nút lọc & làm mới -->
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-filter me-1"></i> Lọc
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-sync-alt"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
 
     <div class="card shadow">
         <div class="card-body">
+            <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-bold">Danh sách phụ trách xưởng</span>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreate">
+                    <i class="fas fa-plus"></i> Thêm phụ trách
+                </button>
+            </div>
             <div class="table-responsive">
                 <table class="table table-bordered table-striped">
                     <thead>
@@ -91,7 +128,11 @@
                                     <td>@item.NgayTao.ToString("dd/MM/yyyy")</td>
                                     <td>@(item.NgayCapNhat?.ToString("dd/MM/yyyy") ?? "")</td>
                                     <td>
-                                        <a asp-action="Edit" asp-route-id="@item.IdNhanVien" class="btn btn-sm btn-warning">Sửa</a>
+                                        <button type="button" class="btn btn-warning" onclick="openEditModal('@item.IdNhanVien')">
+                                            <i class="fas fa-edit"></i> Sửa
+                                        </button>
+
+
                                         <form asp-action="ToggleStatus" asp-route-id="@item.IdNhanVien" method="post" style="display:inline-block" onsubmit="return confirm('Bạn có chắc muốn đổi trạng thái không?');">
                                             <button type="submit" class="btn btn-sm btn-info">Đổi trạng thái</button>
                                         </form>
@@ -106,6 +147,7 @@
                             </tr>
                         }
                     </tbody>
+
                 </table>
             </div>
 
@@ -177,6 +219,56 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Thêm phụ trách xưởng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @await Html.PartialAsync("Create", new API.Data.PhuTrachXuong())
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal để hiển thị form Edit -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel" style="color:black">Chỉnh sửa phụ trách xưởng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body" id="editModalBody">
+                <!-- Partial view sẽ được load ở đây -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function openEditModal(id) {
+            $.get('/PhuTrachXuongs/Edit', { id: id })
+                .done(function (html) {
+                    $('#editModalBody').html(html);
+                    var myModal = new bootstrap.Modal(document.getElementById('editModal'));
+                    myModal.show();
+                })
+                .fail(function () {
+                    alert("Không thể tải form chỉnh sửa.");
+                });
+        }
+    </script>
+}
+
+
+
 @section Styles {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
@@ -225,4 +317,8 @@
             color: #0d6efd;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 }
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

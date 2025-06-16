@@ -1,10 +1,6 @@
 ﻿using API.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -19,124 +15,54 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/IPs
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<IP>>> GetIPs()
-        {
-            return await _context.IPs.ToListAsync();
-        }
-
-        // GET: api/IPs/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<IP>> GetIP(Guid id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             var ip = await _context.IPs.FindAsync(id);
-
-            if (ip == null)
-            {
-                return NotFound();
-            }
-
-            return ip;
+            if (ip == null) return NotFound();
+            return Ok(ip);
         }
 
-        // PUT: api/IPs/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutIP(Guid id, IP ip)
+        [HttpGet("ByCoSo/{id}")]
+        public async Task<IActionResult> GetByCoSo(Guid id)
         {
-            if (id != ip.IdIP)
-            {
-                return BadRequest();
-            }
-
-            var existingIP = await _context.IPs.FindAsync(id);
-            if (existingIP == null)
-            {
-                return NotFound();
-            }
-
-            existingIP.KieuIP = ip.KieuIP;
-            existingIP.IP_DaiIP = ip.IP_DaiIP;
-            existingIP.TrangThai = ip.TrangThai;
-            existingIP.NgayCapNhat = DateTime.Now;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!IPExists(id))
-                {
-                    return NotFound();
-                }
-                throw;
-            }
-
-            return NoContent();
+            var result = await _context.IPs.Where(x => x.IdCoSo == id).ToListAsync();
+            return Ok(result);
         }
 
-        // POST: api/IPs
-        // POST: api/IPs
+        // ✅ POST: api/IPs
         [HttpPost]
-        public async Task<ActionResult<IP>> PostIP(IP ip)
+        public async Task<IActionResult> Post(IP ip)
         {
-            if (ip == null || string.IsNullOrEmpty(ip.KieuIP) || string.IsNullOrEmpty(ip.IP_DaiIP))
-            {
-                return BadRequest("KieuIP and IP_DaiIP are required.");
-            }
-
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            // Tự tạo IdIP nếu chưa có
-            if (ip.IdIP == Guid.Empty)
-            {
-                ip.IdIP = Guid.NewGuid();
-            }
-
-            ip.NgayTao = DateTime.Now;
+            ip.IdIP = Guid.NewGuid(); // đảm bảo có ID
+            ip.NgayCapNhat = DateTime.Now;
 
             _context.IPs.Add(ip);
+            await _context.SaveChangesAsync();
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (IPExists(ip.IdIP))
-                {
-                    return Conflict();
-                }
-                throw;
-            }
-
-            return CreatedAtAction(nameof(GetIP), new { id = ip.IdIP }, ip);
+            return CreatedAtAction(nameof(Post), new { id = ip.IdIP }, ip);
         }
 
-
-        // DELETE: api/IPs/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteIP(Guid id)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] IP ip)
         {
-            var ip = await _context.IPs.FindAsync(id);
-            if (ip == null)
-            {
-                return NotFound();
-            }
+            if (id != ip.IdIP) return BadRequest();
 
-            _context.IPs.Remove(ip);
+            var existing = await _context.IPs.FindAsync(id);
+            if (existing == null) return NotFound();
+
+            existing.KieuIP = ip.KieuIP;
+            existing.IP_DaiIP = ip.IP_DaiIP;
+            existing.TrangThai = ip.TrangThai;
+            existing.NgayCapNhat = DateTime.Now;
+
+            _context.IPs.Update(existing);
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool IPExists(Guid id)
-        {
-            return _context.IPs.Any(e => e.IdIP == id);
         }
     }
 }

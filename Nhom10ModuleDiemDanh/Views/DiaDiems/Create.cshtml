@@ -1,32 +1,40 @@
 ﻿@model API.Data.DiaDiem
 
 <div class="minimal-form">
-    <center><h3> Thêm địa điểm</h3></center>
+    <center><h3>🗺️ Thêm địa điểm</h3></center>
     <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="IdCoSo" />
         <input asp-for="TenDiaDiem" class="form-control mb-1" placeholder="Tên*" required>
         <div class="row g-1 mb-1">
             <div class="col-6">
-                <input asp-for="ViDo" class="form-control" placeholder="Vĩ độ*" required>
+                <input asp-for="ViDo" id="lat" class="form-control" placeholder="Vĩ độ*" required readonly>
             </div>
             <div class="col-6">
-                <input asp-for="KinhDo" class="form-control" placeholder="Kinh độ*" required>
+                <input asp-for="KinhDo" id="lng" class="form-control" placeholder="Kinh độ*" required readonly>
             </div>
         </div>
-        <input asp-for="BanKinh" class="form-control mb-1" placeholder="Bán kính (m)*" required>
+        <input asp-for="BanKinh" id="radius" class="form-control mb-1" placeholder="Bán kính (m)*" required>
         <div class="d-flex justify-content-between mt-2">
             <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary">←</button>
             <div>
                 <label class="form-check-label small me-2">Kích hoạt</label>
                 <input asp-for="TrangThai" class="form-check-input me-2">
-                <button type="submit" class="btn btn-sm btn-primary">Thêm </button>
+                <button type="submit" class="btn btn-sm btn-primary">Thêm</button>
             </div>
         </div>
+        <div class="controls mt-2">
+            <button type="button" onclick="getCurrentLocation()" class="btn btn-sm btn-outline-success">📍 Vị trí hiện tại</button>
+            <button type="button" onclick="drawCircle()" class="btn btn-sm btn-outline-primary">Vẽ vòng tròn</button>
+        </div>
+        <div id="map" class="mt-2"></div>
     </form>
 </div>
 
+<!-- CSS -->
 <style>
     .minimal-form {
-        max-width: 400px;
+        max-width: 500px;
         margin: 10px;
     }
 
@@ -38,6 +46,85 @@
 
         .minimal-form .btn-sm {
             padding: 0.15rem 0.5rem;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
         }
+
+    #map {
+        height: 300px;
+        border-radius: 10px;
+    }
 </style>
+
+<!-- Leaflet CDN -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<!-- Script -->
+<script>
+    const map = L.map('map').setView([21.0285, 105.8542], 13); // Hà Nội mặc định
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    const geocoder = L.Control.geocoder({
+        defaultMarkGeocode: false
+    })
+        .on('markgeocode', function (e) {
+            const latlng = e.geocode.center;
+            map.setView(latlng, 15);
+            updateLatLng(latlng.lat, latlng.lng);
+            setMarker(latlng.lat, latlng.lng);
+        })
+        .addTo(map);
+    let marker = null;
+    let circle = null;
+    map.on('click', function (e) {
+        const { lat, lng } = e.latlng;
+        updateLatLng(lat, lng);
+        setMarker(lat, lng);
+    });
+    function setMarker(lat, lng) {
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([lat, lng]).addTo(map);
+    }
+    function updateLatLng(lat, lng) {
+        document.getElementById('lat').value = lat.toFixed(6);
+        document.getElementById('lng').value = lng.toFixed(6);
+    }
+    function drawCircle() {
+        const lat = parseFloat(document.getElementById('lat').value);
+        const lng = parseFloat(document.getElementById('lng').value);
+        const radius = parseFloat(document.getElementById('radius').value);
+        if (!lat || !lng || !radius) {
+            alert("Vui lòng chọn vị trí và nhập bán kính!");
+            return;
+        }
+        if (circle) map.removeLayer(circle);
+        circle = L.circle([lat, lng], {
+            radius: radius,
+            color: 'blue',
+            fillColor: '#30f',
+            fillOpacity: 0.3
+        }).addTo(map);
+        map.fitBounds(circle.getBounds());
+    }
+    function getCurrentLocation() {
+        if (!navigator.geolocation) {
+            alert("Trình duyệt không hỗ trợ định vị.");
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                updateLatLng(lat, lng);
+                setMarker(lat, lng);
+                map.setView([lat, lng], 15);
+            },
+            (error) => {
+                alert("Không thể lấy vị trí: " + error.message);
+            }
+        );
+    }
+</script>

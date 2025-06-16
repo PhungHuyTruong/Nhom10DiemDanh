@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ModuleDiemDanhDbContext))]
-    [Migration("20250609054037_cuoi")]
-    partial class cuoi
+    [Migration("20250614091801_6")]
+    partial class _6
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -181,9 +181,6 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("IPIdIP")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("IdCaHoc")
                         .HasColumnType("uniqueidentifier");
 
@@ -217,8 +214,6 @@ namespace API.Migrations
                     b.HasKey("IdCoSo");
 
                     b.HasIndex("DiaDiemIdDiaDiem");
-
-                    b.HasIndex("IPIdIP");
 
                     b.ToTable("CoSos");
                 });
@@ -381,6 +376,9 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("IdCoSo")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("KieuIP")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -395,6 +393,8 @@ namespace API.Migrations
                         .HasColumnType("bit");
 
                     b.HasKey("IdIP");
+
+                    b.HasIndex("IdCoSo");
 
                     b.ToTable("IPs");
                 });
@@ -773,14 +773,11 @@ namespace API.Migrations
                     b.Property<bool>("TrangThai")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("VaiTroIdVaiTro")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("IdNhanVien");
 
                     b.HasIndex("IdCoSo");
 
-                    b.HasIndex("VaiTroIdVaiTro");
+                    b.HasIndex("IdVaiTro");
 
                     b.ToTable("PhuTrachXuongs");
                 });
@@ -964,13 +961,7 @@ namespace API.Migrations
                         .WithMany("CoSos")
                         .HasForeignKey("DiaDiemIdDiaDiem");
 
-                    b.HasOne("API.Data.IP", "IP")
-                        .WithMany("CoSos")
-                        .HasForeignKey("IPIdIP");
-
                     b.Navigation("DiaDiem");
-
-                    b.Navigation("IP");
                 });
 
             modelBuilder.Entity("API.Data.DiemDanh", b =>
@@ -1027,6 +1018,17 @@ namespace API.Migrations
                     b.Navigation("HocKy");
 
                     b.Navigation("QuanLyBoMon");
+                });
+
+            modelBuilder.Entity("API.Data.IP", b =>
+                {
+                    b.HasOne("API.Data.CoSo", "CoSo")
+                        .WithMany("IPs")
+                        .HasForeignKey("IdCoSo")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CoSo");
                 });
 
             modelBuilder.Entity("API.Data.KHNXCaHoc", b =>
@@ -1198,7 +1200,8 @@ namespace API.Migrations
 
                     b.HasOne("API.Data.VaiTro", "VaiTro")
                         .WithMany("PhuTrachXuongs")
-                        .HasForeignKey("VaiTroIdVaiTro");
+                        .HasForeignKey("IdVaiTro")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("CoSo");
 
@@ -1257,6 +1260,8 @@ namespace API.Migrations
 
                     b.Navigation("CaHocs");
 
+                    b.Navigation("IPs");
+
                     b.Navigation("KHNXCaHocs");
 
                     b.Navigation("PhuTrachXuongs");
@@ -1286,11 +1291,6 @@ namespace API.Migrations
             modelBuilder.Entity("API.Data.HocKy", b =>
                 {
                     b.Navigation("DuAns");
-                });
-
-            modelBuilder.Entity("API.Data.IP", b =>
-                {
-                    b.Navigation("CoSos");
                 });
 
             modelBuilder.Entity("API.Data.KHNXCaHoc", b =>

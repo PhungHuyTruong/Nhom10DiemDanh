@@ -1,0 +1,154 @@
+﻿@model List<API.Data.IP>
+@{
+    Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+
+    var coSoId = ViewBag.CoSoId;
+    var tuKhoa = ViewBag.TuKhoa as string ?? "";
+    var trangThai = ViewBag.TrangThai as bool?;
+}
+
+<h2 class="mb-4">Quản lý IP</h2>
+
+<!-- BỘ LỌC -->
+<div class="card mb-4">
+    <div class="card-header fw-bold">🔍 Bộ lọc</div>
+    <form method="get" class="d-flex gap-2 align-items-center p-3">
+        <input type="hidden" name="coSoId" value="@coSoId" />
+        <input type="text" name="tuKhoa" class="form-control" placeholder="Tìm IP..." value="@tuKhoa" />
+        <select name="trangThai" class="form-select" style="width: 150px;">
+            <option value="">-- Trạng thái --</option>
+            <option value="true" selected="@(trangThai?.ToString() == "True" ? "selected" : null)">Đang hoạt động</option>
+            <option value="false" selected="@(trangThai?.ToString() == "False" ? "selected" : null)">Ngừng hoạt động</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Lọc</button>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalFormCreate">
+            ➕ Thêm IP
+        </button>
+    </form>
+</div>
+
+<!-- BẢNG -->
+<div class="table-responsive card">
+    <table class="table table-bordered text-center mb-0">
+        <thead class="table-light">
+            <tr>
+                <th>STT</th>
+                <th>Kiểu IP</th>
+                <th>Dải IP</th>
+                <th>Ngày tạo</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int stt = 1;
+            }
+            @if (Model != null && Model.Any())
+            {
+                foreach (var ip in Model)
+                {
+                    <tr>
+                        <td>@stt</td>
+                        <td>@ip.KieuIP</td>
+                        <td>@ip.IP_DaiIP</td>
+                        <td>@ip.NgayTao.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <form asp-action="ToggleStatus" asp-controller="IPs" method="post">
+                                <input type="hidden" name="id" value="@ip.IdIP" />
+                                <input type="hidden" name="coSoId" value="@coSoId" />
+                                <div class="form-check form-switch d-flex align-items-center gap-2 justify-content-center">
+                                    <input class="form-check-input" type="checkbox" name="TrangThai"
+                                           onchange="this.form.submit()" @(ip.TrangThai ? "checked" : "") />
+                                    <span class="badge rounded-pill @(ip.TrangThai ? "bg-success" : "bg-secondary")">
+                                        @(ip.TrangThai ? "Hoạt động" : "Tạm ngưng")
+                                    </span>
+                                </div>
+                            </form>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="openEditModal('@ip.IdIP')">
+                                ✏️ Sửa
+                            </button>
+                        </td>
+                    </tr>
+                    stt++;
+                }
+            }
+            else
+            {
+                <tr><td colspan="6">Không có dữ liệu</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Create -->
+<div class="modal fade" id="modalFormCreate" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createModalLabel">Thêm IP</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @await Html.PartialAsync("Create", new API.Data.IP { IdCoSo = coSoId })
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Chỉnh sửa IP</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="editModalBody">
+                <!-- Form Edit sẽ được load tại đây -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function openEditModal(id) {
+            $.get(`/IPs/Edit/${id}`, function (html) {
+                $('#editModalBody').html(html);
+                $('#editModal').modal('show');
+                $.validator.unobtrusive.parse($('#editForm'));
+            });
+        }
+
+        $(document).on('submit', '#editForm', function (e) {
+            e.preventDefault();
+            const form = $(this);
+
+            $.ajax({
+                url: form.attr('action'),
+                type: form.attr('method'),
+                data: form.serialize(),
+                success: function (result) {
+                    if (result.success) {
+                        $('#editModal').modal('hide');
+                        location.reload();
+                    } else {
+                        $('#editModalBody').html(result);
+                        $.validator.unobtrusive.parse($('#editForm'));
+                    }
+                }
+            });
+        });
+
+        $('#modalFormCreate').on('shown.bs.modal', function () {
+            $.validator.unobtrusive.parse($(this));
+        });
+        $('#editModal').on('shown.bs.modal', function () {
+            $.validator.unobtrusive.parse($(this));
+        });
+    </script>
+}

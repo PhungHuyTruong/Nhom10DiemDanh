@@ -4,190 +4,171 @@ using API.Data;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Text;
+using System.Text.Json;
 
-namespace AppView.Controllers
+namespace Nhom10ModuleDiemDanh.Controllers
 {
     public class CaHocsController : Controller
     {
-        private readonly string _apiBase = "https://localhost:7296/api/CaHocs";
+        private readonly HttpClient _httpClient;
+        private const int PageSize = 10;
 
-        public async Task<IActionResult> Index(string tenCaHoc, int? trangThai, int page = 1)
+        public CaHocsController(HttpClient httpClient)
         {
-            List<CaHoc> danhSach = new();
-            int currentPage = page;
-            int totalPages = 1;
+            _httpClient = httpClient;
+        }
 
-            try
+        // Hiển thị danh sách ca học theo cơ sở
+        public async Task<IActionResult> Index(Guid coSoId, string searchTen, int? trangThai, int page = 1)
+        {
+            var response = await _httpClient.GetAsync($"https://localhost:7296/api/CaHocs/ByCoSo/{coSoId}");
+            if (!response.IsSuccessStatusCode)
             {
-                using (var http = new HttpClient())
-                {
-                    var url = $"{_apiBase}/filter?page={page}&pageSize=5";
-                    var query = new List<string>();
-                    if (!string.IsNullOrEmpty(tenCaHoc))
-                        query.Add($"tenCaHoc={Uri.EscapeDataString(tenCaHoc)}");
-                    if (trangThai.HasValue)
-                        query.Add($"trangThai={trangThai}");
-
-                    if (query.Count > 0)
-                        url += "&" + string.Join("&", query);
-
-                    var response = await http.GetAsync(url);
-                    var json = await response.Content.ReadAsStringAsync();
-                    dynamic result = JsonConvert.DeserializeObject<dynamic>(json);
-
-                    danhSach = JsonConvert.DeserializeObject<List<CaHoc>>(result.data.ToString());
-                    currentPage = result.pagination.currentPage;
-                    totalPages = result.pagination.totalPages;
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Lỗi khi tải dữ liệu: {ex.Message}";
+                ViewBag.CoSoId = coSoId;
+                return View(new List<CaHoc>());
             }
 
-            ViewBag.TenCaHoc = tenCaHoc;
+            var json = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                ViewBag.CoSoId = coSoId;
+                return View(new List<CaHoc>());
+            }
+
+            var data = System.Text.Json.JsonSerializer.Deserialize<List<CaHoc>>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            // Lọc theo tên ca học
+            if (!string.IsNullOrEmpty(searchTen))
+            {
+                data = data.Where(c => c.TenCaHoc != null && c.TenCaHoc.Contains(searchTen, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            // Lọc theo trạng thái (0 hoặc 1)
+            if (trangThai.HasValue)
+            {
+                data = data.Where(c => c.TrangThai == trangThai.Value).ToList();
+            }
+
+            int totalItems = data.Count;
+
+            var caHocs = data
+                .Skip((page - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            // Truyền dữ liệu lọc và phân trang
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / PageSize);
+            ViewBag.SearchTen = searchTen;
             ViewBag.TrangThai = trangThai;
-            ViewBag.CurrentPage = currentPage;
-            ViewBag.TotalPages = totalPages;
+            ViewBag.CoSoId = coSoId;
 
-            return View(danhSach);
+            return View(caHocs);
         }
-        public async Task<IActionResult> DanhSachTheoCoSo(Guid id)
+
+        // GET: Create
+        public IActionResult Create(Guid coSoId)
         {
-            List<CaHoc> danhSach = new(); // luôn khởi tạo
-
-            try
-            {
-                using (var http = new HttpClient())
-                {
-                    var response = await http.GetAsync($"{_apiBase}/by-coso/{id}");
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var json = await response.Content.ReadAsStringAsync();
-                        danhSach = JsonConvert.DeserializeObject<List<CaHoc>>(json) ?? new List<CaHoc>();
-                    }
-                    else
-                    {
-                        TempData["Error"] = "API không trả về dữ liệu.";
-                    }
-
-                    // Lấy tên cơ sở
-                    var coSoRes = await http.GetAsync($"https://localhost:7296/api/CoSo/{id}");
-                    if (coSoRes.IsSuccessStatusCode)
-                    {
-                        var csJson = await coSoRes.Content.ReadAsStringAsync();
-                        var csResult = JsonConvert.DeserializeObject<ApiResponse<CoSo>>(csJson);
-                        ViewBag.TenCoSo = csResult?.data?.TenCoSo ?? "(Không rõ)";
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Lỗi khi tải ca học theo cơ sở: {ex.Message}";
-            }
-
-            ViewBag.CoSoId = id;
-            return View("DanhSachTheoCoSo", danhSach);
+            var model = new CaHoc { CoSoId = coSoId };
+            return View(model);
         }
 
-        public async Task<IActionResult> Details(Guid? id)
-        {
-            if (id == null) return NotFound();
-
-            CaHoc caHoc = null;
-            using (var http = new HttpClient())
-            {
-                var response = await http.GetAsync($"{_apiBase}/{id}");
-                var json = await response.Content.ReadAsStringAsync();
-                var wrapper = JsonConvert.DeserializeObject<ApiResponse<CaHoc>>(json);
-                caHoc = wrapper.data;
-            }
-
-            return View(caHoc);
-        }
-
-        public IActionResult Create() => View();
-
+        // POST: Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CaHoc caHoc)
+        public async Task<IActionResult> Create(CaHoc model)
         {
-            try
-            {
-                using (var http = new HttpClient())
-                {
-                    var content = new StringContent(JsonConvert.SerializeObject(caHoc), Encoding.UTF8, "application/json");
-                    var response = await http.PostAsync(_apiBase, content);
+            var json = System.Text.Json.JsonSerializer.Serialize(model);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        var err = await response.Content.ReadAsStringAsync();
-                        TempData["Error"] = $"API lỗi {response.StatusCode}: {err}";
-                        return View(caHoc);
-                    }
-                }
+            var response = await _httpClient.PostAsync("https://localhost:7296/api/CaHocs", content);
 
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "Lỗi xử lý: " + ex.Message;
-                return View(caHoc);
-            }
-        }
+            if (response.IsSuccessStatusCode)
+                return RedirectToAction("Index", new { coSoId = model.CoSoId });
 
-        public async Task<IActionResult> Edit(Guid? id)
-        {
-            if (id == null) return NotFound();
+            // Đọc nội dung lỗi để debug
+            var errorContent = await response.Content.ReadAsStringAsync();
+            ModelState.AddModelError(string.Empty, "Thêm thất bại: " + errorContent);
 
-            CaHoc caHoc = null;
-            using (var http = new HttpClient())
-            {
-                var response = await http.GetAsync($"{_apiBase}/{id}");
-                var json = await response.Content.ReadAsStringAsync();
-                var wrapper = JsonConvert.DeserializeObject<ApiResponse<CaHoc>>(json);
-                caHoc = wrapper.data;
-            }
-
-            return View(caHoc);
+            return View(model);
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, CaHoc caHoc)
+        public async Task<IActionResult> ToggleStatus(Guid id, Guid coSoId)
         {
-            using (var http = new HttpClient())
-            {
-                var content = new StringContent(JsonConvert.SerializeObject(caHoc), Encoding.UTF8, "application/json");
-                var response = await http.PutAsync($"{_apiBase}?id={id}", content);
+            // 1. Lấy CaHoc hiện tại
+            var getResponse = await _httpClient.GetAsync($"https://localhost:7296/api/CaHocs/{id}");
+            if (!getResponse.IsSuccessStatusCode)
+                return NotFound();
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var err = await response.Content.ReadAsStringAsync();
-                    TempData["Error"] = $"API lỗi {response.StatusCode}: {err}";
-                    return View(caHoc);
-                }
+            var json = await getResponse.Content.ReadAsStringAsync();
+            var caHoc = System.Text.Json.JsonSerializer.Deserialize<CaHoc>(json, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (caHoc == null)
+                return NotFound();
+
+            // 2. Đảo trạng thái
+            caHoc.TrangThai = caHoc.TrangThai == 1 ? 0 : 1;
+            caHoc.NgayCapNhat = DateTime.Now;
+
+            // 3. Gửi PUT để cập nhật lại
+            var putJson = System.Text.Json.JsonSerializer.Serialize(caHoc);
+            var content = new StringContent(putJson, Encoding.UTF8, "application/json");
+
+            var putResponse = await _httpClient.PutAsync($"https://localhost:7296/api/CaHocs/{id}", content);
+            if (!putResponse.IsSuccessStatusCode)
+            {
+                ModelState.AddModelError(string.Empty, "Không thể cập nhật trạng thái.");
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", new { coSoId = coSoId });
         }
 
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        // GET: CaHocs/Edit/{id}?coSoId=...
+        public async Task<IActionResult> Edit(Guid id, Guid coSoId)
         {
-            using (var http = new HttpClient())
+            var response = await _httpClient.GetAsync($"https://localhost:7296/api/CaHocs/{id}");
+            if (!response.IsSuccessStatusCode)
+                return NotFound();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var caHoc = System.Text.Json.JsonSerializer.Deserialize<CaHoc>(json, new JsonSerializerOptions
             {
-                var response = await http.DeleteAsync($"{_apiBase}/{id}");
+                PropertyNameCaseInsensitive = true
+            });
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    TempData["Error"] = $"Xoá thất bại: {response.StatusCode} - {error}";
-                }
-            }
+            if (caHoc == null)
+                return NotFound();
 
-            return RedirectToAction(nameof(Index));
+            ViewBag.CoSoId = coSoId;
+            return PartialView("Edit", caHoc);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(CaHoc model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            model.NgayCapNhat = DateTime.Now;
+
+            var json = System.Text.Json.JsonSerializer.Serialize(model);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync($"https://localhost:7296/api/CaHocs/{model.IdCaHoc}", content);
+
+            if (response.IsSuccessStatusCode)
+                return RedirectToAction("Index", new { coSoId = model.CoSoId });
+
+            var error = await response.Content.ReadAsStringAsync();
+            ModelState.AddModelError(string.Empty, "Cập nhật thất bại: " + error);
+            return View(model);
+        }
+
     }
 }

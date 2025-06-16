@@ -3,47 +3,43 @@
 
 
 @{
-    Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
+    Layout = null;
     var coSoList = ViewBag.CoSoList as List<API.Data.CoSo>;
 }
 
-<h1>Create</h1>
-
-<h4>PhuTrachXuong</h4>
-<hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create" method="post">
             <div class="form-group">
-                <label asp-for="TenNhanVien"></label>
+                <label asp-for="TenNhanVien" style="color: black"></label>
                 <input asp-for="TenNhanVien" class="form-control" />
                 <span asp-validation-for="TenNhanVien" class="text-danger"></span>
             </div>
 
             <div class="form-group">
-                <label asp-for="MaNhanVien"></label>
+                <label asp-for="MaNhanVien" style="color: black"></label>
                 <input asp-for="MaNhanVien" class="form-control" />
             </div>
 
             <div class="form-group">
-                <label asp-for="EmailFE"></label>
+                <label asp-for="EmailFE" style="color: black"></label>
                 <input asp-for="EmailFE" class="form-control" />
             </div>
 
             <div class="form-group">
-                <label asp-for="EmailFPT"></label>
+                <label asp-for="EmailFPT" style="color: black"></label>
                 <input asp-for="EmailFPT" class="form-control" />
             </div>
 
             <div class="form-group">
-                <label asp-for="IdCoSo"></label>
+                <label asp-for="IdCoSo" style="color: black">Cơ sở</label>
                 <select asp-for="IdCoSo" class="form-control" asp-items="ViewBag.CoSoList">
                     <option value="">-- Chọn cơ sở --</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="IdVaiTro">Vai trò</label>
+                <label for="IdVaiTro" style="color: black">Vai trò</label>
                 <select asp-for="IdVaiTro" class="form-control" asp-items="ViewBag.VaiTroList">
                     <option value="">-- Chọn vai trò --</option>
                 </select>
@@ -55,9 +51,6 @@
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
     @{

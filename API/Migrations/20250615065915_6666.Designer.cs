@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ModuleDiemDanhDbContext))]
-    [Migration("20250606123406_1")]
-    partial class _1
+    [Migration("20250615065915_6666")]
+    partial class _6666
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -101,6 +101,9 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("CoSoId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("NgayCapNhat")
                         .HasColumnType("datetime2");
 
@@ -121,6 +124,8 @@ namespace API.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("IdCaHoc");
+
+                    b.HasIndex("CoSoId");
 
                     b.ToTable("CaHocs");
                 });
@@ -165,22 +170,13 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CaHocIdCaHoc")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("DiaChi")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("DiaDiemIdDiaDiem")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("IPIdIP")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("IdCaHoc")
                         .HasColumnType("uniqueidentifier");
@@ -214,12 +210,6 @@ namespace API.Migrations
 
                     b.HasKey("IdCoSo");
 
-                    b.HasIndex("CaHocIdCaHoc");
-
-                    b.HasIndex("DiaDiemIdDiaDiem");
-
-                    b.HasIndex("IPIdIP");
-
                     b.ToTable("CoSos");
                 });
 
@@ -231,6 +221,12 @@ namespace API.Migrations
 
                     b.Property<double?>("BanKinh")
                         .HasColumnType("float");
+
+                    b.Property<Guid?>("CoSosIdCoSo")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("IdCoSo")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<double?>("KinhDo")
                         .HasColumnType("float");
@@ -253,6 +249,8 @@ namespace API.Migrations
                         .HasColumnType("float");
 
                     b.HasKey("IdDiaDiem");
+
+                    b.HasIndex("CoSosIdCoSo");
 
                     b.ToTable("DiaDiems");
                 });
@@ -297,7 +295,7 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CapDoDuAnIdCDDA")
+                    b.Property<Guid?>("CapDoDuAnIdCDDA")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("IdBoMon")
@@ -381,6 +379,10 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("IdCoSo")
+                        .IsRequired()
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("KieuIP")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -395,6 +397,8 @@ namespace API.Migrations
                         .HasColumnType("bit");
 
                     b.HasKey("IdIP");
+
+                    b.HasIndex("IdCoSo");
 
                     b.ToTable("IPs");
                 });
@@ -479,6 +483,15 @@ namespace API.Migrations
 
                     b.Property<string>("NoiDung")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TenBoMon")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TenCapDoDuAn")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TenDuAn")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TenKeHoach")
@@ -690,7 +703,7 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("DuAnIdDuAn")
+                    b.Property<Guid?>("DuAnIdDuAn")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("IdBoMon")
@@ -748,7 +761,10 @@ namespace API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<Guid>("IdCoSo")
+                    b.Property<Guid?>("IdCoSo")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("IdVaiTro")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("MaNhanVien")
@@ -773,6 +789,8 @@ namespace API.Migrations
                     b.HasKey("IdNhanVien");
 
                     b.HasIndex("IdCoSo");
+
+                    b.HasIndex("IdVaiTro");
 
                     b.ToTable("PhuTrachXuongs");
                 });
@@ -941,25 +959,22 @@ namespace API.Migrations
                     b.Navigation("QuanLyBoMon");
                 });
 
-            modelBuilder.Entity("API.Data.CoSo", b =>
+            modelBuilder.Entity("API.Data.CaHoc", b =>
                 {
-                    b.HasOne("API.Data.CaHoc", "CaHoc")
-                        .WithMany("CoSos")
-                        .HasForeignKey("CaHocIdCaHoc");
+                    b.HasOne("API.Data.CoSo", "CoSo")
+                        .WithMany("CaHocs")
+                        .HasForeignKey("CoSoId");
 
-                    b.HasOne("API.Data.DiaDiem", "DiaDiem")
-                        .WithMany("CoSos")
-                        .HasForeignKey("DiaDiemIdDiaDiem");
+                    b.Navigation("CoSo");
+                });
 
-                    b.HasOne("API.Data.IP", "IP")
-                        .WithMany("CoSos")
-                        .HasForeignKey("IPIdIP");
+            modelBuilder.Entity("API.Data.DiaDiem", b =>
+                {
+                    b.HasOne("API.Data.CoSo", "CoSos")
+                        .WithMany("DiaDiems")
+                        .HasForeignKey("CoSosIdCoSo");
 
-                    b.Navigation("CaHoc");
-
-                    b.Navigation("DiaDiem");
-
-                    b.Navigation("IP");
+                    b.Navigation("CoSos");
                 });
 
             modelBuilder.Entity("API.Data.DiemDanh", b =>
@@ -1001,9 +1016,7 @@ namespace API.Migrations
                 {
                     b.HasOne("API.Data.CapDoDuAn", "CapDoDuAn")
                         .WithMany("DuAns")
-                        .HasForeignKey("CapDoDuAnIdCDDA")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CapDoDuAnIdCDDA");
 
                     b.HasOne("API.Data.QuanLyBoMon", "QuanLyBoMon")
                         .WithMany("DuAns")
@@ -1018,6 +1031,17 @@ namespace API.Migrations
                     b.Navigation("HocKy");
 
                     b.Navigation("QuanLyBoMon");
+                });
+
+            modelBuilder.Entity("API.Data.IP", b =>
+                {
+                    b.HasOne("API.Data.CoSo", "CoSo")
+                        .WithMany("IPs")
+                        .HasForeignKey("IdCoSo")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CoSo");
                 });
 
             modelBuilder.Entity("API.Data.KHNXCaHoc", b =>
@@ -1164,9 +1188,7 @@ namespace API.Migrations
                 {
                     b.HasOne("API.Data.DuAn", "DuAn")
                         .WithMany("NhomXuongs")
-                        .HasForeignKey("DuAnIdDuAn")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DuAnIdDuAn");
 
                     b.HasOne("API.Data.QuanLyBoMon", "QuanLyBoMon")
                         .WithMany("NhomXuongs")
@@ -1187,11 +1209,16 @@ namespace API.Migrations
                 {
                     b.HasOne("API.Data.CoSo", "CoSo")
                         .WithMany("PhuTrachXuongs")
-                        .HasForeignKey("IdCoSo")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("IdCoSo");
+
+                    b.HasOne("API.Data.VaiTro", "VaiTro")
+                        .WithMany("PhuTrachXuongs")
+                        .HasForeignKey("IdVaiTro")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("CoSo");
+
+                    b.Navigation("VaiTro");
                 });
 
             modelBuilder.Entity("API.Data.SinhVien", b =>
@@ -1228,8 +1255,6 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.CaHoc", b =>
                 {
-                    b.Navigation("CoSos");
-
                     b.Navigation("DiemDanhs");
 
                     b.Navigation("KHNXCaHocs");
@@ -1246,6 +1271,12 @@ namespace API.Migrations
                 {
                     b.Navigation("BoMonCoSos");
 
+                    b.Navigation("CaHocs");
+
+                    b.Navigation("DiaDiems");
+
+                    b.Navigation("IPs");
+
                     b.Navigation("KHNXCaHocs");
 
                     b.Navigation("PhuTrachXuongs");
@@ -1253,8 +1284,6 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.DiaDiem", b =>
                 {
-                    b.Navigation("CoSos");
-
                     b.Navigation("LichGiangDays");
                 });
 
@@ -1275,11 +1304,6 @@ namespace API.Migrations
             modelBuilder.Entity("API.Data.HocKy", b =>
                 {
                     b.Navigation("DuAns");
-                });
-
-            modelBuilder.Entity("API.Data.IP", b =>
-                {
-                    b.Navigation("CoSos");
                 });
 
             modelBuilder.Entity("API.Data.KHNXCaHoc", b =>
@@ -1338,6 +1362,8 @@ namespace API.Migrations
             modelBuilder.Entity("API.Data.VaiTro", b =>
                 {
                     b.Navigation("BanDaoTaos");
+
+                    b.Navigation("PhuTrachXuongs");
 
                     b.Navigation("SinhViens");
 

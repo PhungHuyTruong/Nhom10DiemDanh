@@ -1,103 +1,164 @@
-﻿@model IEnumerable<API.Data.CaHoc>
+﻿@model List<API.Data.CaHoc>
 @{
     Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
-    string tenCaHoc = Context.Request.Query["tenCaHoc"];
-    string trangThai = Context.Request.Query["trangThai"];
-    int currentPage = ViewBag.CurrentPage ?? 1;
-    int totalPages = ViewBag.TotalPages ?? 1;
+
+    var coSoId = ViewBag.CoSoId;
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var searchTen = ViewBag.SearchTen as string ?? "";
+    var trangThai = ViewBag.TrangThai as int?;
 }
 
-<h2 class="mb-4 text-white">Quản lý ca học</h2>
+<h2 class="mb-4">Quản lý ca học</h2>
 
-<!-- Bộ lọc -->
-<form method="get" class="row mb-4 g-2 align-items-end bg-white p-3 rounded shadow-sm">
-    <div class="col-md-4">
-        <label for="tenCaHoc" class="form-label">Tìm theo tên ca học</label>
-        <input type="text" name="tenCaHoc" class="form-control" value="@tenCaHoc" placeholder="Nhập tên ca học" />
-    </div>
-    <div class="col-md-3">
-        <label for="trangThai" class="form-label">Trạng thái</label>
-        <select name="trangThai" class="form-select">
-    @Html.Raw($"<option value=\"\" {(string.IsNullOrEmpty(trangThai) ? "selected" : "")}>Tất cả</option>")
-    @Html.Raw($"<option value=\"1\" {(trangThai == "1" ? "selected" : "")}>Hoạt động</option>")
-    @Html.Raw($"<option value=\"0\" {(trangThai == "0" ? "selected" : "")}>Không hoạt động</option>")
-</select>
-    </div>
-    <div class="col-md-5 d-flex gap-2">
+<div class="card mb-4">
+    <div class="card-header fw-bold">🔍 Bộ lọc</div>
+    <form method="get" class="d-flex gap-2 align-items-center p-3">
+        <input type="hidden" name="coSoId" value="@coSoId" />
+        <input type="text" name="searchTen" class="form-control" placeholder="Tên ca học" value="@searchTen" />
+        <select name="trangThai" class="form-select" style="width: 150px;">
+            <option value="">-- Trạng thái --</option>
+            <option value="1" selected="@(trangThai == 1 ? "selected" : null)">Hoạt động</option>
+            <option value="0" selected="@(trangThai == 0 ? "selected" : null)">Tạm ngưng</option>
+        </select>
         <button type="submit" class="btn btn-primary">Lọc</button>
-        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Hủy lọc</a>
-        <a class="btn btn-success ms-auto" asp-action="Create">Thêm ca học mới</a>
-    </div>
-</form>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalFormCreate">
+            ➕ Thêm ca học
+        </button>
 
-<!-- Bảng danh sách -->
-<div class="bg-white p-3 rounded shadow-sm">
-    <table class="table table-hover table-bordered align-middle mb-0">
+    </form>
+</div>
+
+<div class="table-responsive card">
+    <table class="table table-bordered text-center mb-0">
         <thead class="table-light">
             <tr>
+                <th>STT</th>
                 <th>Tên ca học</th>
                 <th>Thời gian bắt đầu</th>
                 <th>Thời gian kết thúc</th>
                 <th>Trạng thái</th>
-                <th style="width: 220px;">Hành động</th>
+                <th>Hành động</th>
             </tr>
         </thead>
         <tbody>
-            @if (!Model.Any())
+            @{
+                int pageSize = 10;
+                int stt = (currentPage - 1) * pageSize + 1;
+            }
+            @foreach (var item in Model)
             {
                 <tr>
-                    <td colspan="5" class="text-center">Không tìm thấy ca học phù hợp.</td>
+                    <td>@stt</td>
+                    <td>@item.TenCaHoc</td>
+                    <td>@item.ThoiGianBatDau</td>
+                    <td>@item.ThoiGianKetThuc</td>
+                    <td>
+                        <form asp-action="ToggleStatus" asp-controller="CaHocs" method="post">
+                            <input type="hidden" name="id" value="@item.IdCaHoc" />
+                            <input type="hidden" name="coSoId" value="@coSoId" />
+                            <div class="form-check form-switch d-flex align-items-center gap-2 justify-content-center">
+                                <input class="form-check-input" type="checkbox" name="TrangThai"
+                                       onchange="this.form.submit()" @(item.TrangThai == 1 ? "checked" : "") />
+                                <span class="badge rounded-pill @(item.TrangThai == 1 ? "bg-success" : "bg-secondary")">
+                                    @(item.TrangThai == 1 ? "Hoạt động" : "Tạm ngưng")
+                                </span>
+                            </div>
+                        </form>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="openEditModal('@item.IdCaHoc')">
+                            ✏️ Sửa
+                        </button>
+                    </td>
                 </tr>
-            }
-            else
-            {
-                foreach (var item in Model)
-                {
-                    <tr>
-                        <td>@(string.IsNullOrWhiteSpace(item.TenCaHoc) ? "(Không có tên)" : item.TenCaHoc)</td>
-                        <td>@item.ThoiGianBatDau?.ToString(@"hh\:mm")</td>
-                        <td>@item.ThoiGianKetThuc?.ToString(@"hh\:mm")</td>
-                        <td>
-                            <span class="badge @(item.TrangThai == 1 ? "bg-success" : "bg-secondary")">
-                                @(item.TrangThai == 1 ? "Hoạt động" : "Không hoạt động")
-                            </span>
-                        </td>
-                        <td class="text-nowrap">
-                            <a asp-action="Details" asp-route-id="@item.IdCaHoc" class="btn btn-sm btn-info text-white me-1"><i class="bi bi-eye-fill me-1"></i> Chi tiết</a>
-                            <a asp-action="Edit" asp-route-id="@item.IdCaHoc" class="btn btn-sm btn-primary me-1"><i class="bi bi-pencil-fill me-1"></i> Sửa</a>
-                            <form asp-action="Delete" asp-route-id="@item.IdCaHoc" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa ca học này?')">
-                                    <i class="bi bi-trash-fill me-1"></i> Xoá
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                }
+                stt++;
             }
         </tbody>
     </table>
 </div>
 
-<!-- PHÂN TRANG -->
-@if (totalPages > 1)
-{
-    <nav class="mt-3">
-        <ul class="pagination justify-content-center">
-            @for (int i = 1; i <= totalPages; i++)
-            {
-                var queryParams = new Dictionary<string, string>
-                {
-                    { "tenCaHoc", tenCaHoc ?? "" },
-                    { "trangThai", trangThai ?? "" },
-                    { "page", i.ToString() }
-                };
-                var url = Url.Action("Index") + "?" + string.Join("&", queryParams.Where(kv => !string.IsNullOrWhiteSpace(kv.Value)).Select(kv => $"{kv.Key}={kv.Value}"));
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { coSoId = coSoId, searchTen = searchTen, trangThai = trangThai, page = currentPage - 1 })">Trước</a>
+        </li>
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            <li class="page-item @(i == currentPage ? "active" : "")">
+                <a class="page-link" href="@Url.Action("Index", new { coSoId = coSoId, searchTen = searchTen, trangThai = trangThai, page = i })">@i</a>
+            </li>
+        }
+        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action("Index", new { coSoId = coSoId, searchTen = searchTen, trangThai = trangThai, page = currentPage + 1 })">Sau</a>
+        </li>
+    </ul>
+</nav>
+<!-- Modal Create -->
+<div class="modal fade" id="modalFormCreate" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createModalLabel">Thêm ca học</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @await Html.PartialAsync("Create", new API.Data.CaHoc { CoSoId = coSoId })
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Edit -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Chỉnh sửa ca học</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="editModalBody">
+                <!-- Form Edit sẽ được load tại đây -->
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function openEditModal(id) {
+            $.get(`/CaHocs/Edit/${id}`, function (html) {
+                $('#editModalBody').html(html);
+                $('#editModal').modal('show');
+                $.validator.unobtrusive.parse($('#editForm'));
+            });
+        }
 
-                <li class="page-item @(i == currentPage ? "active" : "")">
-                    <a class="page-link" href="@url">@i</a>
-                </li>
-            }
-        </ul>
-    </nav>
+        $(document).on('submit', '#editForm', function (e) {
+            e.preventDefault();
+            const form = $(this);
+
+            $.ajax({
+                url: form.attr('action'),
+                type: form.attr('method'),
+                data: form.serialize(),
+                success: function (result) {
+                    if (result.success) {
+                        $('#editModal').modal('hide');
+                        location.reload();
+                    } else {
+                        $('#editModalBody').html(result);
+                        $.validator.unobtrusive.parse($('#editForm'));
+                    }
+                }
+            });
+        });
+
+        // Kích hoạt validate khi modal hiển thị
+        $('#modalFormCreate').on('shown.bs.modal', function () {
+            $.validator.unobtrusive.parse($(this));
+        });
+        $('#modalFormEdit').on('shown.bs.modal', function () {
+            $.validator.unobtrusive.parse($(this));
+        });
+    </script>
 }

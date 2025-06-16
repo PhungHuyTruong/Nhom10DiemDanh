@@ -72,11 +72,19 @@
                                 @* <a asp-controller="CaHocs" asp-action="DanhSachTheoCoSo" asp-route-id="@item.value.IdCoSo" class="btn btn-outline-primary">
                                     <i class="fas fa-clock"></i> Ca học
                                 </a>  *@
-                                <a asp-controller="CaHocs" asp-action="Index" class="btn btn-success">
-                                    <i class="fas fa-clock"></i> Ca học
+                                <a asp-controller="CaHocs" asp-action="Index" asp-route-coSoId="@item.value.IdCoSo" class="btn btn-sm btn-primary">
+                                    Ca học
                                 </a>
-                                <a asp-controller="Ip" asp-action="Index" class="btn btn-info btn-sm ip-btn" title="IP"><i class="fas fa-network-wired"></i> IP</a>
-                                <a asp-controller="DiaDiems" asp-action="Indexs" class="btn btn-warning btn-sm dia-diem-btn" title="Địa điểm"><i class="fas fa-map-marker-alt"></i> Địa điểm</a>
+                                <a asp-controller="IPs" asp-action="Index" asp-route-coSoId="@item.value.IdCoSo" class="btn btn-sm btn-warning">
+                                    IP
+                                </a>
+                                <a asp-controller="DiaDiems"
+                                   asp-action="ListByCoSo"
+                                   asp-route-idCoSo="@item.value.IdCoSo"
+                                   class="btn btn-outline-info"
+                                   target="_self">
+                                    <i class="fas fa-map-marker-alt"></i> Địa điểm
+                                </a>
                             </td>
                         </tr>
                     }

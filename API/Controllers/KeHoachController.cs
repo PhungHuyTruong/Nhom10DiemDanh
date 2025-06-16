@@ -19,6 +19,7 @@ namespace API.Controllers
             _context = context;
         }
 
+
         [HttpGet]
         public async Task<IActionResult> GetKeHoachs(string tuKhoa = "", string trangThai = "", string idBoMon = "", string idCapDoDuAn = "", string idHocKy = "", string namHoc = "")
         {
@@ -37,7 +38,7 @@ namespace API.Controllers
                               (string.IsNullOrEmpty(idCapDoDuAn) || (d != null && d.IdCDDA.ToString() == idCapDoDuAn)) &&
                               (string.IsNullOrEmpty(idHocKy) || (d != null && d.IdHocKy.ToString() == idHocKy)) &&
                               (string.IsNullOrEmpty(namHoc) || (d != null && d.NgayTao.Year.ToString() == namHoc))
-                        select new KeHoachViewModel
+                        select new KeHoachInputModel
                         {
                             IdKeHoach = k.IdKeHoach,
                             TenKeHoach = k.TenKeHoach,
@@ -71,7 +72,7 @@ namespace API.Controllers
                 return NotFound();
             }
 
-            var keHoachViewModel = new KeHoachViewModel
+            var keHoachViewModel = new KeHoachInputModel
             {
                 IdKeHoach = keHoach.IdKeHoach,
                 TenKeHoach = keHoach.TenKeHoach,
@@ -91,17 +92,26 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateKeHoach([FromBody] KeHoachViewModel model)
+        public async Task<IActionResult> CreateKeHoach([FromForm] KeHoachInputModel model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (model.ThoiGianBatDau >= model.ThoiGianKetThuc)
+            var duAn = await _context.DuAns
+                .Include(d => d.QuanLyBoMon)
+                .Include(d => d.CapDoDuAn)
+                .FirstOrDefaultAsync(d => d.IdDuAn == model.IdDuAn);
+
+            if (duAn == null)
             {
-                return BadRequest(new { message = "Thời gian kết thúc phải lớn hơn thời gian bắt đầu." });
+                return BadRequest(new { message = "Không thể tạo kế hoạch: Dự án không tồn tại." });
             }
+            //if (model.ThoiGianBatDau >= model.ThoiGianKetThuc)
+            //{
+            //    return BadRequest(new { message = "Thời gian kết thúc phải lớn hơn thời gian bắt đầu." });
+            //}
 
             var keHoach = new KeHoach
             {
@@ -112,7 +122,11 @@ namespace API.Controllers
                 ThoiGianBatDau = model.ThoiGianBatDau,
                 ThoiGianKetThuc = model.ThoiGianKetThuc,
                 TrangThai = model.TrangThai,
-                NgayTao = DateTime.Now
+                NgayTao = DateTime.Now,
+
+                TenDuAn = duAn.TenDuAn,
+                TenBoMon = duAn.QuanLyBoMon?.TenBoMon,
+                TenCapDoDuAn = duAn.CapDoDuAn?.TenCapDoDuAn
             };
 
             _context.KeHoachs.Add(keHoach);
@@ -122,7 +136,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateKeHoach(Guid id, [FromBody] KeHoachViewModel model)
+        public async Task<IActionResult> UpdateKeHoach(Guid id, [FromForm] KeHoachInputModel model)
         {
             if (id != model.IdKeHoach)
             {
@@ -140,6 +154,16 @@ namespace API.Controllers
                 return NotFound();
             }
 
+            var duAn = await _context.DuAns
+                .Include(d => d.QuanLyBoMon)
+                .Include(d => d.CapDoDuAn)
+                .FirstOrDefaultAsync(d => d.IdDuAn == model.IdDuAn);
+
+            if (duAn == null)
+            {
+                return BadRequest(new { message = "Không thể cập nhật kế hoạch: Dự án không tồn tại." });
+            }
+
             keHoach.TenKeHoach = model.TenKeHoach;
             keHoach.IdDuAn = model.IdDuAn;
             keHoach.NoiDung = model.NoiDung;
@@ -147,6 +171,11 @@ namespace API.Controllers
             keHoach.ThoiGianKetThuc = model.ThoiGianKetThuc;
             keHoach.TrangThai = model.TrangThai;
             keHoach.NgayCapNhat = DateTime.Now;
+
+            // Cập nhật lại thông tin từ DuAn giống Create
+            keHoach.TenDuAn = duAn.TenDuAn;
+            keHoach.TenBoMon = duAn.QuanLyBoMon?.TenBoMon;
+            keHoach.TenCapDoDuAn = duAn.CapDoDuAn?.TenCapDoDuAn;
 
             await _context.SaveChangesAsync();
 

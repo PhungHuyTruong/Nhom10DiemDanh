@@ -36,7 +36,7 @@ namespace API.Controllers
         {
             diaDiem.IdDiaDiem = Guid.NewGuid();
             diaDiem.NgayTao = DateTime.Now;
-            diaDiem.TrangThai = true;
+            //diaDiem.TrangThai = true;
 
             _context.DiaDiems.Add(diaDiem);
             await _context.SaveChangesAsync();
@@ -86,6 +86,15 @@ namespace API.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+        [HttpGet("by-coso/{idCoSo}")]
+        public async Task<IActionResult> GetByCoSo(Guid idCoSo)
+        {
+            var diaDiems = await _context.DiaDiems
+                .Where(dd => dd.IdCoSo == idCoSo)
+                .ToListAsync();
+
+            return Ok(diaDiems);
         }
     }
 }

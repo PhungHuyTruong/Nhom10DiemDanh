@@ -3,12 +3,12 @@
 <form id="createForm">
     @Html.AntiForgeryToken()
     <div class="form-group">
-        <label asp-for="TenCoSo" class="control-label"></label>
+        <label asp-for="TenCoSo" class="control-label" style="color:black"></label>
         <input asp-for="TenCoSo" class="form-control" />
         <span asp-validation-for="TenCoSo" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="MaCoSo" class="control-label"></label>
+        <label asp-for="MaCoSo" class="control-label" style="color:black"></label>
         <input asp-for="MaCoSo" class="form-control" />
         <span asp-validation-for="MaCoSo" class="text-danger"></span>
     </div>

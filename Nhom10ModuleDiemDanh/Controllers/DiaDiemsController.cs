@@ -12,7 +12,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
 
         public DiaDiemsController(IHttpClientFactory factory)
         {
-            _client = factory.CreateClient("MyApi");
+            _client = factory.CreateClient("ApiClient");
             _client.BaseAddress = new Uri("http://localhost:5017/api/");
         }
 
@@ -44,24 +44,68 @@ namespace Nhom10ModuleDiemDanh.Controllers
         }
 
         // GET: Create
-        public IActionResult Create() => View();
+        [HttpGet]
+        public IActionResult Create(Guid idCoSo)
+        {
+            // Kiểm tra xem IdCoSo có được truyền vào không
+            if (idCoSo == Guid.Empty)
+            {
+                // Nếu không có IdCoSo, không thể tạo địa điểm. Chuyển hướng về trang nào đó hoặc báo lỗi.
+                return BadRequest("Không có thông tin cơ sở để tạo địa điểm.");
+            }
+
+            // Tạo một model mới và gán IdCoSo vào đó
+            var viewModel = new DiaDiem
+            {
+                IdCoSo = idCoSo
+            };
+
+            // Trả về View với model đã chứa sẵn IdCoSo (để điền vào trường ẩn)
+            return View(viewModel);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Create(DiaDiem model)
         {
-            var json = JsonSerializer.Serialize(model);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _client.PostAsync("DiaDiem", content);
-
-            if (!response.IsSuccessStatusCode)
+            // BƯỚC 1: KIỂM TRA DỮ LIỆU TỪ FORM CÓ HỢP LỆ KHÔNG
+            // Kiểm tra các [Required], [Range]... trong class DiaDiem
+            if (!ModelState.IsValid)
             {
-                var errorMsg = await response.Content.ReadAsStringAsync();
-                ModelState.AddModelError("", $"Lỗi tạo địa điểm: {errorMsg}");
-                return View(model); // Giữ lại form để người dùng sửa
+                // Nếu không hợp lệ, trả về ngay lập tức form cho người dùng sửa lại
+                // các lỗi sẽ được hiển thị nhờ <div asp-validation-summary="All"></div>
+                return View(model);
             }
 
-            return RedirectToAction("Indexs"); // Thành công → quay về danh sách
+            // BƯỚC 2: GỌI API VÀ XỬ LÝ LỖI
+            try
+            {
+                var json = JsonSerializer.Serialize(model);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _client.PostAsync("DiaDiem", content);
+
+                // Xử lý kết quả trả về từ API
+                if (response.IsSuccessStatusCode)
+                {
+                    // Thành công! Chuyển hướng người dùng về trang chi tiết của cơ sở họ vừa thêm địa điểm.
+                    // Đây là trải nghiệm người dùng tốt hơn là về trang danh sách chung.
+                    return RedirectToAction("Index", "CoSo", new { id = model.IdCoSo });
+                }
+                else
+                {
+                    // Nếu API trả về lỗi (ví dụ: tên trùng, IdCoSo không tồn tại...)
+                    // Đọc nội dung lỗi và hiển thị trên form
+                    var errorMsg = await response.Content.ReadAsStringAsync();
+                    ModelState.AddModelError(string.Empty, $"Lỗi từ API: {errorMsg}");
+                    return View(model); // Giữ lại form để người dùng sửa
+                }
+            }
+            catch (Exception ex)
+            {
+                // Bắt các lỗi về kết nối mạng hoặc API không chạy...
+                ModelState.AddModelError(string.Empty, $"Không thể kết nối tới máy chủ. Vui lòng thử lại sau. Lỗi: {ex.Message}");
+                return RedirectToAction("Index", "CoSo", new { id = model.IdCoSo });
+            }
         }
 
         // GET: Edit
@@ -99,27 +143,14 @@ namespace Nhom10ModuleDiemDanh.Controllers
 
             return RedirectToAction("Indexs");
         }
-
+        // Trong DiaDiemsController.cs (Client)
         [HttpPost]
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
-            // Gọi API GET để lấy thông tin địa điểm
-            var getResponse = await _client.GetAsync($"DiaDiem/{id}");
-            if (!getResponse.IsSuccessStatusCode) return NotFound();
+            // Chỉ cần gọi POST đến endpoint chuyên dụng là đủ
+            var response = await _client.PostAsync($"DiaDiem/doi-trang-thai/{id}", null);
 
-            var json = await getResponse.Content.ReadAsStringAsync();
-            var diaDiem = JsonSerializer.Deserialize<DiaDiem>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            if (diaDiem == null) return NotFound();
-
-            diaDiem.TrangThai = !diaDiem.TrangThai;
-            diaDiem.NgayCapNhat = DateTime.Now;
-
-            // Gửi PUT cập nhật
-            var putJson = JsonSerializer.Serialize(diaDiem);
-            var content = new StringContent(putJson, Encoding.UTF8, "application/json");
-            var putResponse = await _client.PutAsync($"DiaDiem/{id}", content);
-
-            if (!putResponse.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
                 return BadRequest("Không thể đổi trạng thái.");
 
             return RedirectToAction("Indexs");
@@ -139,6 +170,23 @@ namespace Nhom10ModuleDiemDanh.Controllers
                 return NotFound("Không có dữ liệu.");
 
             return View(diaDiem);
+        }
+        // GET: DiaDiems/ListByCoSo/{idCoSo}
+        public async Task<IActionResult> ListByCoSo(Guid idCoSo)
+        {
+            var response = await _client.GetAsync($"DiaDiem/by-coso/{idCoSo}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                ViewBag.Error = "Không thể tải danh sách địa điểm.";
+                return View(new List<DiaDiem>());
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var diaDiems = JsonSerializer.Deserialize<List<DiaDiem>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            ViewBag.IdCoSo = idCoSo;
+            return View("Indexs", diaDiems); // Tái sử dụng view Indexs để hiển thị
         }
     }
 }

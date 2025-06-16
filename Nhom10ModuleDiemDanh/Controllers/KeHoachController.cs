@@ -16,20 +16,22 @@ namespace Nhom10ModuleDiemDanh.Controllers
         private readonly IKeHoachService _keHoachService;
         private readonly HttpClient _httpClient;
         private readonly string _apiBaseUrl = "https://localhost:7296/";
+        private readonly ModuleDiemDanhDbContext _context;
 
-        public KeHoachController(IKeHoachService keHoachService, HttpClient httpClient)
+        public KeHoachController(ModuleDiemDanhDbContext context, IKeHoachService keHoachService, HttpClient httpClient)
         {
             _keHoachService = keHoachService;
             _httpClient = httpClient;
+            _context = context;
         }
 
         public async Task<IActionResult> Index(string tuKhoa = "", string trangThai = "", string idBoMon = "", string idCapDoDuAn = "", string idHocKy = "", string namHoc = "")
         {
             // Lấy dữ liệu cho bộ lọc từ API
-            var boMonsResponse = await _httpClient.GetAsync($"{_apiBaseUrl}/QuanLyBoMon");
-            var capDoDuAnsResponse = await _httpClient.GetAsync($"{_apiBaseUrl}/CapDoDuAn");
-            var hocKysResponse = await _httpClient.GetAsync($"{_apiBaseUrl}/HocKy");
-            var duAnsResponse = await _httpClient.GetAsync($"{_apiBaseUrl}/DuAn");
+            var boMonsResponse = await _httpClient.GetAsync($"{_apiBaseUrl}api/QuanLyBoMons");
+            var capDoDuAnsResponse = await _httpClient.GetAsync($"{_apiBaseUrl}api/CapDoDuAn");
+            var hocKysResponse = await _httpClient.GetAsync($"{_apiBaseUrl}api/HocKy");
+            var duAnsResponse = await _httpClient.GetAsync($"{_apiBaseUrl}api/DuAn");
 
             if (boMonsResponse.IsSuccessStatusCode && capDoDuAnsResponse.IsSuccessStatusCode && hocKysResponse.IsSuccessStatusCode && duAnsResponse.IsSuccessStatusCode)
             {
@@ -77,32 +79,23 @@ namespace Nhom10ModuleDiemDanh.Controllers
 
         public IActionResult Create()
         {
+            var duAns = _context.DuAns
+        .Select(d => new { d.IdDuAn, d.TenDuAn })
+        .ToList();
+
+            ViewBag.DuAnList = new SelectList(duAns, "IdDuAn", "TenDuAn");
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] KeHoachViewModel model)
+        public async Task<IActionResult> Create(KeHoachViewModel model)
         {
+            Console.WriteLine("===> IdDuAn nhận được từ form: " + model.IdDuAn);
             try
             {
                 if (model == null)
                 {
                     return Json(new { success = false, message = "Dữ liệu không được để trống" });
-                }
-
-                if (string.IsNullOrEmpty(model.TenKeHoach))
-                {
-                    return Json(new { success = false, message = "Tên kế hoạch không được để trống" });
-                }
-
-                if (string.IsNullOrEmpty(model.NoiDung))
-                {
-                    return Json(new { success = false, message = "Nội dung không được để trống" });
-                }
-
-                if (model.ThoiGianBatDau >= model.ThoiGianKetThuc)
-                {
-                    return Json(new { success = false, message = "Thời gian kết thúc phải lớn hơn thời gian bắt đầu" });
                 }
 
                 await _keHoachService.CreateKeHoach(model);
@@ -130,25 +123,71 @@ namespace Nhom10ModuleDiemDanh.Controllers
 
         public async Task<IActionResult> Edit(Guid id)
         {
-            var model = await _keHoachService.GetKeHoachById(id);
-            if (model == null) return NotFound();
-            return View(model);
+            var response = await _httpClient.GetAsync($"https://localhost:7296/api/KeHoach/{id}");
+            if (!response.IsSuccessStatusCode) return NotFound();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var keHoach = JsonSerializer.Deserialize<KeHoachViewModel>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            // This is where you're fetching DuAns
+            var duAns = _context.DuAns
+                .Select(d => new { d.IdDuAn, d.TenDuAn })
+                .ToList();
+
+            ViewBag.DuAnList = new SelectList(duAns, "IdDuAn", "TenDuAn", keHoach.IdDuAn);
+
+            return View(keHoach);
         }
+
+
+        // Trong KeHoachController.cs
 
         [HttpPost]
         public async Task<IActionResult> Edit(KeHoachViewModel model)
         {
-            if (ModelState.IsValid)
+            // Luôn tải lại danh sách dự án cho ViewBag, để đảm bảo DropdownList có dữ liệu khi trả về View
+            var duAns = _context.DuAns
+                .Select(d => new { d.IdDuAn, d.TenDuAn })
+                .ToList();
+            ViewBag.DuAnList = new SelectList(duAns, "IdDuAn", "TenDuAn", model.IdDuAn);
+
+            // Kiểm tra các lỗi validation từ Model Binding
+            if (!ModelState.IsValid)
             {
-                if (model.ThoiGianBatDau >= model.ThoiGianKetThuc)
-                {
-                    ModelState.AddModelError("", "Thời gian kết thúc phải lớn hơn thời gian bắt đầu.");
-                    return View(model);
-                }
-                await _keHoachService.UpdateKeHoach(model);
-                return Json(new { success = true });
+                // Trả về JSON với các lỗi validation
+                // Thu thập tất cả các lỗi từ ModelState
+                var errors = ModelState.Values
+                                     .SelectMany(v => v.Errors)
+                                     .Select(e => e.ErrorMessage)
+                                     .ToList();
+                return Json(new { success = false, message = "Dữ liệu nhập không hợp lệ.", errors = errors });
             }
-            return View(model);
+
+            // Kiểm tra validation logic riêng (Thời gian bắt đầu, kết thúc)
+            if (model.ThoiGianBatDau >= model.ThoiGianKetThuc)
+            {
+                // Thêm lỗi vào ModelState và trả về JSON
+                ModelState.AddModelError("", "Thời gian kết thúc phải lớn hơn thời gian bắt đầu.");
+                var errors = ModelState.Values
+                                     .SelectMany(v => v.Errors)
+                                     .Select(e => e.ErrorMessage)
+                                     .ToList();
+                return Json(new { success = false, message = "Thời gian không hợp lệ.", errors = errors });
+            }
+
+            try
+            {
+                await _keHoachService.UpdateKeHoach(model);
+                return Json(new { success = true }); // Thành công, trả về JSON thành công
+            }
+            catch (Exception ex)
+            {
+                // Bắt lỗi từ service và trả về JSON
+                return Json(new { success = false, message = "Lỗi khi cập nhật kế hoạch: " + ex.Message });
+            }
         }
 
         public async Task<IActionResult> Details(Guid id)

@@ -8,7 +8,7 @@
     <form id="createForm" asp-action="Create" asp-controller="KeHoach" method="post">
         <div class="mb-3">
             <label class="form-label">Dự án</label>
-            <select asp-for="IdDuAn" class="form-select" id="IdDuAn">
+            <select asp-for="IdDuAn" asp-items="ViewBag.DuAnList" class="form-select">
                 <option value="">Chọn dự án...</option>
             </select>
             <span asp-validation-for="IdDuAn" class="text-danger"></span>

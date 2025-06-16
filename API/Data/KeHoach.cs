@@ -1,6 +1,7 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Data
 {
@@ -27,7 +28,12 @@ namespace API.Data
         public DateTime? NgayCapNhat { get; set; }
 
         // Navigation properties
+        [ForeignKey(nameof(IdDuAn))]
         public virtual DuAn DuAn { get; set; }
         public virtual ICollection<KeHoachNhomXuong> KeHoachNhomXuongs { get; set; }
+
+        public string? TenDuAn { get; set; }
+        public string? TenBoMon { get; set; }
+        public string? TenCapDoDuAn { get; set; }
     }
 }

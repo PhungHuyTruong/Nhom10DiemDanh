@@ -19,6 +19,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
     public class PhuTrachXuongsController : Controller
     {
         private readonly HttpClient _client;
+        private const int PageSize = 10;
 
         public PhuTrachXuongsController(IHttpClientFactory factory)
         {
@@ -26,19 +27,45 @@ namespace Nhom10ModuleDiemDanh.Controllers
             _client.BaseAddress = new Uri("https://localhost:7296/api/");
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchMa, bool? trangThai, int page = 1)
         {
             var response = await _client.GetAsync("PhuTrachXuongs/GetAll");
+
             if (!response.IsSuccessStatusCode)
                 return View(new List<DtoApi>());
 
             var json = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(json))
+                return View(new List<DtoApi>());
+
             var data = JsonSerializer.Deserialize<List<DtoApi>>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
 
-            return View(data);
+            // Lọc theo mã phụ trách (nếu có)
+            if (!string.IsNullOrEmpty(searchMa))
+                data = data.Where(p => p.MaNhanVien.Contains(searchMa, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            // Lọc theo trạng thái (nếu có)
+            if (trangThai.HasValue)
+                data = data.Where(p => p.TrangThai == trangThai.Value).ToList();
+
+            // Phân trang
+            int totalItems = data.Count;
+            var items = data
+                .OrderByDescending(p => p.NgayTao) // nếu có NgayTao
+                .Skip((page - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            // Truyền dữ liệu phân trang về View
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / PageSize);
+            ViewBag.SearchMa = searchMa;
+            ViewBag.TrangThai = trangThai;
+
+            return View(items);
         }
 
 
@@ -94,9 +121,9 @@ namespace Nhom10ModuleDiemDanh.Controllers
             var model = JsonSerializer.Deserialize<PhuTrachXuong>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             await LoadCoSoList();
-            await LoadVaiTroList(); // Thêm dòng này
+            await LoadVaiTroList();
 
-            return View(model);
+            return PartialView("Edit", model);
         }
 
         [HttpPost]

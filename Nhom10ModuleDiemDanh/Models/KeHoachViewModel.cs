@@ -8,12 +8,12 @@ namespace Nhom10ModuleDiemDanh.Models
 
         [Required(ErrorMessage = "Tên kế hoạch không được để trống")]
         [MaxLength(255, ErrorMessage = "Tên kế hoạch không được vượt quá 255 ký tự")]
-        public string TenKeHoach { get; set; }
+        public string? TenKeHoach { get; set; }
 
         public Guid? IdDuAn { get; set; }
 
         [Required(ErrorMessage = "Nội dung không được để trống")]
-        public string NoiDung { get; set; }
+        public string? NoiDung { get; set; }
 
         [Required(ErrorMessage = "Thời gian bắt đầu không được để trống")]
         public DateTime ThoiGianBatDau { get; set; }
@@ -27,8 +27,8 @@ namespace Nhom10ModuleDiemDanh.Models
 
         public DateTime? NgayCapNhat { get; set; }
 
-        public string TenDuAn { get; set; }
-        public string TenBoMon { get; set; }
-        public string TenCapDoDuAn { get; set; }
+        public string? TenDuAn { get; set; }
+        public string? TenBoMon { get; set; }
+        public string? TenCapDoDuAn { get; set; }
     }
 }

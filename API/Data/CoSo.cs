@@ -20,8 +20,8 @@ namespace API.Data
         public bool TrangThai { get; set; } = true;
 
         // Navigation properties
-        public virtual DiaDiem? DiaDiem { get; set; }
-        public virtual IP? IP { get; set; }
+        public virtual ICollection<DiaDiem> DiaDiems { get; set; }
+        public virtual ICollection<IP> IPs { get; set; } = new List<IP>();
         public virtual ICollection<CaHoc> CaHocs { get; set; } = new List<CaHoc>();
         public virtual ICollection<PhuTrachXuong> PhuTrachXuongs { get; set; }
         public virtual ICollection<BoMonCoSo> BoMonCoSos { get; set; }

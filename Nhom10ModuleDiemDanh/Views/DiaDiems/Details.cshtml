@@ -1,44 +1,101 @@
 ﻿@model API.Data.DiaDiem
 
-  @{
-    ViewData["Title"] = "Details";
+@{
+    ViewData["Title"] = "Chi tiết địa điểm";
+}
 
-} *
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // Lấy tọa độ và bán kính từ Model của Razor
+        var lat = @Model.ViDo;
+        var lng = @Model.KinhDo;
+        var radius = @Model.BanKinh;
+
+        // Khởi tạo bản đồ, đặt trung tâm là vị trí của địa điểm
+        var map = L.map('map', {
+            dragging: false,
+            zoomControl: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false
+        }).setView([lat, lng], 16);
+
+        // Thêm lớp bản đồ nền
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        // Thêm marker (dấu chấm) tại vị trí
+        L.marker([lat, lng]).addTo(map)
+            .bindPopup('@Model.TenDiaDiem')
+            .openPopup();
+
+        // Thêm vòng tròn thể hiện bán kính
+        L.circle([lat, lng], {
+            color: 'blue',
+            fillColor: '#3388ff',
+            fillOpacity: 0.2,
+            radius: radius
+        }).addTo(map);
+    </script>
+}
 
 <div class="container mt-4">
-    <h2 class="text-primary">Chi tiết địa điểm</h2>
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Chi tiết - @Model.TenDiaDiem</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4"><i class="fas fa-map-marker-alt text-secondary me-2"></i>Tên địa điểm</dt>
+                        <dd class="col-sm-8"><strong>@Model.TenDiaDiem</strong></dd>
 
-    <dl class="row">
-        <dt class="col-sm-3">Tên địa điểm</dt>
-        <dd class="col-sm-9">@Model.TenDiaDiem</dd>
+                        <dt class="col-sm-4"><i class="fas fa-ruler-vertical text-secondary me-2"></i>Vĩ độ</dt>
+                        <dd class="col-sm-8">@Model.ViDo</dd>
 
-        <dt class="col-sm-3">Vĩ độ</dt>
-        <dd class="col-sm-9">@Model.ViDo</dd>
+                        <dt class="col-sm-4"><i class="fas fa-ruler-horizontal text-secondary me-2"></i>Kinh độ</dt>
+                        <dd class="col-sm-8">@Model.KinhDo</dd>
 
-        <dt class="col-sm-3">Kinh độ</dt>
-        <dd class="col-sm-9">@Model.KinhDo</dd>
+                        <dt class="col-sm-4"><i class="fas fa-draw-circle text-secondary me-2"></i>Bán kính</dt>
+                        <dd class="col-sm-8">@Model.BanKinh m</dd>
 
-        <dt class="col-sm-3">Bán kính</dt>
-        <dd class="col-sm-9">@Model.BanKinh m</dd>
+                        <dt class="col-sm-4"><i class="fas fa-calendar-plus text-secondary me-2"></i>Ngày tạo</dt>
+                        <dd class="col-sm-8">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</dd>
 
-        <dt class="col-sm-3">Ngày tạo</dt>
-        <dd class="col-sm-9">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</dd>
+                        <dt class="col-sm-4"><i class="fas fa-calendar-check text-secondary me-2"></i>Ngày cập nhật</dt>
+                        <dd class="col-sm-8">@Model.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm")</dd>
 
-        <dt class="col-sm-3">Ngày cập nhật</dt>
-        <dd class="col-sm-9">@Model.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm")</dd>
+                        <dt class="col-sm-4"><i class="fas fa-power-off text-secondary me-2"></i>Trạng thái</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.TrangThai)
+                            {
+                                <span class="badge bg-success rounded-pill px-3">Hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger rounded-pill px-3">Ngưng hoạt động</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
 
-        <dt class="col-sm-3">Trạng thái</dt>
-        <dd class="col-sm-9">
-            @if (Model.TrangThai)
-            {
-                <span class="badge bg-success">Hoạt động</span>
-            }
-            else
-            {
-                <span class="badge bg-danger">Ngưng hoạt động</span>
-            }
-        </dd>
-    </dl>
-
-    <a asp-action="Indexs" class="btn btn-secondary">Quay lại danh sách</a>
+                <div class="col-md-6">
+                    <div id="map" style="height: 350px; border-radius: 8px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-light text-end">
+            <a asp-action="Edit" asp-route-id="@Model.IdDiaDiem" class="btn btn-warning">
+                <i class="fas fa-edit me-1"></i> Chỉnh sửa
+            </a>
+            <a asp-controller="DiaDiems" asp-action="Indexs" asp-route-id="@Model.IdCoSo" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Quay về Cơ sở
+            </a>
+        </div>
+    </div>
 </div>

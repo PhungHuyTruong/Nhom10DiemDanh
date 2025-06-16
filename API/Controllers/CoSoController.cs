@@ -45,7 +45,7 @@ namespace API.Controllers
                 Email = c.Email,
                 TrangThai = c.TrangThai ? "Hoạt động" : "Tắt",
                 IdDiaDiem = c.IdDiaDiem,
-                IdIP = c.IdIP,
+                //IdIP = c.IdIP,
                 //IdCaHoc = c.IdCaHoc
             }).ToListAsync();
 
@@ -72,7 +72,7 @@ namespace API.Controllers
                 Email = coSo.Email,
                 TrangThai = coSo.TrangThai ? "Hoạt động" : "Tắt",
                 IdDiaDiem = coSo.IdDiaDiem,
-                IdIP = coSo.IdIP,
+                //IdIP = coSo.IdIP,
                 //IdCaHoc = coSo.IdCaHoc
             };
 
@@ -96,7 +96,7 @@ namespace API.Controllers
                 Email = model.Email,
                 TrangThai = model.TrangThai == "Hoạt động",
                 IdDiaDiem = model.IdDiaDiem,
-                IdIP = model.IdIP,
+                //IdIP = model.IdIP,
                 //IdCaHoc = model.IdCaHoc
             };
 
@@ -128,7 +128,7 @@ namespace API.Controllers
             coSo.Email = model.Email;
             coSo.TrangThai = model.TrangThai == "Hoạt động";
             coSo.IdDiaDiem = model.IdDiaDiem;
-            coSo.IdIP = model.IdIP;
+            //coSo.IdIP = model.IdIP;
             //coSo.IdCaHoc = model.IdCaHoc;
             coSo.NgayCapNhat = DateTime.Now;
 

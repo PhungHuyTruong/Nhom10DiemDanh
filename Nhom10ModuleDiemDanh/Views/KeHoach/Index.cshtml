@@ -255,38 +255,21 @@
             });
 
             // Load Edit Modal
-            $('.edit-btn').click(function () {
-                var id = $(this).data('id');
-                $.ajax({
-                    url: '@Url.Action("Edit", "KeHoach")/' + id,
-                    type: 'GET',
-                    success: function (data) {
-                        $('#editModalBody').html(data);
-                        $.ajax({
-                            url: 'https://localhost:7296/api/DuAn',
-                            type: 'GET',
-                            success: function (duAns) {
-                                var select = $('#IdDuAn');
-                                select.empty();
-                                select.append('<option value="">Chọn dự án</option>');
-                                $.each(duAns, function (i, item) {
-                                    if (item.trangThai) {
-                                        select.append('<option value="' + item.idDuAn + '">' + item.tenDuAn + '</option>');
-                                    }
-                                });
-                                select.val($('#IdDuAn').data('selected'));
-                            },
-                            error: function () {
-                                alert('Không thể tải danh sách dự án.');
-                            }
-                        });
-                        $('#editForm').validate();
-                    },
-                    error: function () {
-                        alert('Không thể tải form sửa kế hoạch.');
-                    }
-                });
+                    // Load Edit Modal
+        $('.edit-btn').click(function () {
+            var id = $(this).data('id');
+            $.ajax({
+                url: '@Url.Action("Edit", "KeHoach")/' + id,
+                type: 'GET',
+                success: function (data) {
+                    $('#editModalBody').html(data); // This will include the pre-populated dropdown
+                    $('#editForm').validate(); // Re-initialize validation for the new form content
+                },
+                error: function () {
+                    alert('Không thể tải form sửa kế hoạch.');
+                }
             });
+        });
 
             // Save Edit
             $('#saveEditBtn').click(function () {

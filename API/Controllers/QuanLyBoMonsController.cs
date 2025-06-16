@@ -20,6 +20,22 @@ namespace API.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var data = await _context.QuanLyBoMons
+                .Select(x => new
+                {
+                    x.IDBoMon,
+                    x.MaBoMon,
+                    x.TenBoMon,
+                    x.TrangThai
+                })
+                .ToListAsync();
+
+            return Ok(data);
+        }
+
         // GET: api/QuanLyBoMons
         [HttpGet("paging")]
         public async Task<IActionResult> GetPaged(
