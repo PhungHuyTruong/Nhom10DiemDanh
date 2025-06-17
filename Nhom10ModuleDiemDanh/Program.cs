@@ -4,19 +4,19 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using Nhom10ModuleDiemDanh.Services;
 using System.Net.Http.Headers;
-using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authentication.OAuth;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDistributedMemoryCache(); 
+builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); 
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-
 
 builder.Services.AddDbContext<ModuleDiemDanhDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -28,23 +28,9 @@ builder.Services.AddHttpClient("MyApi", client =>
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 });
 
-
-// Add authentication
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-})
-.AddCookie()
-.AddGoogle(options =>
-{
-    options.ClientId = builder.Configuration["GoogleKeys:ClientId"];
-    options.ClientSecret = builder.Configuration["GoogleKeys:ClientSecret"];
-});
-
 builder.Services.AddHttpClient<ICoSoService, CoSoService>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7296/"); // Ð?m b?o kh?p v?i API project
+    client.BaseAddress = new Uri("https://localhost:7296/");
 });
 
 builder.Services.AddHttpClient<IBoMonCoSoService, BoMonCoSoService>(client =>
@@ -60,11 +46,31 @@ builder.Services.AddHttpClient<IKeHoachService, KeHoachService>(client =>
 
 builder.Services.AddScoped<IKeHoachService, KeHoachService>();
 
-//builder.Services.AddHttpClient("MyApi", client =>
-//{
-//    client.BaseAddress = new Uri("https://localhost:7296/api/");
-//});
- 
+// Add authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["GoogleKeys:ClientId"];
+    options.ClientSecret = builder.Configuration["GoogleKeys:ClientSecret"];
+    options.CallbackPath = "/signin-google";
+
+    options.Events = new OAuthEvents
+    {
+        OnRemoteFailure = context =>
+        {
+            // 🔁 Redirect về Home/Index kèm error
+            context.Response.Redirect("/Home/Index?error=" + Uri.EscapeDataString(context.Failure?.Message ?? "unknown"));
+            context.HandleResponse();
+            return Task.CompletedTask;
+        }
+    };
+});
+
 
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(options =>
@@ -75,28 +81,23 @@ builder.Services.AddControllersWithViews()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
-
-builder.Services.AddHttpClient();
-
 var app = builder.Build();
 
-// Configure pipeline
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-builder.Services.AddSession();
-app.UseSession();
 
-app.UseAuthentication();  
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
+app.UseSession(); 
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseSession();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
