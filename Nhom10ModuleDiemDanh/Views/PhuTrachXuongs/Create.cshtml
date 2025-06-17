@@ -1,52 +1,60 @@
-﻿@using API.Data
-@model API.Data.PhuTrachXuong
+﻿@model Nhom10ModuleDiemDanh.Models.PhuTrachXuongDto
 
 
 @{
     Layout = null;
-    var coSoList = ViewBag.CoSoList as List<API.Data.CoSo>;
+    // var coSoList = ViewData["CoSoList"] as List<SelectListItem>;
+    // var vaiTroList = ViewData["VaiTroList"] as List<SelectListItem>;
 }
 
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create" method="post">
             <div class="form-group">
-                <label asp-for="TenNhanVien" style="color: black"></label>
+                <label asp-for="TenNhanVien"></label>
                 <input asp-for="TenNhanVien" class="form-control" />
                 <span asp-validation-for="TenNhanVien" class="text-danger"></span>
             </div>
 
             <div class="form-group">
-                <label asp-for="MaNhanVien" style="color: black"></label>
+                <label asp-for="MaNhanVien"></label>
                 <input asp-for="MaNhanVien" class="form-control" />
+                <span asp-validation-for="MaNhanVien" class="text-danger"></span>
             </div>
 
             <div class="form-group">
-                <label asp-for="EmailFE" style="color: black"></label>
+                <label asp-for="EmailFE"></label>
                 <input asp-for="EmailFE" class="form-control" />
+                <span asp-validation-for="EmailFE" class="text-danger"></span>
             </div>
 
             <div class="form-group">
-                <label asp-for="EmailFPT" style="color: black"></label>
+                <label asp-for="EmailFPT"></label>
                 <input asp-for="EmailFPT" class="form-control" />
+                <span asp-validation-for="EmailFPT" class="text-danger"></span>
             </div>
 
             <div class="form-group">
-                <label asp-for="IdCoSo" style="color: black">Cơ sở</label>
-                <select asp-for="IdCoSo" class="form-control" asp-items="ViewBag.CoSoList">
+                <label asp-for="IdCoSo">Cơ sở</label>
+                <select asp-for="IdCoSo" asp-items="ViewBag.CoSoList" class="form-control">
                     <option value="">-- Chọn cơ sở --</option>
                 </select>
+                <span asp-validation-for="IdCoSo" class="text-danger"></span>
             </div>
 
             <div class="form-group">
-                <label for="IdVaiTro" style="color: black">Vai trò</label>
-                <select asp-for="IdVaiTro" class="form-control" asp-items="ViewBag.VaiTroList">
-                    <option value="">-- Chọn vai trò --</option>
+                <label asp-for="IdVaiTros">Vai trò</label>
+                <select name="IdVaiTros" multiple class="form-control">
+                    @foreach (var item in (IEnumerable<SelectListItem>)ViewBag.VaiTroList)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
                 </select>
-                <span asp-validation-for="IdVaiTro" class="text-danger"></span>
+                <span asp-validation-for="IdVaiTros" class="text-danger"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary">Tạo mới</button>
+            <button type="submit" class="btn btn-primary">Lưu</button>
+            <a asp-action="Index" class="btn btn-secondary">Hủy</a>
         </form>
     </div>
 </div>

@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ModuleDiemDanhDbContext))]
-    partial class ModuleDiemDanhDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250616030210_55")]
+    partial class _55
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -758,6 +761,9 @@ namespace API.Migrations
                     b.Property<Guid?>("IdCoSo")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("IdVaiTro")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("MaNhanVien")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -780,6 +786,8 @@ namespace API.Migrations
                     b.HasKey("IdNhanVien");
 
                     b.HasIndex("IdCoSo");
+
+                    b.HasIndex("IdVaiTro");
 
                     b.ToTable("PhuTrachXuongs");
                 });
@@ -909,14 +917,17 @@ namespace API.Migrations
                     b.Property<DateTime>("NgayTao")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("PhuTrachXuongIdNhanVien")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("TrangThai")
                         .HasColumnType("bit");
 
                     b.HasKey("IdVTNV");
 
-                    b.HasIndex("IdNhanVien");
-
                     b.HasIndex("IdVaiTro");
+
+                    b.HasIndex("PhuTrachXuongIdNhanVien");
 
                     b.ToTable("VaiTroNhanViens");
                 });
@@ -1195,7 +1206,14 @@ namespace API.Migrations
                         .WithMany("PhuTrachXuongs")
                         .HasForeignKey("IdCoSo");
 
+                    b.HasOne("API.Data.VaiTro", "VaiTro")
+                        .WithMany("PhuTrachXuongs")
+                        .HasForeignKey("IdVaiTro")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("CoSo");
+
+                    b.Navigation("VaiTro");
                 });
 
             modelBuilder.Entity("API.Data.SinhVien", b =>
@@ -1215,15 +1233,15 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.VaiTroNhanVien", b =>
                 {
-                    b.HasOne("API.Data.PhuTrachXuong", "PhuTrachXuong")
-                        .WithMany("VaiTroNhanViens")
-                        .HasForeignKey("IdNhanVien")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("API.Data.VaiTro", "VaiTro")
                         .WithMany("VaiTroNhanViens")
-                        .HasForeignKey("IdVaiTro")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("IdVaiTro");
+
+                    b.HasOne("API.Data.PhuTrachXuong", "PhuTrachXuong")
+                        .WithMany()
+                        .HasForeignKey("PhuTrachXuongIdNhanVien")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("PhuTrachXuong");
 
@@ -1320,8 +1338,6 @@ namespace API.Migrations
                     b.Navigation("DiemDanhs");
 
                     b.Navigation("NhomXuongs");
-
-                    b.Navigation("VaiTroNhanViens");
                 });
 
             modelBuilder.Entity("API.Data.QuanLyBoMon", b =>
@@ -1341,6 +1357,8 @@ namespace API.Migrations
             modelBuilder.Entity("API.Data.VaiTro", b =>
                 {
                     b.Navigation("BanDaoTaos");
+
+                    b.Navigation("PhuTrachXuongs");
 
                     b.Navigation("SinhViens");
 

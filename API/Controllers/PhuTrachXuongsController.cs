@@ -21,7 +21,10 @@ namespace API.Controllers
         public async Task<IActionResult> GetAll()
         {
             var result = await _context.PhuTrachXuongs
-                .Select(x => new API.Models.PhuTrachXuongDto
+                .Include(x => x.VaiTroNhanViens)
+                    .ThenInclude(vtnv => vtnv.VaiTro)
+                .Include(x => x.CoSo)
+                .Select(x => new PhuTrachXuongDto
                 {
                     IdNhanVien = x.IdNhanVien,
                     MaNhanVien = x.MaNhanVien,
@@ -32,13 +35,19 @@ namespace API.Controllers
                     TenCoSo = x.CoSo.TenCoSo,
                     TrangThai = x.TrangThai,
                     NgayTao = x.NgayTao,
-                    TenVaiTro = x.VaiTro.TenVaiTro,
                     NgayCapNhat = x.NgayCapNhat,
+
+                    // ✅ Lấy danh sách tên vai trò
+                    TenVaiTros = x.VaiTroNhanViens
+                        .Where(v => v.TrangThai == true) // nếu có trạng thái
+                        .Select(v => v.VaiTro.TenVaiTro)
+                        .ToList()
                 })
                 .ToListAsync();
 
             return Ok(result);
         }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
@@ -47,18 +56,37 @@ namespace API.Controllers
             return pt == null ? NotFound() : Ok(pt);
         }
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] PhuTrachXuong model)
+        public async Task<IActionResult> Create([FromForm] PhuTrachXuongDto model)
         {
-            if (model == null)
-                return BadRequest();
+            if (model == null) return BadRequest();
 
-            // Gán lại các giá trị cần khởi tạo
-            model.IdNhanVien = Guid.NewGuid();
-            model.NgayTao = DateTime.Now;
-            model.TrangThai = true;
-            model.IdVaiTro = model.IdVaiTro;
+            var nv = new PhuTrachXuong
+            {
+                IdNhanVien = Guid.NewGuid(),
+                TenNhanVien = model.TenNhanVien,
+                MaNhanVien = model.MaNhanVien,
+                EmailFE = model.EmailFE,
+                EmailFPT = model.EmailFPT,
+                IdCoSo = model.IdCoSo,
+                NgayTao = DateTime.Now,
+                TrangThai = true
+            };
 
-            _context.PhuTrachXuongs.Add(model);
+            await _context.PhuTrachXuongs.AddAsync(nv);
+
+            // Gán danh sách vai trò
+            foreach (var idVaiTro in model.IdVaiTros)
+            {
+                _context.VaiTroNhanViens.Add(new VaiTroNhanVien
+                {
+                    IdVTNV = Guid.NewGuid(),
+                    IdNhanVien = nv.IdNhanVien,
+                    IdVaiTro = idVaiTro,
+                    NgayTao = DateTime.Now,
+                    TrangThai = true
+                });
+            }
+
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index", "PhuTrachXuongs");
@@ -66,11 +94,13 @@ namespace API.Controllers
 
 
 
-        [HttpPut("{id}")] // hoặc [HttpPut] nếu muốn
-        public async Task<IActionResult> Update(Guid id, [FromBody] PhuTrachXuong model)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] PhuTrachXuongDto model)
         {
+            var pt = await _context.PhuTrachXuongs
+                .Include(x => x.VaiTroNhanViens)
+                .FirstOrDefaultAsync(x => x.IdNhanVien == id);
 
-            var pt = await _context.PhuTrachXuongs.FindAsync(id);
             if (pt == null) return NotFound();
 
             pt.TenNhanVien = model.TenNhanVien;
@@ -78,15 +108,33 @@ namespace API.Controllers
             pt.EmailFE = model.EmailFE;
             pt.EmailFPT = model.EmailFPT;
             pt.IdCoSo = model.IdCoSo;
-            pt.IdNhanVien = model.IdNhanVien != Guid.Empty ? model.IdNhanVien : pt.IdNhanVien;
             pt.NgayCapNhat = DateTime.Now;
             pt.TrangThai = model.TrangThai;
-            pt.IdVaiTro = model.IdVaiTro;
+
+            // Xóa các vai trò cũ
+            _context.VaiTroNhanViens.RemoveRange(pt.VaiTroNhanViens);
+
+            // Thêm lại danh sách vai trò mới
+            if (model.IdVaiTros != null)
+            {
+                foreach (var idVaiTro in model.IdVaiTros)
+                {
+                    _context.VaiTroNhanViens.Add(new VaiTroNhanVien
+                    {
+                        IdVTNV = Guid.NewGuid(),
+                        IdNhanVien = pt.IdNhanVien,
+                        IdVaiTro = idVaiTro,
+                        NgayTao = DateTime.Now,
+                        TrangThai = true
+                    });
+                }
+            }
 
             await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(); // ✅ Không dùng Redirect trong API
         }
+
+
 
         [HttpPost("doi-trang-thai/{id}")]
         public async Task<IActionResult> ToggleStatus(Guid id)

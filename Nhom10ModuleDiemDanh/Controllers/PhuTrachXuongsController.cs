@@ -19,7 +19,6 @@ namespace Nhom10ModuleDiemDanh.Controllers
     public class PhuTrachXuongsController : Controller
     {
         private readonly HttpClient _client;
-        private const int PageSize = 10;
 
         public PhuTrachXuongsController(IHttpClientFactory factory)
         {
@@ -27,45 +26,22 @@ namespace Nhom10ModuleDiemDanh.Controllers
             _client.BaseAddress = new Uri("https://localhost:7296/api/");
         }
 
-        public async Task<IActionResult> Index(string searchMa, bool? trangThai, int page = 1)
+        public async Task<IActionResult> Index()
         {
             var response = await _client.GetAsync("PhuTrachXuongs/GetAll");
-
             if (!response.IsSuccessStatusCode)
                 return View(new List<DtoApi>());
 
             var json = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrWhiteSpace(json))
-                return View(new List<DtoApi>());
-
             var data = JsonSerializer.Deserialize<List<DtoApi>>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
 
-            // Lọc theo mã phụ trách (nếu có)
-            if (!string.IsNullOrEmpty(searchMa))
-                data = data.Where(p => p.MaNhanVien.Contains(searchMa, StringComparison.OrdinalIgnoreCase)).ToList();
+            await LoadCoSoList();
+            await LoadVaiTroList();
 
-            // Lọc theo trạng thái (nếu có)
-            if (trangThai.HasValue)
-                data = data.Where(p => p.TrangThai == trangThai.Value).ToList();
-
-            // Phân trang
-            int totalItems = data.Count;
-            var items = data
-                .OrderByDescending(p => p.NgayTao) // nếu có NgayTao
-                .Skip((page - 1) * PageSize)
-                .Take(PageSize)
-                .ToList();
-
-            // Truyền dữ liệu phân trang về View
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / PageSize);
-            ViewBag.SearchMa = searchMa;
-            ViewBag.TrangThai = trangThai;
-
-            return View(items);
+            return View(data);
         }
 
 
@@ -74,42 +50,65 @@ namespace Nhom10ModuleDiemDanh.Controllers
         {
             await LoadCoSoList();
             await LoadVaiTroList(); // Thêm dòng này
-            return View();
+            return View(new DtoNhom10());
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(PhuTrachXuong model)
+        public async Task<IActionResult> Create(DtoNhom10 model)
         {
             if (!ModelState.IsValid)
             {
                 await LoadCoSoList();
-                await LoadVaiTroList(); // Thêm dòng này
-                return View(model);
-
+                await LoadVaiTroList();
+                return View(model); // ✅ Trả lại đúng kiểu DtoNhom10 khi lỗi
             }
 
-            model.IdNhanVien = Guid.Empty;
-            model.NgayTao = DateTime.Now;
-            model.TrangThai = true;
-            model.CoSo = null;
-            model.DiemDanhs = null;
-            model.NhomXuongs = null;
+            // Tạo entity để gửi lên API
+            var entity = new PhuTrachXuong
+            {
+                IdNhanVien = Guid.NewGuid(),
+                TenNhanVien = model.TenNhanVien,
+                MaNhanVien = model.MaNhanVien,
+                EmailFE = model.EmailFE,
+                EmailFPT = model.EmailFPT,
+                IdCoSo = model.IdCoSo,
+                NgayTao = DateTime.Now,
+                TrangThai = true
+            };
 
-            var jsonString = JsonSerializer.Serialize(model);
-            var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
+            // Gửi kèm danh sách vai trò
+            var payload = new
+            {
+                entity.IdNhanVien,
+                entity.TenNhanVien,
+                entity.MaNhanVien,
+                entity.EmailFE,
+                entity.EmailFPT,
+                entity.IdCoSo,
+                entity.TrangThai,
+                entity.NgayTao,
+                IdVaiTros = model.IdVaiTros // ✅ danh sách vai trò từ View
+            };
+
+            var jsonContent = JsonSerializer.Serialize(payload);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
             var response = await _client.PostAsync("PhuTrachXuongs", content);
             if (!response.IsSuccessStatusCode)
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 ModelState.AddModelError(string.Empty, $"Thêm mới thất bại: {response.StatusCode}, {errorBody}");
+
                 await LoadCoSoList();
                 await LoadVaiTroList();
+
+                // ❗ Phải trả lại DTO (không trả PhuTrachXuong)
                 return View(model);
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", "PhuTrachXuongs");
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
@@ -118,18 +117,21 @@ namespace Nhom10ModuleDiemDanh.Controllers
             if (!response.IsSuccessStatusCode) return NotFound();
 
             var json = await response.Content.ReadAsStringAsync();
-            var model = JsonSerializer.Deserialize<PhuTrachXuong>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var model = JsonSerializer.Deserialize<DtoNhom10>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
 
             await LoadCoSoList();
             await LoadVaiTroList();
 
-            return PartialView("Edit", model);
+            return View(model);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Edit(PhuTrachXuong model)
-        {
 
+        [HttpPost]
+        public async Task<IActionResult> Edit(DtoNhom10 model)
+        {
             if (!ModelState.IsValid)
             {
                 await LoadCoSoList();
@@ -137,15 +139,29 @@ namespace Nhom10ModuleDiemDanh.Controllers
                 return View(model);
             }
 
-            var json = JsonSerializer.Serialize(model);
+            var payload = new
+            {
+                model.IdNhanVien,
+                model.TenNhanVien,
+                model.MaNhanVien,
+                model.EmailFE,
+                model.EmailFPT,
+                model.IdCoSo,
+                model.TrangThai,
+                model.NgayTao,
+                model.NgayCapNhat,
+                IdVaiTros = model.IdVaiTros
+            };
+
+            var json = JsonSerializer.Serialize(payload);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _client.PutAsync($"PhuTrachXuongs/{model.IdNhanVien}", content);
 
             if (!response.IsSuccessStatusCode)
             {
-                var errorBody = await response.Content.ReadAsStringAsync();
-                ModelState.AddModelError(string.Empty, $"Cập nhật thất bại: {response.StatusCode}, {errorBody}");
+                var error = await response.Content.ReadAsStringAsync();
+                ModelState.AddModelError("", $"Cập nhật thất bại: {error}");
                 await LoadCoSoList();
                 await LoadVaiTroList();
                 return View(model);
@@ -153,6 +169,8 @@ namespace Nhom10ModuleDiemDanh.Controllers
 
             return RedirectToAction("Index");
         }
+
+
 
 
         public async Task<IActionResult> ToggleStatus(Guid id)

@@ -191,11 +191,18 @@ namespace API.Data
                 .Property(c => c.IdCaHoc)
                 .IsRequired(false);
 
-            modelBuilder.Entity<PhuTrachXuong>()
-                .HasOne(pt => pt.VaiTro)
-                .WithMany(vt => vt.PhuTrachXuongs)
-                .HasForeignKey(pt => pt.IdVaiTro)
-                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<VaiTroNhanVien>()
+                .HasOne(v => v.PhuTrachXuong)
+                .WithMany(p => p.VaiTroNhanViens)
+                .HasForeignKey(v => v.IdNhanVien)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<VaiTroNhanVien>()
+                .HasOne(v => v.VaiTro)
+                .WithMany(vt => vt.VaiTroNhanViens)
+                .HasForeignKey(v => v.IdVaiTro)
+                .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

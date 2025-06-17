@@ -31,11 +31,9 @@ namespace API.Data
         public bool TrangThai { get; set; } = true;
 
         // Navigation properties
-
-        public Guid? IdVaiTro { get; set; }
-
         [JsonIgnore]
-        public virtual VaiTro? VaiTro { get; set; }
+        public virtual ICollection<VaiTroNhanVien>? VaiTroNhanViens { get; set; }
+
         [JsonIgnore]
         public virtual CoSo? CoSo { get; set; }
         [JsonIgnore]
