@@ -1,6 +1,7 @@
 ﻿@model IEnumerable<API.Data.KHNXCaHoc>
 
 @{
+    Layout = "~/Views/Shared/PhuTrachXuongLayout.cshtml";
     ViewData["Title"] = "Danh Sách Ca Học";
 
     string keyword = ViewBag.Filter?.keyword as string ?? "";
@@ -11,7 +12,7 @@
 
 <div class="container-fluid p-4">
     <h2 class="text-white fw-bold mb-4" style="background: linear-gradient(to right, #2193b0, #6dd5ed); padding: 15px; border-radius: 8px;">
-        Danh Sách Kế Hoạch
+        Danh Sách Ca Học
     </h2>
 
     <!-- Bộ lọc -->
@@ -28,18 +29,30 @@
                 <div class="col-md-2">
                     <label class="form-label">Trạng thái</label>
                     <select name="trangThai" class="form-select">
-                        <option value="" selected="@(string.IsNullOrEmpty(trangThai) ? "selected" : null)">Tất cả trạng thái</option>
-                        <option value="1" selected="@(trangThai == "1" ? "selected" : null)">Hoạt động</option>
-                        <option value="0" selected="@(trangThai == "0" ? "selected" : null)">Ngừng</option>
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="sapdienra" selected="@(trangThai == "sapdienra" ? "selected" : null)">Sắp diễn ra</option>
+                        <option value="dangdienra" selected="@(trangThai == "dangdienra" ? "selected" : null)">Đang diễn ra</option>
+                        <option value="dadienra" selected="@(trangThai == "dadienra" ? "selected" : null)">Đã diễn ra</option>
                     </select>
+
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Ca học</label>
                     <select name="caHoc" class="form-select">
-                        <option value="" selected="@(string.IsNullOrEmpty(caHoc) ? "selected" : null)">Tất cả ca học</option>
-                        <option value="sang" selected="@(caHoc == "sang" ? "selected" : null)">Sáng</option>
-                        <option value="chieu" selected="@(caHoc == "chieu" ? "selected" : null)">Chiều</option>
+                        <option value="">Tất cả ca học</option>
+                        @if (ViewBag.CaHocList != null)
+                        {
+                            @foreach (var ca in ViewBag.CaHocList)
+                            {
+                                <option value="@ca.IdCaHoc" selected="@(caHoc == ca.IdCaHoc.ToString() ? "selected" : null)">
+                                    @ca.TenCaHoc
+                                </option>
+
+                            }
+
+                        }
                     </select>
+
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Ngày diễn ra</label>
@@ -58,8 +71,23 @@
         <div class="fw-bold text-primary"><i class="fa fa-table me-2"></i> Danh sách ca học</div>
         <div>
             <button class="btn btn-outline-secondary btn-sm me-1"><i class="fa fa-history me-1"></i> Lịch sử import</button>
-            <button class="btn btn-outline-secondary btn-sm me-1"><i class="fa fa-download me-1"></i> Tải xuống template</button>
-            <button class="btn btn-outline-secondary btn-sm me-1"><i class="fa fa-file-import me-1"></i> Import Excel</button>
+            <a class="btn btn-outline-secondary btn-sm me-1"
+               asp-action="DownloadTemplate"
+               asp-controller="KHNXCaHocs">
+                <i class="fa fa-download me-1"></i> Tải xuống template
+            </a>
+
+            <form asp-action="ImportExcel"
+                  asp-controller="KHNXCaHocs"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="d-inline">
+                <label for="excelUpload" class="btn btn-outline-secondary btn-sm me-1 mb-0">
+                    <i class="fa fa-file-import me-1"></i> Import Excel
+                </label>
+                <input type="file" name="file" id="excelUpload" class="d-none" onchange="this.form.submit()" />
+            </form>
+
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCaHocModal">
                 <i class="fa fa-plus me-1"></i> Thêm
             </button>
@@ -90,29 +118,104 @@
                         <tr>
                             <td>@item.Buoi</td>
                             <td>@item.NgayHoc.ToString("dd/MM/yyyy")</td>
-                            <td>@item.ThoiGian</td>
-                            <td>@item.IdCaHoc</td>
-                            <td>@item.NoiDung</td>
+                            <td>
+                                @if (item.CaHoc != null && item.CaHoc.ThoiGianBatDau.HasValue && item.CaHoc.ThoiGianKetThuc.HasValue)
+                                {
+                                    @($"{item.CaHoc.ThoiGianBatDau.Value.ToString(@"hh\:mm")} - {item.CaHoc.ThoiGianKetThuc.Value.ToString(@"hh\:mm")}")
+                                }
+                                else
+                                {
+                                    @item.ThoiGian
+                                }
+                            </td>
+                            <td>
+                                @if (item.CaHoc != null)
+                                {
+                                    <span class="fw-semibold">@item.CaHoc.TenCaHoc</span>
+                                    @if (!string.IsNullOrWhiteSpace(item.LinkOnline))
+                                    {
+                                        <span class="badge bg-primary-subtle text-primary ms-1">Online</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary-subtle text-secondary ms-1">Offline</span>
+                                    }
+                                }
+                                else
+                                {
+                                    @item.IdCaHoc
+                                }
+                            </td>
+
+
+
+
+
+                            <td>
+                                <button type="button" class="btn btn-link p-0 text-primary" data-bs-toggle="modal" data-bs-target="#noiDungModal" onclick="showNoiDung('@item.NoiDung')">
+                                    Chi tiết
+                                </button>
+                            </td>
+
                             <td>
                                 @if (!string.IsNullOrWhiteSpace(item.LinkOnline))
                                 {
-                                    <a href="@item.LinkOnline" target="_blank">Xem</a>
+                                    <a href="@item.LinkOnline" class="link-no-underline" target="_blank">Link</a>
+
                                 }
                             </td>
                             <td>@item.DiemDanhTre</td>
+                            @{
+                                var now = DateTime.Now;
+                                DateTime? start = null;
+                                DateTime? end = null;
+
+                                if (item.CaHoc != null && item.CaHoc.ThoiGianBatDau.HasValue && item.CaHoc.ThoiGianKetThuc.HasValue)
+                                {
+                                    start = item.NgayHoc.Date + item.CaHoc.ThoiGianBatDau.Value;
+                                    end = item.NgayHoc.Date + item.CaHoc.ThoiGianKetThuc.Value;
+                                }
+                            }
+
                             <td>
-                                <span class="badge @(item.TrangThai == 1 ? "bg-success" : "bg-secondary")">
-                                    @(item.TrangThai == 1 ? "Hoạt động" : "Tạm dừng")
-                                </span>
+                                @if (start != null && end != null)
+                                {
+                                    if (now < start)
+                                    {
+                                        <span class="badge bg-warning text-dark">Sắp diễn ra</span>
+                                    }
+                                    else if (now >= start && now <= end)
+                                    {
+                                        <span class="badge bg-success">Đang diễn ra</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Đã diễn ra</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-dark">Không xác định</span>
+                                }
                             </td>
-                            <td>
-                                <a href="/KHNXCaHocs/Edit/@item.IdNXCH" class="btn btn-sm btn-warning me-1">
-                                    <i class="fa fa-edit"></i>
-                                </a>
-                                <button class="btn btn-sm btn-danger" onclick="deleteCaHoc('@item.IdNXCH')">
-                                    <i class="fa fa-trash"></i>
-                                </button>
+
+                            <td class="text-center">
+                                @if (start != null && end != null && DateTime.Now > end)
+                                {
+                                    <span class="badge bg-light text-secondary">Không thể thao tác</span>
+                                }
+                                else
+                                {
+                                    <a href="/KHNXCaHocs/Edit/@item.IdNXCH" class="btn btn-sm btn-warning me-1" title="Chỉnh sửa">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteCaHoc('@item.IdNXCH')" title="Xóa">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                }
                             </td>
+
+
                         </tr>
                     }
                 }
@@ -134,6 +237,11 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                     </div>
                     <div class="modal-body row g-3">
+                        <!-- Trường IdKHNX tạm thời làm input text để nhập thủ công -->
+                        <div class="col-md-6">
+                            <label class="form-label">ID Kế hoạch nhóm xưởng (Tạm thời)</label>
+                            <input name="IdKHNX" class="form-control" placeholder="Nhập ID kế hoạch nhóm xưởng (GUID)" />
+                        </div>
                         <div class="col-md-6">
                             <label class="form-label">Buổi</label>
                             <input name="Buoi" class="form-control" required />
@@ -142,10 +250,11 @@
                             <label class="form-label">Ngày học</label>
                             <input name="NgayHoc" type="date" class="form-control" required />
                         </div>
-                        <div class="col-md-6">
+                       @* <div class="col-md-6">
                             <label class="form-label">Thời gian</label>
-                            <input name="ThoiGian" class="form-control" />
-                        </div>
+                            <input name="ThoiGian" id="addThoiGian" class="form-control" readonly />
+                        </div>*@
+                        <input type="hidden" name="ThoiGian" id="addThoiGian" />
                         <div class="col-md-6">
                             <label class="form-label">Nội dung</label>
                             <input name="NoiDung" class="form-control" />
@@ -155,12 +264,22 @@
                             <input name="LinkOnline" class="form-control" />
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label">Tên Ca học</label>
+                            <select name="IdCaHoc" id="addIdCaHoc" class="form-select" required>
+                                <option value="">Chọn tên ca học</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Điểm danh trễ</label>
+                            <input name="DiemDanhTre" class="form-control" value="15 phút" readonly />
+                        </div>
+                        @*<div class="col-md-6">
                             <label class="form-label">Trạng thái</label>
                             <select name="TrangThai" class="form-select">
                                 <option value="1">Hoạt động</option>
                                 <option value="0">Ngừng</option>
                             </select>
-                        </div>
+                        </div>*@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -201,13 +320,13 @@
                         <label class="form-label">Link online</label>
                         <input name="LinkOnline" class="form-control" />
                     </div>
-                    <div class="col-md-6">
+                   @* <div class="col-md-6">
                         <label class="form-label">Trạng thái</label>
                         <select name="TrangThai" class="form-select">
                             <option value="1">Hoạt động</option>
                             <option value="0">Ngừng</option>
                         </select>
-                    </div>
+                    </div>*@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -217,13 +336,81 @@
         </div>
     </div>
 </div>
+<!-- Modal xem chi tiết nội dung -->
+<div class="modal fade" id="noiDungModal" tabindex="-1" aria-labelledby="noiDungModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="noiDungModalLabel">Chi tiết nội dung</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <p id="noiDungContent" class="mb-0 text-break"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Lấy dữ liệu ca học cho dropdown
+            const caHocSelect = document.getElementById('addIdCaHoc');
+            try {
+                const response = await fetch('/api/KHNXCaHocs/GetCaHocsForDropdown');
+                const result = await response.json();
+                if (result.success && result.data && Array.isArray(result.data)) {
+                    result.data.forEach(caHoc => {
+                        const option = document.createElement('option');
+                        option.value = caHoc.idCaHoc;
+                        option.textContent = caHoc.tenCaHoc;
+                        option.dataset.thoiGianBatDau = caHoc.thoiGianBatDau;
+                        option.dataset.thoiGianKetThuc = caHoc.thoiGianKetThuc;
+                        caHocSelect.appendChild(option);
+                    });
+                } else {
+                    console.error("Không lấy được danh sách ca học:", result.message || "Lỗi không xác định");
+                }
+            } catch (error) {
+                console.error("Lỗi khi fetch danh sách ca học:", error);
+            }
+
+            // Xử lý sự kiện khi chọn ca học trong dropdown
+            caHocSelect.addEventListener('change', function () {
+                const selectedOption = caHocSelect.options[caHocSelect.selectedIndex];
+                const thoiGianBatDau = selectedOption.dataset.thoiGianBatDau;
+                const thoiGianKetThuc = selectedOption.dataset.thoiGianKetThuc;
+                const thoiGianInput = document.getElementById('addThoiGian');
+
+                if (thoiGianBatDau && thoiGianKetThuc) {
+                    thoiGianInput.value = `${thoiGianBatDau.substring(0, 5)} - ${thoiGianKetThuc.substring(0, 5)}`;
+                } else {
+                    thoiGianInput.value = ''; // Xóa nếu không có thời gian
+                }
+            });
+        });
+
         document.getElementById("createCaHocForm").addEventListener("submit", async function (e) {
             e.preventDefault();
             const form = e.target;
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
+
+            // Lấy IdKHNX từ URL (ví dụ: /KHNXCaHocs/Index?idkhnx=...)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('idkhnx')) {
+                data.IdKHNX = urlParams.get('idkhnx');
+            } else {
+                // Nếu không có IdKHNX từ URL, có thể cần cảnh báo hoặc lấy từ một nguồn khác
+                console.warn("IdKHNX không tìm thấy trong URL. Đảm bảo IdKHNX được truyền đến trang.");
+                // Tùy chọn: có thể return false để ngăn form submit nếu IdKHNX bắt buộc
+                // return;
+            }
+
+            // Đặt mặc định cho DiemDanhTre nếu nó rỗng hoặc chưa được đặt
+            if (!data.DiemDanhTre || data.DiemDanhTre.trim() === '') {
+                data.DiemDanhTre = "15 phút";
+            }
 
             if (data.NgayHoc)
                 data.NgayHoc = new Date(data.NgayHoc).toISOString();
@@ -335,5 +522,28 @@
                 alert("Lỗi kết nối máy chủ.");
             }
         });
+
+                function showNoiDung(noiDung) {
+            const noiDungEl = document.getElementById("noiDungContent");
+            noiDungEl.textContent = decodeURIComponent(noiDung); // Nếu có ký tự đặc biệt
+        }
+
     </script>
 }
+<style>
+    button.btn-link {
+        text-decoration: none;
+    }
+
+    .link-no-underline {
+        text-decoration: none;
+    }
+
+    .link-no-underline:hover {
+        text-decoration: underline;
+    }
+
+
+
+
+</style>

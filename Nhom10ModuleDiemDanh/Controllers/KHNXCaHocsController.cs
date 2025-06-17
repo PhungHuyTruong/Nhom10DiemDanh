@@ -17,12 +17,13 @@ namespace Nhom10ModuleDiemDanh.Controllers
         public KHNXCaHocsController(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("https://localhost:7296/api/"); // Web API base
+            _httpClient.BaseAddress = new Uri("https://localhost:7296/api/");
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         // GET: KHNXCaHocs
-        public async Task<IActionResult> Index(string keyword, int? trangThai, string caHoc, DateTime? ngay)
+        [HttpGet]
+        public async Task<IActionResult> Index(string keyword, string trangThai, string caHoc, DateTime? ngay)
         {
             var response = await _httpClient.GetAsync("KHNXCaHocs");
             if (!response.IsSuccessStatusCode)
@@ -35,23 +36,86 @@ namespace Nhom10ModuleDiemDanh.Controllers
             var data = result?.data ?? new List<KHNXCaHoc>();
 
             if (!string.IsNullOrWhiteSpace(keyword))
-                data = data.Where(x => (x.NoiDung != null && x.NoiDung.Contains(keyword, StringComparison.OrdinalIgnoreCase))).ToList();
+            {
+                data = data.Where(x =>
+                    (!string.IsNullOrEmpty(x.NoiDung) && x.NoiDung.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(x.Buoi) && x.Buoi.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+            }
 
-            if (trangThai != null)
-                data = data.Where(x => x.TrangThai == trangThai).ToList();
-
+            // ✅ BỔ SUNG đoạn lọc ca học theo IdCaHoc
             if (!string.IsNullOrEmpty(caHoc))
-                data = data.Where(x => x.Buoi != null && x.Buoi.Equals(caHoc, StringComparison.OrdinalIgnoreCase)).ToList();
+            {
+                if (Guid.TryParse(caHoc, out var caHocGuid))
+                {
+                    data = data.Where(x => x.IdCaHoc == caHocGuid).ToList();
+                }
+            }
+
+
+            // Sau khi lấy danh sách KHNXCaHoc
+            var caHocResponse = await _httpClient.GetAsync("KHNXCaHocs/GetCaHocsForDropdown");
+
+
+            var caHocList = new List<CaHoc>();
+
+            if (caHocResponse.IsSuccessStatusCode)
+            {
+                var caHocResult = await caHocResponse.Content.ReadFromJsonAsync<ApiResponse<List<CaHoc>>>();
+
+                caHocList = caHocResult?.data ?? new List<CaHoc>();
+            }
+
+            ViewBag.CaHocList = caHocList;
+
 
             if (ngay.HasValue)
                 data = data.Where(x => x.NgayHoc.Date == ngay.Value.Date).ToList();
 
-            // Gửi lại giá trị filter ra View để giữ form lọc
-            ViewBag.Filter = new { keyword, trangThai, caHoc, ngay = ngay?.ToString("yyyy-MM-dd") };
+            if (!string.IsNullOrEmpty(trangThai))
+            {
+                var now = DateTime.Now;
+
+                if (trangThai == "sapdienra")
+                {
+                    data = data.Where(x =>
+                        x.CaHoc?.ThoiGianBatDau.HasValue == true &&
+                        new DateTime(x.NgayHoc.Year, x.NgayHoc.Month, x.NgayHoc.Day,
+                                     x.CaHoc.ThoiGianBatDau.Value.Hours,
+                                     x.CaHoc.ThoiGianBatDau.Value.Minutes, 0) > now).ToList();
+                }
+                else if (trangThai == "dangdienra")
+                {
+                    data = data.Where(x =>
+                        x.CaHoc?.ThoiGianBatDau.HasValue == true &&
+                        x.CaHoc?.ThoiGianKetThuc.HasValue == true &&
+                        new DateTime(x.NgayHoc.Year, x.NgayHoc.Month, x.NgayHoc.Day,
+                                     x.CaHoc.ThoiGianBatDau.Value.Hours,
+                                     x.CaHoc.ThoiGianBatDau.Value.Minutes, 0) <= now &&
+                        new DateTime(x.NgayHoc.Year, x.NgayHoc.Month, x.NgayHoc.Day,
+                                     x.CaHoc.ThoiGianKetThuc.Value.Hours,
+                                     x.CaHoc.ThoiGianKetThuc.Value.Minutes, 0) >= now).ToList();
+                }
+                else if (trangThai == "dadienra")
+                {
+                    data = data.Where(x =>
+                        x.CaHoc?.ThoiGianKetThuc.HasValue == true &&
+                        new DateTime(x.NgayHoc.Year, x.NgayHoc.Month, x.NgayHoc.Day,
+                                     x.CaHoc.ThoiGianKetThuc.Value.Hours,
+                                     x.CaHoc.ThoiGianKetThuc.Value.Minutes, 0) < now).ToList();
+                }
+            }
+
+            ViewBag.Filter = new
+            {
+                keyword,
+                trangThai,
+                caHoc,
+                ngay = ngay?.ToString("yyyy-MM-dd")
+            };
 
             return View(data);
         }
-
 
         // GET: KHNXCaHocs/Details/5
         public async Task<IActionResult> Details(Guid? id)
@@ -66,30 +130,23 @@ namespace Nhom10ModuleDiemDanh.Controllers
         }
 
         // GET: KHNXCaHocs/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
         // POST: KHNXCaHocs/Create
         [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Create([FromBody] KHNXCaHoc model)
-{
-    if (!ModelState.IsValid)
-    {
-        return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
-    }
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([FromBody] KHNXCaHoc model)
+        {
+            if (!ModelState.IsValid)
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
 
-    var response = await _httpClient.PostAsJsonAsync("KHNXCaHocs", model);
-    if (response.IsSuccessStatusCode)
-    {
-        return Json(new { success = true });
-    }
+            var response = await _httpClient.PostAsJsonAsync("KHNXCaHocs", model);
+            if (response.IsSuccessStatusCode)
+                return Json(new { success = true });
 
-    var errorMsg = await response.Content.ReadAsStringAsync();
-    return Json(new { success = false, message = errorMsg });
-}
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            return Json(new { success = false, message = errorMsg });
+        }
 
         // GET: KHNXCaHocs/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
@@ -105,21 +162,17 @@ public async Task<IActionResult> Create([FromBody] KHNXCaHoc model)
 
         // POST: KHNXCaHocs/Edit/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, KHNXCaHoc model)
+        public async Task<IActionResult> Edit(Guid id, [FromBody] KHNXCaHoc model)
         {
-            if (id != model.IdNXCH) return BadRequest();
-            if (!ModelState.IsValid) return View(model);
+            if (id != model.IdNXCH)
+                return BadRequest(new { success = false, message = "ID không khớp" });
 
             var response = await _httpClient.PutAsJsonAsync($"KHNXCaHocs/{id}", model);
             if (response.IsSuccessStatusCode)
-            {
-                return RedirectToAction(nameof(Index));
-            }
+                return Ok(new { success = true });
 
             var errorMsg = await response.Content.ReadAsStringAsync();
-            ModelState.AddModelError(string.Empty, $"Lỗi khi cập nhật: {errorMsg}");
-            return View(model);
+            return BadRequest(new { success = false, message = errorMsg });
         }
 
         // POST: KHNXCaHocs/Delete/5
@@ -128,12 +181,44 @@ public async Task<IActionResult> Create([FromBody] KHNXCaHoc model)
         {
             var response = await _httpClient.DeleteAsync($"KHNXCaHocs/{id}");
             if (response.IsSuccessStatusCode)
-            {
                 return Json(new { success = true });
-            }
 
             var errorMsg = await response.Content.ReadAsStringAsync();
             return Json(new { success = false, message = errorMsg });
         }
+
+        public async Task<IActionResult> DownloadTemplate()
+        {
+            var response = await _httpClient.GetAsync("KHNXCaHocs/download-template");
+            if (!response.IsSuccessStatusCode)
+                return NotFound("Không thể tải template từ API.");
+
+            var bytes = await response.Content.ReadAsByteArrayAsync();
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "TemplateCaHoc.xlsx");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ImportExcel(IFormFile file)
+        {
+            if (file == null || file.Length <= 0)
+            {
+                TempData["Error"] = "File không hợp lệ.";
+                return RedirectToAction("Index");
+            }
+
+            var content = new MultipartFormDataContent();
+            var stream = new StreamContent(file.OpenReadStream());
+            stream.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+            content.Add(stream, "file", file.FileName);
+
+            var response = await _httpClient.PostAsync("KHNXCaHocs/import-excel", content);
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Import thành công!";
+            else
+                TempData["Error"] = "Import thất bại.";
+
+            return RedirectToAction("Index");
+        }
+
     }
 }

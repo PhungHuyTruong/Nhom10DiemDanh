@@ -1,88 +1,63 @@
 ﻿@model API.Data.KHNXCaHoc
 
 @{
+
     ViewData["Title"] = "Chỉnh sửa Ca Học";
 }
 
-<div class="container py-4">
+<div class="container-fluid p-4">
     <h2 class="text-white fw-bold mb-4" style="background: linear-gradient(to right, #00b09b, #96c93d); padding: 15px; border-radius: 8px;">
         <i class="fa fa-edit me-2"></i> Chỉnh sửa Ca Học
     </h2>
-
     <div class="card shadow-sm">
         <div class="card-body">
-            <form asp-action="Edit" class="row g-3">
-                <input type="hidden" asp-for="IdNXCH" />
+            <form id="editCaHocForm">
+                <input type="hidden" name="IdNXCH" value="@Model.IdNXCH" />
 
-                <div class="col-md-6">
-                    <label asp-for="Buoi" class="form-label">Buổi</label>
-                    <input asp-for="Buoi" class="form-control" />
-                    <span asp-validation-for="Buoi" class="text-danger"></span>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Buổi</label>
+                        <input name="Buoi" class="form-control" value="@Model.Buoi" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Ngày học</label>
+                        <input name="NgayHoc" type="date" class="form-control"
+                               value="@Model.NgayHoc.ToString("yyyy-MM-dd")" required />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Ca học</label>
+                        <select name="IdCaHoc" id="editIdCaHoc" class="form-select" required>
+                            <option value="">Đang tải...</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Nội dung</label>
+                        <input name="NoiDung" class="form-control" value="@Model.NoiDung" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Link online</label>
+                        <input name="LinkOnline" class="form-control" value="@Model.LinkOnline" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Điểm danh trễ</label>
+                        <input name="DiemDanhTre" class="form-control" value="@Model.DiemDanhTre" />
+                    </div>
+
+                   @*<div class="col-md-6">
+                        <label class="form-label">Trạng thái</label>
+                        <select name="TrangThai" class="form-select">
+                            <option value="1" selected="@(Model.TrangThai == 1)">Hoạt động</option>
+                            <option value="0" selected="@(Model.TrangThai == 0)">Tạm dừng</option>
+                        </select>
+                    </div>*@
                 </div>
 
-                <div class="col-md-6">
-                    <label asp-for="NgayHoc" class="form-label">Ngày học</label>
-                    <input asp-for="NgayHoc" type="date" class="form-control" />
-                    <span asp-validation-for="NgayHoc" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label asp-for="ThoiGian" class="form-label">Thời gian</label>
-                    <input asp-for="ThoiGian" class="form-control" />
-                    <span asp-validation-for="ThoiGian" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label asp-for="IdKHNX" class="form-label">Kế hoạch nhóm xưởng</label>
-                    <select asp-for="IdKHNX" class="form-select" asp-items="ViewBag.IdKHNX"></select>
-                    <span asp-validation-for="IdKHNX" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label asp-for="IdCaHoc" class="form-label">Ca học</label>
-                    <select asp-for="IdCaHoc" class="form-select" asp-items="ViewBag.IdCaHoc"></select>
-                    <span asp-validation-for="IdCaHoc" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label asp-for="NoiDung" class="form-label">Nội dung</label>
-                    <input asp-for="NoiDung" class="form-control" />
-                    <span asp-validation-for="NoiDung" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label asp-for="LinkOnline" class="form-label">Link online</label>
-                    <input asp-for="LinkOnline" class="form-control" />
-                    <span asp-validation-for="LinkOnline" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label asp-for="DiemDanhTre" class="form-label">Điểm danh trễ</label>
-                    <input asp-for="DiemDanhTre" class="form-control" />
-                    <span asp-validation-for="DiemDanhTre" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label asp-for="NgayTao" class="form-label">Ngày tạo</label>
-                    <input asp-for="NgayTao" class="form-control" readonly />
-                </div>
-
-                <div class="col-md-6">
-                    <label asp-for="NgayCapNhat" class="form-label">Ngày cập nhật</label>
-                    <input asp-for="NgayCapNhat" class="form-control" />
-                    <span asp-validation-for="NgayCapNhat" class="text-danger"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label asp-for="TrangThai" class="form-label">Trạng thái</label>
-                    <select asp-for="TrangThai" class="form-select">
-                        <option value="1">Hoạt động</option>
-                        <option value="0">Tạm dừng</option>
-                    </select>
-                    <span asp-validation-for="TrangThai" class="text-danger"></span>
-                </div>
-
-                <div class="col-12 text-end mt-4">
+                <div class="mt-4 text-end">
                     <button type="submit" class="btn btn-success me-2">
                         <i class="fa fa-save me-1"></i> Lưu thay đổi
                     </button>
@@ -96,7 +71,59 @@
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const select = document.getElementById('editIdCaHoc');
+            try {
+                const res = await fetch('/api/KHNXCaHocs/GetCaHocsForDropdown');
+                const json = await res.json();
+                if (json.success && Array.isArray(json.data)) {
+                    select.innerHTML = '<option value="">Chọn ca học</option>';
+                    json.data.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.idCaHoc;
+                        opt.textContent = c.tenCaHoc;
+                        if (c.idCaHoc === '@Model.IdCaHoc') opt.selected = true;
+                        select.appendChild(opt);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">Không có ca học</option>';
+                }
+            } catch (err) {
+                console.error(err);
+                select.innerHTML = '<option value="">Lỗi tải ca học</option>';
+            }
+
+            document.getElementById('editCaHocForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                if (data.NgayHoc)
+                    data.NgayHoc = new Date(data.NgayHoc).toISOString();
+
+                try {
+                    const response = await fetch(`/KHNXCaHocs/Edit/${data.IdNXCH}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+                    if (response.ok && result.success !== false) {
+                        alert('Cập nhật thành công!');
+                        window.location.href = '/KHNXCaHocs';
+                    } else {
+                        alert('Lỗi: ' + (result.message || 'Không xác định'));
+                    }
+                } catch (err) {
+                    console.error('Lỗi gửi:', err);
+                    alert('Lỗi kết nối đến máy chủ.');
+                }
+            });
+        });
+    </script>
 }

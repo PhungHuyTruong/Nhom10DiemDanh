@@ -1,5 +1,8 @@
 ﻿@model KeHoachViewModel
-
+@{
+    Layout = null;
+}
+<div class="card shadow p-4 bg-white">
 <div>
     <dl class="row">
         <dt class="col-sm-4">Tên kế hoạch</dt>
@@ -17,4 +20,5 @@
         <dt class="col-sm-4">Trạng thái</dt>
         <dd class="col-sm-8">@(Model.TrangThai == 1 ? "Hoạt động" : "Ngừng hoạt động")</dd>
     </dl>
+</div>
 </div>

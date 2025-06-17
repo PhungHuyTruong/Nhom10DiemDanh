@@ -37,7 +37,7 @@ namespace API.Data
         // Navigation properties
         [JsonIgnore]
         public virtual KeHoachNhomXuong? KeHoachNhomXuong { get; set; }
-        [JsonIgnore]
+       
         public virtual CaHoc? CaHoc { get; set; }
         [JsonIgnore]
         public virtual ICollection<LichGiangDay> LichGiangDays { get; set; } = new List<LichGiangDay>();
