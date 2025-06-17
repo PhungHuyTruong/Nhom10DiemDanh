@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ModuleDiemDanhDbContext))]
-    [Migration("20250614123000_77777")]
-    partial class _77777
+    [Migration("20250616032304_llll")]
+    partial class llll
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -307,10 +307,6 @@ namespace API.Migrations
                     b.Property<Guid?>("IdHocKy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("MaDuAn")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("MoTa")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -469,9 +465,6 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("DuAnIdDuAn")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("IdDuAn")
                         .HasColumnType("uniqueidentifier");
 
@@ -483,6 +476,15 @@ namespace API.Migrations
 
                     b.Property<string>("NoiDung")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TenBoMon")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TenCapDoDuAn")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TenDuAn")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TenKeHoach")
@@ -501,7 +503,7 @@ namespace API.Migrations
 
                     b.HasKey("IdKeHoach");
 
-                    b.HasIndex("DuAnIdDuAn");
+                    b.HasIndex("IdDuAn");
 
                     b.ToTable("KeHoachs");
                 });
@@ -1058,9 +1060,7 @@ namespace API.Migrations
                 {
                     b.HasOne("API.Data.DuAn", "DuAn")
                         .WithMany()
-                        .HasForeignKey("DuAnIdDuAn")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("IdDuAn");
 
                     b.Navigation("DuAn");
                 });

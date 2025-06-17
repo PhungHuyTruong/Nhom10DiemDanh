@@ -1,0 +1,234 @@
+﻿@model IEnumerable<API.Dtos.DuAnDto>
+@{
+    ViewData["Title"] = "Danh Sách Dự Án";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 bg-light py-4 shadow-sm" style="min-height: 100vh;">
+            <h1 class="text-primary fw-bold">DD10</h1>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <a class="nav-link active bg-info text-white rounded" href="#">Quản lý dự án</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="#">Quản lý nhóm xưởng</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="#">Danh sách kế hoạch</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Quản lý sinh viên</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-10 p-4">
+            <div class="bg-primary text-white p-3 rounded mb-3">
+                <h3 class="m-0">📘 Danh Sách Dự Án</h3>
+            </div>
+
+            <!-- Bộ lọc -->
+            <div class="bg-light border p-3 rounded mb-3">
+                <h5>Bộ lọc</h5>
+                <form method="get" asp-action="Index" class="row g-2 align-items-center">
+                    <div class="col-md-3">
+                        <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm kiếm theo tên" />
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" name="capDo">
+                            <option value="">Tất cả cấp độ</option>
+                            <option value="Cấp 1">Cấp 1</option>
+                            <option value="Cấp 2">Cấp 2</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" name="hocKy">
+                            <option value="">Tất cả học kỳ</option>
+                            <option value="SUMMER-2005">SUMMER-2005</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" name="monHoc">
+                            <option value="">Tất cả môn học</option>
+                            <option value="Lập trình C#">Lập trình C#</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" name="trangThai">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="true">Hoạt động</option>
+                            <option value="false">Ngừng</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn btn-outline-primary w-100">Lọc</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Danh sách -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-bold">📋 Danh sách dự án</div>
+                <div class="card-body p-0">
+                    <table class="table table-striped m-0">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>#</th>
+                                <th>Tên</th>
+                                <th>Cấp độ</th>
+                                <th>Học kỳ</th>
+                                <th>Môn học</th>
+                                <th>Mô tả</th>
+                                <th>Trạng thái</th>
+                                <th>Chức năng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @if (!Model.Any())
+                            {
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">Không có dữ liệu.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                int stt = 1;
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@stt</td>
+                                        <td>@item.TenDuAn</td>
+                                        <td>@item.TenCapDo</td>
+                                        <td>@item.TenHocKy</td>
+                                        <td>@item.TenBoMon</td>
+                                        <td>@item.MoTa</td>
+                                        <td>
+                                            @if (item.TrangThai)
+                                            {
+                                                <span class="text-success"><i class="bi bi-circle-fill"></i> Hoạt động</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-secondary"><i class="bi bi-circle-fill"></i> Ngừng</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary btn-edit-duan" data-id="@item.IdDuAn">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    stt++;
+                                }
+                                
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Nút Thêm -->
+            <button class="btn btn-primary" id="btn-show-create"><i class="bi bi-plus-lg"></i> Thêm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create -->
+<div class="modal fade" id="modal-create" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm Dự Án</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modal-create-body"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit -->
+<div class="modal fade" id="modal-edit" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chỉnh sửa Dự Án</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modal-edit-body"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Show Create Modal
+            $('#btn-show-create').click(function () {
+                $.get('@Url.Action("Create", "DuAns")', function (html) {
+                    $('#modal-create-body').html(html);
+                    $('#modal-create').modal('show');
+                });
+            });
+
+            // Show Edit Modal
+            $(document).on('click', '.btn-edit-duan', function () {
+                const id = $(this).data("id");
+                const url = '/DuAns/Edit/' + id;
+                $.get(url, function (html) {
+                    $('#modal-edit-body').html(html);
+                    $('#modal-edit').modal('show');
+                });
+            });
+
+            // Submit Create Form via AJAX
+            $(document).on('submit', '#form-create-duan', function (e) {
+                e.preventDefault();
+                const form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            $('#modal-create').modal('hide');
+                            location.reload();
+                        } else {
+                            $('#modal-create-body').html(res);
+                        }
+                    },
+                    error: function (xhr) {
+                        $('#modal-create-body').html(xhr.responseText);
+                        alert("❌ Lỗi khi thêm dự án.");
+                    }
+                });
+            });
+
+            // Submit Edit Form via AJAX
+            $(document).on('submit', '#form-edit-duan', function (e) {
+                e.preventDefault();
+                const form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            $('#modal-edit').modal('hide');
+                            location.reload();
+                        } else {
+                            $('#modal-edit-body').html(res);
+                        }
+                    },
+                    error: function (xhr) {
+                        $('#modal-edit-body').html(xhr.responseText);
+                        alert("❌ Lỗi khi cập nhật.");
+                    }
+                });
+            });
+        });
+    </script>
+}

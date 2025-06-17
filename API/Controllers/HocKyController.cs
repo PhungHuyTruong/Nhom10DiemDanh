@@ -17,7 +17,7 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var data = await _diemDanhDbContext.hocKy.ToListAsync();
+            var data = await _diemDanhDbContext.HocKys.ToListAsync();
             return Ok(data);
         }
 
@@ -25,7 +25,7 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var hocKy = await _diemDanhDbContext.hocKy.FindAsync(id);
+            var hocKy = await _diemDanhDbContext.HocKys.FindAsync(id);
             if (hocKy == null) return NotFound();
             return Ok(hocKy);
         }
@@ -40,7 +40,7 @@ namespace API.Controllers
             hocKy.NgayTao = DateTime.Now;
             hocKy.TrangThai = true;
 
-            _diemDanhDbContext.hocKy.Add(hocKy);
+            _diemDanhDbContext.HocKys.Add(hocKy);
             await _diemDanhDbContext.SaveChangesAsync();
             return RedirectToAction("Index");
         }
@@ -50,7 +50,7 @@ namespace API.Controllers
         {
             if (!ModelState.IsValid)
                 return View(updatedHocKy);
-            var hocKy = await _diemDanhDbContext.hocKy.FindAsync(id);
+            var hocKy = await _diemDanhDbContext.HocKys.FindAsync(id);
             if (hocKy == null) return NotFound();
 
             hocKy.TenHocKy = updatedHocKy.TenHocKy;
@@ -65,7 +65,7 @@ namespace API.Controllers
         [HttpPost("doi-trang-thai/{id}")]
         public async Task<IActionResult> DoiTrangThai(Guid id)
         {
-            var hocKy = await _diemDanhDbContext.hocKy.FindAsync(id);
+            var hocKy = await _diemDanhDbContext.HocKys.FindAsync(id);
             if (hocKy == null)
             {
                 return NotFound();
@@ -74,7 +74,7 @@ namespace API.Controllers
             hocKy.TrangThai = !hocKy.TrangThai;
             hocKy.NgayCapNhat = DateTime.Now;
 
-            _diemDanhDbContext.hocKy.Update(hocKy);
+            _diemDanhDbContext.HocKys.Update(hocKy);
             await _diemDanhDbContext.SaveChangesAsync();
 
             return RedirectToAction("Index");

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ModuleDiemDanhDbContext))]
-    [Migration("20250615075400_7675")]
-    partial class _7675
+    [Migration("20250616042602_kkk")]
+    partial class kkk
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -287,56 +287,6 @@ namespace API.Migrations
                     b.HasIndex("IdSinhVien");
 
                     b.ToTable("DiemDanhs");
-                });
-
-            modelBuilder.Entity("API.Data.DuAn", b =>
-                {
-                    b.Property<Guid>("IdDuAn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("CapDoDuAnIdCDDA")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("IdBoMon")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("IdCDDA")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("IdHocKy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("MaDuAn")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MoTa")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("NgayCapNhat")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("NgayTao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("TenDuAn")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("TrangThai")
-                        .HasColumnType("bit");
-
-                    b.HasKey("IdDuAn");
-
-                    b.HasIndex("CapDoDuAnIdCDDA");
-
-                    b.HasIndex("IdBoMon");
-
-                    b.HasIndex("IdHocKy");
-
-                    b.ToTable("DuAns");
                 });
 
             modelBuilder.Entity("API.Data.HocKy", b =>
@@ -932,6 +882,51 @@ namespace API.Migrations
                     b.ToTable("VaiTroNhanViens");
                 });
 
+            modelBuilder.Entity("DuAn", b =>
+                {
+                    b.Property<Guid>("IdDuAn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("IdBoMon")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("IdCDDA")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("IdHocKy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("MoTa")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("NgayCapNhat")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TenDuAn")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("TrangThai")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IdDuAn");
+
+                    b.HasIndex("IdBoMon");
+
+                    b.HasIndex("IdCDDA");
+
+                    b.HasIndex("IdHocKy");
+
+                    b.ToTable("DuAns");
+                });
+
             modelBuilder.Entity("API.Data.BanDaoTao", b =>
                 {
                     b.HasOne("API.Data.VaiTro", "VaiTro")
@@ -1009,27 +1004,6 @@ namespace API.Migrations
                     b.Navigation("SinhVien");
                 });
 
-            modelBuilder.Entity("API.Data.DuAn", b =>
-                {
-                    b.HasOne("API.Data.CapDoDuAn", "CapDoDuAn")
-                        .WithMany("DuAns")
-                        .HasForeignKey("CapDoDuAnIdCDDA");
-
-                    b.HasOne("API.Data.QuanLyBoMon", "QuanLyBoMon")
-                        .WithMany("DuAns")
-                        .HasForeignKey("IdBoMon");
-
-                    b.HasOne("API.Data.HocKy", "HocKy")
-                        .WithMany("DuAns")
-                        .HasForeignKey("IdHocKy");
-
-                    b.Navigation("CapDoDuAn");
-
-                    b.Navigation("HocKy");
-
-                    b.Navigation("QuanLyBoMon");
-                });
-
             modelBuilder.Entity("API.Data.IP", b =>
                 {
                     b.HasOne("API.Data.CoSo", "CoSo")
@@ -1062,7 +1036,7 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.KeHoach", b =>
                 {
-                    b.HasOne("API.Data.DuAn", "DuAn")
+                    b.HasOne("DuAn", "DuAn")
                         .WithMany()
                         .HasForeignKey("IdDuAn");
 
@@ -1096,7 +1070,7 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("API.Data.DuAn", "DuAn")
+                    b.HasOne("DuAn", "DuAn")
                         .WithMany("LichGiangDays")
                         .HasForeignKey("IdDuAn");
 
@@ -1133,7 +1107,7 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("API.Data.DuAn", "DuAn")
+                    b.HasOne("DuAn", "DuAn")
                         .WithMany("LichHocs")
                         .HasForeignKey("IDHocKy")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1181,7 +1155,7 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.NhomXuong", b =>
                 {
-                    b.HasOne("API.Data.DuAn", "DuAn")
+                    b.HasOne("DuAn", "DuAn")
                         .WithMany("NhomXuongs")
                         .HasForeignKey("DuAnIdDuAn");
 
@@ -1248,6 +1222,27 @@ namespace API.Migrations
                     b.Navigation("VaiTro");
                 });
 
+            modelBuilder.Entity("DuAn", b =>
+                {
+                    b.HasOne("API.Data.QuanLyBoMon", "QuanLyBoMon")
+                        .WithMany("DuAns")
+                        .HasForeignKey("IdBoMon");
+
+                    b.HasOne("API.Data.CapDoDuAn", "CapDoDuAn")
+                        .WithMany("DuAns")
+                        .HasForeignKey("IdCDDA");
+
+                    b.HasOne("API.Data.HocKy", "HocKy")
+                        .WithMany("DuAns")
+                        .HasForeignKey("IdHocKy");
+
+                    b.Navigation("CapDoDuAn");
+
+                    b.Navigation("HocKy");
+
+                    b.Navigation("QuanLyBoMon");
+                });
+
             modelBuilder.Entity("API.Data.CaHoc", b =>
                 {
                     b.Navigation("DiemDanhs");
@@ -1285,15 +1280,6 @@ namespace API.Migrations
             modelBuilder.Entity("API.Data.DiemDanh", b =>
                 {
                     b.Navigation("LichSuDiemDanhs");
-                });
-
-            modelBuilder.Entity("API.Data.DuAn", b =>
-                {
-                    b.Navigation("LichGiangDays");
-
-                    b.Navigation("LichHocs");
-
-                    b.Navigation("NhomXuongs");
                 });
 
             modelBuilder.Entity("API.Data.HocKy", b =>
@@ -1363,6 +1349,15 @@ namespace API.Migrations
                     b.Navigation("SinhViens");
 
                     b.Navigation("VaiTroNhanViens");
+                });
+
+            modelBuilder.Entity("DuAn", b =>
+                {
+                    b.Navigation("LichGiangDays");
+
+                    b.Navigation("LichHocs");
+
+                    b.Navigation("NhomXuongs");
                 });
 #pragma warning restore 612, 618
         }

@@ -30,7 +30,7 @@ namespace API.Controllers
                         from b in boMonGroup.DefaultIfEmpty()
                         join c in _context.CapDoDuAns on d.IdCDDA equals c.IdCDDA into capDoGroup
                         from c in capDoGroup.DefaultIfEmpty()
-                        join h in _context.hocKy on d.IdHocKy equals h.IdHocKy into hocKyGroup
+                        join h in _context.HocKys on d.IdHocKy equals h.IdHocKy into hocKyGroup
                         from h in hocKyGroup.DefaultIfEmpty()
                         where (string.IsNullOrEmpty(tuKhoa) || k.TenKeHoach.Contains(tuKhoa)) &&
                               (string.IsNullOrEmpty(trangThai) || (trangThai == "Hoạt động" && k.TrangThai == 1) || (trangThai == "Ngừng hoạt động" && k.TrangThai == 0)) &&
