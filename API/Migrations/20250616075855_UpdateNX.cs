@@ -6,31 +6,31 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class _7675 : Migration
+    public partial class UpdateNX : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_KeHoachs_DuAns_DuAnIdDuAn",
-                table: "KeHoachs");
+                name: "FK_NhomXuongs_DuAns_DuAnIdDuAn",
+                table: "NhomXuongs");
 
             migrationBuilder.DropIndex(
-                name: "IX_KeHoachs_DuAnIdDuAn",
-                table: "KeHoachs");
+                name: "IX_NhomXuongs_DuAnIdDuAn",
+                table: "NhomXuongs");
 
             migrationBuilder.DropColumn(
                 name: "DuAnIdDuAn",
-                table: "KeHoachs");
+                table: "NhomXuongs");
 
             migrationBuilder.CreateIndex(
-                name: "IX_KeHoachs_IdDuAn",
-                table: "KeHoachs",
+                name: "IX_NhomXuongs_IdDuAn",
+                table: "NhomXuongs",
                 column: "IdDuAn");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_KeHoachs_DuAns_IdDuAn",
-                table: "KeHoachs",
+                name: "FK_NhomXuongs_DuAns_IdDuAn",
+                table: "NhomXuongs",
                 column: "IdDuAn",
                 principalTable: "DuAns",
                 principalColumn: "IdDuAn");
@@ -40,32 +40,30 @@ namespace API.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_KeHoachs_DuAns_IdDuAn",
-                table: "KeHoachs");
+                name: "FK_NhomXuongs_DuAns_IdDuAn",
+                table: "NhomXuongs");
 
             migrationBuilder.DropIndex(
-                name: "IX_KeHoachs_IdDuAn",
-                table: "KeHoachs");
+                name: "IX_NhomXuongs_IdDuAn",
+                table: "NhomXuongs");
 
             migrationBuilder.AddColumn<Guid>(
                 name: "DuAnIdDuAn",
-                table: "KeHoachs",
+                table: "NhomXuongs",
                 type: "uniqueidentifier",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                nullable: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_KeHoachs_DuAnIdDuAn",
-                table: "KeHoachs",
+                name: "IX_NhomXuongs_DuAnIdDuAn",
+                table: "NhomXuongs",
                 column: "DuAnIdDuAn");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_KeHoachs_DuAns_DuAnIdDuAn",
-                table: "KeHoachs",
+                name: "FK_NhomXuongs_DuAns_DuAnIdDuAn",
+                table: "NhomXuongs",
                 column: "DuAnIdDuAn",
                 principalTable: "DuAns",
-                principalColumn: "IdDuAn",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "IdDuAn");
         }
     }
 }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ModuleDiemDanhDbContext))]
-    [Migration("20250615065915_6666")]
-    partial class _6666
+    [Migration("20250616030438_khanh")]
+    partial class khanh
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -469,9 +469,6 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("DuAnIdDuAn")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("IdDuAn")
                         .HasColumnType("uniqueidentifier");
 
@@ -510,7 +507,7 @@ namespace API.Migrations
 
                     b.HasKey("IdKeHoach");
 
-                    b.HasIndex("DuAnIdDuAn");
+                    b.HasIndex("IdDuAn");
 
                     b.ToTable("KeHoachs");
                 });
@@ -1067,9 +1064,7 @@ namespace API.Migrations
                 {
                     b.HasOne("API.Data.DuAn", "DuAn")
                         .WithMany()
-                        .HasForeignKey("DuAnIdDuAn")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("IdDuAn");
 
                     b.Navigation("DuAn");
                 });

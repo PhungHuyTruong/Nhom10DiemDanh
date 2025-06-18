@@ -32,11 +32,20 @@
     <!-- Dự án -->
     <div class="mb-3">
         <label asp-for="IdDuAn" class="form-label fw-semibold">Dự án</label>
-        <select asp-for="IdDuAn" class="form-select" asp-items="ViewBag.DuAns">
+        <select asp-for="IdDuAn" class="form-select du-an-select" asp-items="ViewBag.DuAns">
             <option value="">-- Chọn dự án --</option>
         </select>
         <span asp-validation-for="IdDuAn" class="text-danger small"></span>
     </div>
+
+    <!-- Mã Bộ Môn -->
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Mã bộ môn</label>
+        <input class="form-control ma-bo-mon-display" type="text" readonly placeholder="Mã bộ môn sẽ tự hiển thị" />
+    </div>
+
+    <!-- ID Bộ môn (ẩn) -->
+    <input type="hidden" asp-for="IdBoMon" class="id-bo-mon-input" />
 
     <!-- Nút -->
     <div class="d-flex justify-content-end mt-4 gap-2">

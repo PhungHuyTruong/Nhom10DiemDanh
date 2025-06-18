@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Data
 {
@@ -11,6 +12,7 @@ namespace API.Data
         public string MaDuAn { get; set; }
         public string MoTa { get; set; }
         public Guid? IdCDDA { get; set; }
+    
         public Guid? IdBoMon { get; set; }
         public Guid? IdHocKy { get; set; }
         public DateTime NgayTao { get; set; } = DateTime.Now;
@@ -19,6 +21,7 @@ namespace API.Data
 
         // Navigation properties
         public virtual CapDoDuAn? CapDoDuAn { get; set; }
+        [ForeignKey("IdBoMon")]
         public virtual QuanLyBoMon? QuanLyBoMon { get; set; }
         public virtual HocKy? HocKy { get; set; }
         public virtual ICollection<NhomXuong>? NhomXuongs { get; set; }

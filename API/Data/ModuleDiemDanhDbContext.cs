@@ -115,9 +115,9 @@ namespace API.Data
                 .WithMany(c => c.PhuTrachXuongs)
                 .HasForeignKey(p => p.IdCoSo);
 
-            modelBuilder.Entity<PhuTrachXuong>()
-                .HasMany(p => p.NhomXuongs)
-                .WithOne(n => n.PhuTrachXuong)
+            modelBuilder.Entity<NhomXuong>()
+                .HasOne(n => n.PhuTrachXuong)
+                .WithMany(p => p.NhomXuongs)
                 .HasForeignKey(n => n.IdPhuTrachXuong);
 
             modelBuilder.Entity<QuanLyBoMon>()

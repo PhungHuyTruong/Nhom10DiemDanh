@@ -1,66 +1,73 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using API.Data;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using API.Models;
+using Nhom10ModuleDiemDanh.Models;
+using DtoApi = API.Models.PhuTrachXuongDto;
 
 namespace Nhom10ModuleDiemDanh.Controllers
 {
     public class NhomXuongsController : Controller
     {
-        private readonly string apiUrl = "https://localhost:7296/api/NhomXuongs";
+        private readonly ModuleDiemDanhDbContext _context;
+        private readonly HttpClient _client;
+        public NhomXuongsController(ModuleDiemDanhDbContext context , IHttpClientFactory factory)
+        {
+            _context = context;
+            _client = factory.CreateClient("MyApi");
+        }
 
         public async Task<IActionResult> Index(int page = 1, string search = "", int? trangThai = null)
         {
             int pageSize = 5;
 
-            var pagedData = new
+            var query = _context.NhomXuongs
+                .Include(x => x.DuAn)
+                .Include(x => x.QuanLyBoMon)
+                .Include(x => x.PhuTrachXuong)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(x => x.TenNhomXuong.Contains(search));
+
+            if (trangThai.HasValue)
+                query = query.Where(x => x.TrangThai == trangThai);
+
+            var totalItems = await query.CountAsync();
+
+            var data = await query
+                .OrderByDescending(x => x.NgayTao)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.Pagination = new
             {
-                data = new List<NhomXuong>(),
-                pagination = new
-                {
-                    currentPage = page,
-                    pageSize = pageSize,
-                    totalItems = 0,
-                    totalPages = 0
-                }
+                currentPage = page,
+                pageSize,
+                totalItems,
+                totalPages = (int)Math.Ceiling((double)totalItems / pageSize)
             };
 
-            using (HttpClient client = new HttpClient())
-            {
-                var url = $"{apiUrl}/paging?page={page}&pageSize={pageSize}&search={search}&trangThai={(trangThai.HasValue ? trangThai.ToString() : "")}";
-                var response = await client.GetAsync(url);
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    pagedData = JsonConvert.DeserializeAnonymousType(json, pagedData);
-                }
-            }
-
-            ViewBag.Pagination = pagedData.pagination;
             ViewBag.Search = search;
             ViewBag.TrangThai = trangThai;
-            return View(pagedData.data);
+
+            await LoadGiangVienDropdown();
+            LoadDuAnDropdown();
+            return View(data);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewBag.GiangViens = new SelectList(new List<PhuTrachXuong>
-                {
-                 new PhuTrachXuong { IdNhanVien = Guid.NewGuid(), TenNhanVien = "Nguyễn Văn A" },
-                 new PhuTrachXuong { IdNhanVien = Guid.NewGuid(), TenNhanVien = "Trần Thị B" },
-                }, "Id", "TenNhanVien");
-
-            ViewBag.DuAns = new SelectList(new List<DuAn>
-                {
-                 new DuAn { IdDuAn = Guid.NewGuid(), TenDuAn = "Dự án A" },
-                    new DuAn { IdDuAn = Guid.NewGuid(), TenDuAn = "Dự án B" },
-                }, "Id", "TenDuAn");
-
+            await LoadGiangVienDropdown();
+            LoadDuAnDropdown();
             return View();
         }
 
@@ -69,39 +76,28 @@ namespace Nhom10ModuleDiemDanh.Controllers
         public async Task<IActionResult> Create(NhomXuong nhom)
         {
             if (!ModelState.IsValid)
-                return View(nhom);
-
-            using (HttpClient client = new HttpClient())
             {
-                nhom.IdNhomXuong = Guid.NewGuid();
-                nhom.NgayTao = DateTime.Now;
-                nhom.TrangThai = 1;
-
-                var content = new StringContent(JsonConvert.SerializeObject(nhom), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync(apiUrl, content);
-                if (response.IsSuccessStatusCode)
-                    return RedirectToAction(nameof(Index));
+                await LoadGiangVienDropdown();
+                LoadDuAnDropdown();
+                return View(nhom);
             }
 
-            return View(nhom);
+            nhom.IdNhomXuong = Guid.NewGuid();
+            nhom.NgayTao = DateTime.Now;
+            nhom.TrangThai = 1;
+            _context.NhomXuongs.Add(nhom);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Edit(Guid id)
         {
-            NhomXuong model = null;
-            using (HttpClient client = new HttpClient())
-            {
-                var response = await client.GetAsync($"{apiUrl}/{id}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    model = JsonConvert.DeserializeObject<NhomXuong>(json);
-                }
-            }
-
+            var model = await _context.NhomXuongs.FindAsync(id);
             if (model == null)
                 return NotFound();
 
+            await LoadGiangVienDropdown(model.IdPhuTrachXuong);
+            LoadDuAnDropdown(model.IdDuAn);
             return View(model);
         }
 
@@ -110,32 +106,143 @@ namespace Nhom10ModuleDiemDanh.Controllers
         public async Task<IActionResult> Edit(Guid id, NhomXuong model)
         {
             if (id != model.IdNhomXuong || !ModelState.IsValid)
-                return View(model);
-
-            model.NgayCapNhat = DateTime.Now;
-
-            using (HttpClient client = new HttpClient())
             {
-                var content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
-                var response = await client.PutAsync($"{apiUrl}/{id}", content);
-                if (response.IsSuccessStatusCode)
-                    return RedirectToAction(nameof(Index));
+                await LoadGiangVienDropdown(model.IdPhuTrachXuong);
+                LoadDuAnDropdown(model.IdDuAn);
+                return View(model);
             }
 
-            return View(model);
+            var exist = await _context.NhomXuongs.FindAsync(id);
+            if (exist == null)
+                return NotFound();
+
+            exist.TenNhomXuong = model.TenNhomXuong;
+            exist.IdDuAn = model.IdDuAn;
+            exist.IdBoMon = model.IdBoMon;
+            exist.IdPhuTrachXuong = model.IdPhuTrachXuong;
+            exist.MoTa = model.MoTa;
+            exist.TrangThai = model.TrangThai;
+            exist.NgayCapNhat = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
-            using (HttpClient client = new HttpClient())
-            {
-                var response = await client.PutAsync($"{apiUrl}/toggle-status/{id}", null);
-                if (response.IsSuccessStatusCode)
-                    return RedirectToAction(nameof(Index));
-            }
+            var nx = await _context.NhomXuongs.FindAsync(id);
+            if (nx == null) return NotFound();
+
+            nx.TrangThai = nx.TrangThai == 1 ? 0 : 1;
+            nx.NgayCapNhat = DateTime.Now;
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
+
+        private async Task LoadGiangVienDropdown(Guid? selectedId = null)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var response = await client.GetAsync("https://localhost:7296/api/PhuTrachXuongs/GetAll");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var list = JsonConvert.DeserializeObject<List<DtoApi>>(json);
+                    ViewBag.GiangViens = new SelectList(list, "IdNhanVien", "TenNhanVien", selectedId);
+                }
+                else
+                {
+                    ViewBag.GiangViens = new SelectList(new List<DtoApi>(), "IdNhanVien", "TenNhanVien");
+                }
+            }
+        }
+
+        private void LoadDuAnDropdown(Guid? selectedId = null)
+        {
+            var duAns = _context.DuAns
+                .Where(x => x.TrangThai)
+                .Select(x => new { x.IdDuAn, x.TenDuAn })
+                .ToList();
+
+            ViewBag.DuAns = new SelectList(duAns, "IdDuAn", "TenDuAn", selectedId);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetBoMonByDuAn(Guid id)
+        {
+            var duAn = await _context.DuAns.FirstOrDefaultAsync(x => x.IdDuAn == id);
+            if (duAn == null || duAn.IdBoMon == null)
+                return NotFound();
+
+            var boMon = await _context.QuanLyBoMons.FirstOrDefaultAsync(x => x.IDBoMon == duAn.IdBoMon);
+            if (boMon == null)
+                return NotFound();
+
+            var data = new
+            {
+                idBoMon = boMon.IDBoMon,
+                maBoMon = boMon.MaBoMon
+            };
+
+            return Json(data);
+        }
+
+        public async Task<IActionResult> DownloadTemplate()
+        {
+            var response = await _client.GetAsync("NhomXuongs/download-data");
+
+            if (!response.IsSuccessStatusCode)
+                return NotFound("Không thể tải template từ API.");
+
+            var fileBytes = await response.Content.ReadAsByteArrayAsync();
+            var fileName = "Template_NhomXuong.xlsx";
+
+            return File(fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ImportExcel(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                TempData["ImportError"] = "Vui lòng chọn file Excel.";
+                return RedirectToAction("Index");
+            }
+
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+
+            using var content = new MultipartFormDataContent();
+            var fileContent = new StreamContent(memoryStream);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+            content.Add(fileContent, "file", file.FileName);
+
+            using var client = new HttpClient();
+            var response = await client.PostAsync("https://localhost:7296/api/NhomXuongs/import-excel", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<dynamic>(json);
+                TempData["ImportSuccess"] = result?.message?.ToString() ?? "Import thành công.";
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                TempData["ImportError"] = "Import thất bại: " + error;
+            }
+
+            // ✅ QUAY VỀ TRANG INDEX để thấy dữ liệu mới
+            return RedirectToAction("Index", new { page = 1 });
+        }
+
+
+
+
     }
 }
