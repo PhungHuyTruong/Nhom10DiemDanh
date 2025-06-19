@@ -1,0 +1,87 @@
+﻿@model List<API.Data.SinhVien>
+@{
+    Layout = "~/Views/Shared/PhuTrachXuongLayout.cshtml";
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var searchMa = ViewBag.SearchMa as string ?? "";
+    var trangThai = ViewBag.TrangThai as bool?;
+    var idNhomXuong = ViewBag.IdNhomXuong as Guid?;
+    var tenNhomXuong = ViewBag.TenNhomXuong as string ?? "Nhóm xưởng";
+}
+
+<h2 class="text-white mb-4">Danh sách sinh viên trong <strong>@tenNhomXuong</strong></h2>
+
+<div class="card mb-4">
+    <div class="card-header fw-bold">🎯 Bộ lọc</div>
+    <form method="get" class="d-flex gap-2 align-items-center p-3">
+        <input type="text" name="searchMa" class="form-control" placeholder="Mã sinh viên" value="@searchMa" />
+        <select name="trangThai" class="form-select" style="width: 150px;">
+            <option value="">-- Trạng thái --</option>
+            <option value="true" selected="@(trangThai?.ToString() == "True" ? "selected" : null)">Hoạt động</option>
+            <option value="false" selected="@(trangThai?.ToString() == "False" ? "selected" : null)">Ngừng</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Lọc</button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">📋 Danh sách sinh viên thuộc nhóm</span>
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary" href="@Url.Action("ThemSinhVien", "SinhVienNhomXuong", new { idNhomXuong })">
+                ➕ Thêm sinh viên vào nhóm
+            </a>
+            <a class="btn btn-secondary" href="@Url.Action("Index", "NhomXuongs")">⬅️ Quay lại nhóm xưởng</a>
+        </div>
+    </div>
+
+    <div class="table-responsive p-3">
+        <table class="table table-bordered table-hover text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>Stt</th>
+                    <th>Tên sinh viên</th>
+                    <th>Mã sinh viên</th>
+                    <th>Email</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7">Không có sinh viên nào trong nhóm này.</td>
+                    </tr>
+                }
+                else
+                {
+                    int stt = 1;
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@stt</td>
+                            <td>@item.TenSinhVien</td>
+                            <td>@item.MaSinhVien</td>
+                            <td>@item.Email</td>
+                            <td>
+                                <span class="badge @(item.TrangThai ? "bg-success" : "bg-secondary")">
+                                    @(item.TrangThai ? "Hoạt động" : "Ngừng")
+                                </span>
+                            </td>
+                            <td>
+                                <a class="btn btn-info btn-sm" href="@Url.Action("Details", "SinhVien", new { id = item.IdSinhVien })">👁️ Xem</a>
+                                <form asp-action="XoaKhoiNhom" asp-controller="SinhVienNhomXuong" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@item.IdSinhVien" />
+                                    <input type="hidden" name="idNhomXuong" value="@idNhomXuong" />
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Xoá sinh viên khỏi nhóm?')">🗑️ Xoá</button>
+                                </form>
+                            </td>
+                        </tr>
+                        stt++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

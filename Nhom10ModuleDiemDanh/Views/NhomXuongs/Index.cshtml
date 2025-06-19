@@ -1,5 +1,4 @@
-﻿
-@model IEnumerable<API.Data.NhomXuong>
+﻿@model IEnumerable<API.Data.NhomXuong>
 @{
     Layout = "~/Views/Shared/PhuTrachXuongLayout.cshtml";
 }
@@ -92,7 +91,7 @@
                     <tr>
                         <td>@(item.i + 1)</td>
                         <td>
-                            <a asp-controller="SinhVien" asp-action="Index" asp-route-nhomXuongId="@item.x.IdNhomXuong">
+                            <a asp-controller="SinhVienNhomXuong" asp-action="DanhSach" asp-route-idNhomXuong="@item.x.IdNhomXuong">
                                 @item.x.TenNhomXuong
                             </a>
                         </td>

@@ -1,0 +1,90 @@
+﻿@model List<API.Data.SinhVien>
+@{
+    Layout = "~/Views/Shared/PhuTrachXuongLayout.cshtml";
+    var idNhomXuong = ViewBag.IdNhomXuong as Guid?;
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+}
+
+<h2 class="text-white mb-4">Chọn sinh viên để thêm vào nhóm xưởng</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning">Hiện tại không có sinh viên nào chưa có nhóm.</div>
+}
+else
+{
+    <form asp-action="GanSinhVienVaoNhom" asp-controller="SinhVienNhomXuong" method="post" onsubmit="return validateSelection();">
+        <input type="hidden" name="IdNhomXuong" value="@idNhomXuong" />
+
+        <div class="card">
+            <div class="card-header fw-bold">📋 Danh sách sinh viên chưa có nhóm</div>
+            <div class="table-responsive p-3">
+                <table class="table table-bordered table-hover text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th><input type="checkbox" id="selectAll" /></th>
+                            <th>STT</th>
+                            <th>Tên sinh viên</th>
+                            <th>Mã sinh viên</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="IdSinhVien[]" value="@Model[i].IdSinhVien" />
+                                </td>
+                                <td>@(i + 1)</td>
+                                <td>@Model[i].TenSinhVien</td>
+                                <td>@Model[i].MaSinhVien</td>
+                                <td>@Model[i].Email</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <li class="page-item @(currentPage == i ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("ThemSinhVien", "SinhVienNhomXuong", new { idNhomXuong = idNhomXuong, page = i })">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+
+        <div class="mt-3 d-flex justify-content-between">
+            <a class="btn btn-secondary" href="@Url.Action("Index", "NhomXuongs")">⬅️ Quay lại nhóm</a>
+            <button type="submit" class="btn btn-primary">✅ Thêm vào nhóm</button>
+        </div>
+    </form>
+}
+
+@section Scripts {
+    <script>
+        // Chọn tất cả checkbox
+        document.getElementById("selectAll")?.addEventListener("change", function () {
+            const checkboxes = document.querySelectorAll('input[name="IdSinhVien[]"]');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+
+        // Kiểm tra có chọn sinh viên không
+        function validateSelection() {
+            const selected = document.querySelectorAll('input[name="IdSinhVien[]"]:checked');
+            if (selected.length === 0) {
+                alert("Vui lòng chọn ít nhất một sinh viên để thêm vào nhóm.");
+                return false;
+            }
+            return true;
+        }
+    </script>
+}
