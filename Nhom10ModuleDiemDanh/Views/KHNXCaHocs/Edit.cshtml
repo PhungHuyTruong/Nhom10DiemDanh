@@ -13,6 +13,7 @@
         <div class="card-body">
             <form id="editCaHocForm">
                 <input type="hidden" name="IdNXCH" value="@Model.IdNXCH" />
+                <input type="hidden" name="IdKHNX" value="@Model.IdKHNX" />
 
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -61,7 +62,7 @@
                     <button type="submit" class="btn btn-success me-2">
                         <i class="fa fa-save me-1"></i> Lưu thay đổi
                     </button>
-                    <a asp-action="Index" class="btn btn-secondary">
+                    <a href="/KHNXCaHocs?idKHNX=@Model.IdKHNX" class="btn btn-secondary">
                         <i class="fa fa-arrow-left me-1"></i> Quay lại danh sách
                     </a>
                 </div>
@@ -113,9 +114,10 @@
                     });
 
                     const result = await response.json();
-                    if (response.ok && result.success !== false) {
+                   if (response.ok && result.success !== false) {
                         alert('Cập nhật thành công!');
-                        window.location.href = '/KHNXCaHocs';
+                        var idKHNX = document.querySelector('input[name="IdKHNX"]').value || '@Model.IdKHNX';
+                        window.location.href = '/KHNXCaHocs?idKHNX=' + idKHNX;
                     } else {
                         alert('Lỗi: ' + (result.message || 'Không xác định'));
                     }

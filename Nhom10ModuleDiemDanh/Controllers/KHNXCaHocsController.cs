@@ -23,8 +23,10 @@ namespace Nhom10ModuleDiemDanh.Controllers
 
         // GET: KHNXCaHocs
         [HttpGet]
-        public async Task<IActionResult> Index(string keyword, string trangThai, string caHoc, DateTime? ngay)
+        public async Task<IActionResult> Index(Guid idKHNX, string tenNhomXuong, string keyword, string trangThai, string caHoc, DateTime? ngay)
         {
+            ViewBag.IdKHNX = idKHNX;
+            ViewBag.TenNhomXuong = tenNhomXuong;
             var response = await _httpClient.GetAsync("KHNXCaHocs");
             if (!response.IsSuccessStatusCode)
             {
@@ -34,6 +36,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
 
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<KHNXCaHoc>>>();
             var data = result?.data ?? new List<KHNXCaHoc>();
+            data = data.Where(x => x.IdKHNX == idKHNX).ToList();
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
@@ -118,15 +121,31 @@ namespace Nhom10ModuleDiemDanh.Controllers
         }
 
         // GET: KHNXCaHocs/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+        [HttpGet]
+        public async Task<IActionResult> Details(Guid id)
         {
-            if (id == null) return NotFound();
-
+            // Gọi API để lấy dữ liệu ca học
             var response = await _httpClient.GetAsync($"KHNXCaHocs/{id}");
-            if (!response.IsSuccessStatusCode) return NotFound();
+            if (!response.IsSuccessStatusCode)
+                return NotFound();
 
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<KHNXCaHoc>>();
-            return View(result?.data);
+            var caHoc = result?.data;
+            if (caHoc == null)
+                return NotFound();
+
+            // Trả về JSON cho JS
+            return Json(new
+            {
+                idNXCH = caHoc.IdNXCH,
+                idKHNX = caHoc.IdKHNX,
+                buoi = caHoc.Buoi,
+                ngayHoc = caHoc.NgayHoc,
+                idCaHoc = caHoc.IdCaHoc,
+                noiDung = caHoc.NoiDung,
+                linkOnline = caHoc.LinkOnline,
+                diemDanhTre = caHoc.DiemDanhTre
+            });
         }
 
         // GET: KHNXCaHocs/Create
@@ -187,9 +206,9 @@ namespace Nhom10ModuleDiemDanh.Controllers
             return Json(new { success = false, message = errorMsg });
         }
 
-        public async Task<IActionResult> DownloadTemplate()
+        public async Task<IActionResult> DownloadTemplate(Guid idKHNX)
         {
-            var response = await _httpClient.GetAsync("KHNXCaHocs/download-template");
+            var response = await _httpClient.GetAsync($"KHNXCaHocs/download-template?idKHNX={idKHNX}");
             if (!response.IsSuccessStatusCode)
                 return NotFound("Không thể tải template từ API.");
 
@@ -198,26 +217,45 @@ namespace Nhom10ModuleDiemDanh.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ImportExcel(IFormFile file)
+        public async Task<IActionResult> ImportExcel(IFormFile file, Guid idKHNX)
         {
-            if (file == null || file.Length <= 0)
+            try
             {
-                TempData["Error"] = "File không hợp lệ.";
-                return RedirectToAction("Index");
-            }
+                if (file == null || file.Length <= 0)
+                {
+                    TempData["Error"] = "File không hợp lệ.";
+                    return RedirectToAction("Index", new { idKHNX });
+                }
 
-            var content = new MultipartFormDataContent();
-            var stream = new StreamContent(file.OpenReadStream());
-            stream.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
-            content.Add(stream, "file", file.FileName);
+                Console.WriteLine($"Client side - IdKHNX: {idKHNX}");
+                Console.WriteLine($"Client side - File name: {file.FileName}");
 
-            var response = await _httpClient.PostAsync("KHNXCaHocs/import-excel", content);
-            if (response.IsSuccessStatusCode)
+                var content = new MultipartFormDataContent();
+                var stream = new StreamContent(file.OpenReadStream());
+                stream.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+                content.Add(stream, "file", file.FileName);
+                content.Add(new StringContent(idKHNX.ToString()), "idKHNX");
+
+                var response = await _httpClient.PostAsync("KHNXCaHocs/import-excel", content);
+
+                // Đọc response detail nếu có lỗi
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API Error Response: {errorContent}");
+                    TempData["Error"] = $"Import thất bại. Chi tiết: {errorContent}";
+                    return RedirectToAction("Index", new { idKHNX });
+                }
+
                 TempData["Success"] = "Import thành công!";
-            else
-                TempData["Error"] = "Import thất bại.";
-
-            return RedirectToAction("Index");
+                return RedirectToAction("Index", new { idKHNX });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Client Error: {ex.Message}");
+                TempData["Error"] = $"Lỗi khi import: {ex.Message}";
+                return RedirectToAction("Index", new { idKHNX });
+            }
         }
 
     }

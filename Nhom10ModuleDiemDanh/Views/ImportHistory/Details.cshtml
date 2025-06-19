@@ -1,0 +1,61 @@
+﻿@model API.Data.ImportHistory
+
+@{
+    ViewData["Title"] = "Chi tiết lịch sử import";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-gray-800">Chi tiết lịch sử import</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Thông tin import</h6>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Tên file:</dt>
+                <dd class="col-sm-9">@Model.FileName</dd>
+
+                <dt class="col-sm-3">Loại import:</dt>
+                <dd class="col-sm-9">
+                    <span class="badge badge-info">@Model.Type</span>
+                </dd>
+
+                <dt class="col-sm-3">Ngày import:</dt>
+                <dd class="col-sm-9">@Model.ImportDate.ToString("dd/MM/yyyy HH:mm:ss")</dd>
+
+                <dt class="col-sm-3">Người import:</dt>
+                <dd class="col-sm-9">@Model.ImportedBy</dd>
+
+                <dt class="col-sm-3">Trạng thái:</dt>
+                <dd class="col-sm-9">
+                    @if (Model.Status == "Success")
+                    {
+                        <span class="badge badge-success">Thành công</span>
+                    }
+                    else if (Model.Status == "Failed")
+                    {
+                        <span class="badge badge-danger">Thất bại</span>
+                    }
+                    else if (Model.Status == "PartialSuccess")
+                    {
+                        <span class="badge badge-warning">Thành công một phần</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-secondary">@Model.Status</span>
+                    }
+                </dd>
+
+                <dt class="col-sm-3">Thông báo:</dt>
+                <dd class="col-sm-9">@Model.Message</dd>
+            </dl>
+
+            <div class="mt-3">
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

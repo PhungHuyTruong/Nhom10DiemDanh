@@ -186,11 +186,13 @@ namespace API.Controllers
         }
 
         [HttpGet("download-template")]
-        public async Task<IActionResult> DownloadTemplate()
+        public async Task<IActionResult> DownloadTemplate([FromQuery] Guid? idKHNX)
         {
-            var data = await _context.KHNXCaHocs
-                .Include(x => x.CaHoc)
-                .ToListAsync();
+            var query = _context.KHNXCaHocs.Include(x => x.CaHoc).AsQueryable();
+            if (idKHNX.HasValue)
+                query = query.Where(x => x.IdKHNX == idKHNX.Value);
+
+            var data = await query.ToListAsync();
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("DanhSachCaHoc");
@@ -256,62 +258,88 @@ namespace API.Controllers
 
 
         [HttpPost("import-excel")]
-        public async Task<IActionResult> ImportExcel(IFormFile file)
+        public async Task<IActionResult> ImportExcel(IFormFile file, [FromForm] Guid idKHNX)
         {
             if (file == null || file.Length == 0)
                 return BadRequest("File không hợp lệ.");
 
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            using var stream = new MemoryStream();
-            await file.CopyToAsync(stream);
-            stream.Position = 0;
-
-            using var package = new ExcelPackage(stream);
-            var worksheet = package.Workbook.Worksheets[0];
-
-            // Đọc dữ liệu từ dòng 2
-            // ... existing code ...
-            for (int row = 2; worksheet.Cells[row, 1].Value != null; row++)
+            var importHistory = new ImportHistory
             {
-                var buoi = worksheet.Cells[row, 1].Text;
-                var ngayHoc = DateTime.TryParse(worksheet.Cells[row, 2].Text, out var date) ? date : DateTime.Now;
-                var thoiGian = worksheet.Cells[row, 3].Text; // Đọc giá trị cho ThoiGian
-                var tenCaHocExcel = worksheet.Cells[row, 4].Text; // Đọc tên ca học
-                var noiDung = worksheet.Cells[row, 5].Text;
-                var linkOnline = worksheet.Cells[row, 6].Text; // Đổi tên biến từ 'link' thành 'linkOnline' để rõ ràng hơn
-                var diemDanhTre = worksheet.Cells[row, 7].Text;
+                Id = Guid.NewGuid(),
+                FileName = file.FileName,
+                ImportDate = DateTime.Now,
+                ImportedBy = "Tên người dùng hoặc null", // Nếu có thông tin user thì lấy, không thì để null
+                Type = "KHNXCaHoc"
+            };
 
-                // Tìm IdCaHoc dựa trên TenCaHoc đọc từ Excel
-                var caHocInDb = await _context.CaHocs.FirstOrDefaultAsync(c => c.TenCaHoc == tenCaHocExcel);
-                Guid? idCaHoc = caHocInDb?.IdCaHoc; // IdCaHoc có thể null nếu không tìm thấy
+            int successCount = 0;
+            int failCount = 0;
 
-                // Lưu ý: IdKHNX hiện tại đang được đọc từ cột 7, mà cột 7 trong template là DiemDanhTre.
-                // Nếu IdKHNX không có trong file Excel, bạn cần quyết định cách gán giá trị cho nó
-                // (ví dụ: truyền từ tham số URL, gán giá trị mặc định, hoặc để null nếu được phép).
-                // Hiện tại tôi sẽ bỏ qua việc đọc IdKHNX từ Excel để tránh nhầm lẫn.
-                // var idKHNX = Guid.TryParse(worksheet.Cells[row, 7].Text, out var idKH) ? idKH : Guid.Empty; // Xóa hoặc sửa dòng này
+            try
+            {
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                stream.Position = 0;
 
-                var caHoc = new KHNXCaHoc
+                using var package = new ExcelPackage(stream);
+                var worksheet = package.Workbook.Worksheets[0];
+
+                for (int row = 2; worksheet.Cells[row, 1].Value != null; row++)
                 {
-                    IdNXCH = Guid.NewGuid(),
-                    Buoi = buoi,
-                    NgayHoc = ngayHoc,
-                    ThoiGian = thoiGian, // Gán giá trị ThoiGian
-                    NoiDung = noiDung,
-                    LinkOnline = linkOnline, // Gán giá trị LinkOnline
-                    IdCaHoc = idCaHoc, // Gán IdCaHoc đã tìm được
-                    DiemDanhTre = diemDanhTre, // Gán giá trị DiemDanhTre
-                    // IdKHNX = idKHNX, // Nếu IdKHNX được lấy từ Excel, hãy xác định lại cột hoặc cách lấy giá trị
-                    NgayTao = DateTime.Now,
-                    NgayCapNhat = DateTime.Now
-                };
+                    try
+                    {
+                        var buoi = worksheet.Cells[row, 1].Text;
+                        var ngayHoc = DateTime.TryParse(worksheet.Cells[row, 2].Text, out var date) ? date : DateTime.Now;
+                        var thoiGian = worksheet.Cells[row, 3].Text;
+                        var tenCaHocExcel = worksheet.Cells[row, 4].Text;
+                        var noiDung = worksheet.Cells[row, 5].Text;
+                        var linkOnline = worksheet.Cells[row, 6].Text;
+                        var diemDanhTre = worksheet.Cells[row, 7].Text;
 
-                _context.KHNXCaHocs.Add(caHoc);
+                        var caHocInDb = await _context.CaHocs.FirstOrDefaultAsync(c => c.TenCaHoc == tenCaHocExcel);
+                        Guid? idCaHoc = caHocInDb?.IdCaHoc;
+
+                        var caHoc = new KHNXCaHoc
+                        {
+                            IdNXCH = Guid.NewGuid(),
+                            Buoi = buoi,
+                            NgayHoc = ngayHoc,
+                            ThoiGian = thoiGian,
+                            NoiDung = noiDung,
+                            LinkOnline = linkOnline,
+                            IdCaHoc = idCaHoc,
+                            DiemDanhTre = diemDanhTre,
+                            IdKHNX = idKHNX, // Gán đúng IdKHNX cho từng ca học
+                            NgayTao = DateTime.Now,
+                            NgayCapNhat = DateTime.Now
+                        };
+
+                        _context.KHNXCaHocs.Add(caHoc);
+                        successCount++;
+                    }
+                    catch
+                    {
+                        failCount++;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                importHistory.Status = failCount == 0 ? "Success" : (successCount > 0 ? "PartialSuccess" : "Failed");
+                importHistory.Message = $"Import thành công {successCount} dòng, thất bại {failCount} dòng.";
             }
-            // ... existing code ...
+            catch (Exception ex)
+            {
+                importHistory.Status = "Failed";
+                importHistory.Message = $"Lỗi: {ex.Message}";
+            }
 
+            _context.ImportHistory.Add(importHistory);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index", "KHNXCaHocs");
+
+            // Redirect về Index và truyền lại idKHNX
+            return RedirectToAction("Index", "KHNXCaHocs", new { idKHNX = idKHNX });
         }
 
 
