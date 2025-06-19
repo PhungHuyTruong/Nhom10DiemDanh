@@ -36,16 +36,16 @@ namespace Nhom10ModuleDiemDanh.Controllers
             return View(new List<DuAn>());
         }
 
-        // 🧠 Tải danh sách dropdown dùng chung
-        private async Task LoadDropdownsAsync()
+        // 🧠 Tải danh sách dropdown dùng chung (có selected)
+        private async Task LoadDropdownsAsync(DuAnDto? dto = null)
         {
             var capDoList = await _dbContext.CapDoDuAns.ToListAsync();
             var boMonList = await _dbContext.QuanLyBoMons.ToListAsync();
             var hocKyList = await _dbContext.HocKys.ToListAsync();
 
-            ViewBag.IdCDDA = new SelectList(capDoList, "IdCDDA", "TenCapDoDuAn");
-            ViewBag.IdBoMon = new SelectList(boMonList, "IDBoMon", "TenBoMon");
-            ViewBag.IdHocKy = new SelectList(hocKyList, "IdHocKy", "TenHocKy");
+            ViewBag.IdCDDA = new SelectList(capDoList, "IdCDDA", "TenCapDoDuAn", dto?.IdCDDA);
+            ViewBag.IdBoMon = new SelectList(boMonList, "IDBoMon", "TenBoMon", dto?.IdBoMon);
+            ViewBag.IdHocKy = new SelectList(hocKyList, "IdHocKy", "TenHocKy", dto?.IdHocKy);
         }
 
         // GET: DuAns/Create (modal)
@@ -81,7 +81,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
         }
 
         // GET: DuAns/Edit
-        [HttpGet] // ⚠️ BẮT BUỘC có attribute này để route GET khớp khi gọi từ browser
+        [HttpGet]
         public async Task<IActionResult> Edit(Guid? id)
         {
             if (id == null) return NotFound();
@@ -91,7 +91,8 @@ namespace Nhom10ModuleDiemDanh.Controllers
 
             var dto = await response.Content.ReadFromJsonAsync<DuAnDto>();
             if (dto == null) return NotFound();
-            await LoadDropdownsAsync();
+
+            await LoadDropdownsAsync(dto); // ✅ truyền dto vào
             return PartialView("Edit", dto); // Modal edit
         }
 
@@ -102,11 +103,25 @@ namespace Nhom10ModuleDiemDanh.Controllers
         {
             if (dto.IdDuAn == Guid.Empty)
                 return NotFound();
-            var response = await _httpClient.PutAsJsonAsync($"{_apiUrl}/{dto.IdDuAn}", dto);
-            if (response.IsSuccessStatusCode)
-                return Json(new { success = true });
 
-            await LoadDropdownsAsync();
+            var request = new HttpRequestMessage(HttpMethod.Put, $"{_apiUrl}/{dto.IdDuAn}")
+            {
+                Content = JsonContent.Create(dto)
+            };
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return Json(new { success = true });
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine("LỖI API (PUT DuAn): " + errorContent);
+
+            ModelState.AddModelError(string.Empty, "Lỗi khi cập nhật dự án: " + errorContent);
+
+            await LoadDropdownsAsync(dto); // ✅ giữ lại selected khi submit lỗi
             return PartialView("Edit", dto);
         }
 
