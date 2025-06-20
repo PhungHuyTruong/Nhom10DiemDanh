@@ -78,16 +78,24 @@ namespace Nhom10ModuleDiemDanh.Controllers
         }
 
         // GET: KeHoachNhomXuongs
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(Guid? idKeHoach)
         {
             var response = await _httpClient.GetAsync("KeHoachNhomXuongs");
+            List<KeHoachNhomXuongDto> keHoachNhomXuongs = new List<KeHoachNhomXuongDto>();
             if (response.IsSuccessStatusCode)
             {
-                var keHoachNhomXuongs = await response.Content.ReadFromJsonAsync<List<KeHoachNhomXuongDto>>();
-                return View(keHoachNhomXuongs);
+                keHoachNhomXuongs = await response.Content.ReadFromJsonAsync<List<KeHoachNhomXuongDto>>();
             }
-            // Handle error case, maybe return a view with an error message
-            return View(new List<KeHoachNhomXuongDto>());
+
+            // Nếu có idKeHoach, lọc danh sách
+            if (idKeHoach.HasValue)
+            {
+                keHoachNhomXuongs = keHoachNhomXuongs
+                    .Where(x => x.IdKeHoach == idKeHoach.Value)
+                    .ToList();
+            }
+
+            return View(keHoachNhomXuongs);
         }
 
         // GET: KeHoachNhomXuongs/Details/5

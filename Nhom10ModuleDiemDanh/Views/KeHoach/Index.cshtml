@@ -1,4 +1,5 @@
 ﻿@using Nhom10ModuleDiemDanh.Models
+@using System.Web
 @model IEnumerable<KeHoachViewModel>
 
 @{
@@ -30,8 +31,9 @@
             <label for="trangThai">Trạng thái:</label>
             <select id="trangThai" name="trangThai" class="form-select">
                 <option value="Tất cả trạng thái" selected="@(trangThai == "Tất cả trạng thái")">Tất cả trạng thái</option>
-                <option value="Hoạt động" selected="@(trangThai == "Hoạt động")">Hoạt động</option>
-                <option value="Ngừng hoạt động" selected="@(trangThai == "Ngừng hoạt động")">Ngừng hoạt động</option>
+                <option value="sapdienra" selected="@(trangThai == "sapdienra")">Sắp diễn ra</option>
+                <option value="dangdienra" selected="@(trangThai == "dangdienra")">Đang diễn ra</option>
+                <option value="dadienra" selected="@(trangThai == "dadienra")">Đã diễn ra</option>
             </select>
         </div>
         <div class="col-md-2">
@@ -85,19 +87,48 @@
                     {
                         <tr>
                             <td>@(item.index + 1)</td>
-                            <td>@item.value.TenKeHoach</td>
+                            <td>
+                                <a asp-controller="KeHoachNhomXuongs" asp-action="Index" asp-route-idKeHoach="@item.value.IdKeHoach">
+                                    @item.value.TenKeHoach
+                                </a>
+                            </td>
                             <td>@(item.value.TenDuAn ?? "Chưa có")</td>
-                            <td>@item.value.NoiDung</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.value.NoiDung))
+                                {
+                                    <button type="button" class="btn btn-link p-0 text-primary" data-bs-toggle="modal" data-bs-target="#noiDungModal" onclick="showNoiDung('@HttpUtility.JavaScriptStringEncode(item.value.NoiDung)')">
+                                        Chi tiết
+                                    </button>
+                                }
+                            </td>
                             <td>@(item.value.TenBoMon ?? "Chưa có")</td>
                             <td>@(item.value.TenCapDoDuAn ?? "Chưa có")</td>
                             <td>@item.value.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm") - @item.value.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>
-                                <div class="form-check form-switch d-flex justify-content-center align-items-center gap-2">
-                                    <input type="checkbox" class="form-check-input toggle-status" id="toggle-@item.value.IdKeHoach" data-id="@item.value.IdKeHoach" @(item.value.TrangThai == 1 ? "checked" : "") />
-                                    <span class="badge rounded-pill bg-@(item.value.TrangThai == 1 ? "success" : "secondary")">
-                                        @(item.value.TrangThai == 1 ? "Hoạt động" : "Ngừng hoạt động")
-                                    </span>
-                                </div>
+                                @{
+                                    var now = DateTime.Now;
+                                    var startTime = item.value.ThoiGianBatDau;
+                                    var endTime = item.value.ThoiGianKetThuc;
+                                    var statusText = "";
+                                    var statusClass = "";
+
+                                    if (now < startTime)
+                                    {
+                                        statusText = "Sắp diễn ra";
+                                        statusClass = "bg-warning text-dark";
+                                    }
+                                    else if (now >= startTime && now <= endTime)
+                                    {
+                                        statusText = "Đang diễn ra";
+                                        statusClass = "bg-success";
+                                    }
+                                    else
+                                    {
+                                        statusText = "Đã diễn ra";
+                                        statusClass = "bg-secondary";
+                                    }
+                                }
+                                <span class="badge rounded-pill @statusClass">@statusText</span>
                             </td>
                             <td>
                                 <button class="btn btn-info btn-sm details-btn" data-id="@item.value.IdKeHoach" data-bs-toggle="modal" data-bs-target="#detailsModal">🔍</button>
@@ -167,6 +198,21 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL XEM CHI TIẾT NỘI DUNG -->
+<div class="modal fade" id="noiDungModal" tabindex="-1" aria-labelledby="noiDungModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="noiDungModalLabel">Chi tiết nội dung</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <p id="noiDungContent" class="mb-0 text-break"></p>
             </div>
         </div>
     </div>
@@ -337,7 +383,7 @@
                 }
             });
 
-            // Toggle Status
+            @*// Toggle Status
             $('.toggle-status').on('change', function () {
                 var checkbox = $(this);
                 var id = checkbox.data('id');
@@ -361,7 +407,7 @@
                         checkbox.prop('checked', !isChecked);
                     }
                 });
-            });
+            });*@
 
             // Xử lý form lọc
             $('#filterForm').on('submit', function (e) {
@@ -381,5 +427,8 @@
                 window.location.href = '@Url.Action("Index", "KeHoach")' + queryString;
             });
         });
+         function showNoiDung(noiDung) {
+            document.getElementById('noiDungContent').textContent = noiDung;
+        }
     </script>
 }

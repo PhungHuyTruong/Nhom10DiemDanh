@@ -12,5 +12,6 @@ namespace API.Data
         public string Status { get; set; }
         public string Message { get; set; }
         public string Type { get; set; } // Ví dụ: "KHNXCaHoc"
+        public Guid? IdKHNX { get; set; } // <-- Thêm dòng này
     }
 }
