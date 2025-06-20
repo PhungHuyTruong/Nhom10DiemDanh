@@ -7,7 +7,7 @@ namespace API.Data
     {
         public ModuleDiemDanhDbContext()
         {
-            
+
         }
         public ModuleDiemDanhDbContext(DbContextOptions<ModuleDiemDanhDbContext> options) : base(options)
         {
@@ -166,7 +166,7 @@ namespace API.Data
             modelBuilder.Entity<LichHoc>()
                 .HasOne(l => l.DuAn)
                 .WithMany(d => d.LichHocs)
-                .HasForeignKey(l => l.IDHocKy) 
+                .HasForeignKey(l => l.IDHocKy)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<LichHoc>()
@@ -191,11 +191,18 @@ namespace API.Data
                 .Property(c => c.IdCaHoc)
                 .IsRequired(false);
 
-            modelBuilder.Entity<PhuTrachXuong>()
-                .HasOne(pt => pt.VaiTro)
-                .WithMany(vt => vt.PhuTrachXuongs)
-                .HasForeignKey(pt => pt.IdVaiTro)
-                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<VaiTroNhanVien>()
+                .HasOne(v => v.PhuTrachXuong)
+                .WithMany(p => p.VaiTroNhanViens)
+                .HasForeignKey(v => v.IdNhanVien)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<VaiTroNhanVien>()
+                .HasOne(v => v.VaiTro)
+                .WithMany(vt => vt.VaiTroNhanViens)
+                .HasForeignKey(v => v.IdVaiTro)
+                .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

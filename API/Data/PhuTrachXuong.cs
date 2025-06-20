@@ -27,15 +27,13 @@ namespace API.Data
 
         public DateTime NgayTao { get; set; } = DateTime.Now;
         public DateTime? NgayCapNhat { get; set; } = DateTime.Now;
-      
+
         public bool TrangThai { get; set; } = true;
 
         // Navigation properties
-
-        public Guid? IdVaiTro { get; set; }
-
         [JsonIgnore]
-        public virtual VaiTro? VaiTro { get; set; }
+        public virtual ICollection<VaiTroNhanVien>? VaiTroNhanViens { get; set; }
+
         [JsonIgnore]
         public virtual CoSo? CoSo { get; set; }
         [JsonIgnore]
