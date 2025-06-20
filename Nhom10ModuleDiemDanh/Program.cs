@@ -99,6 +99,6 @@ app.UseAuthorization();
 app.UseSession();
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=DuAns}/{action=Index}/{id?}");
 
 app.Run();

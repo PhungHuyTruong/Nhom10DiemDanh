@@ -1,0 +1,71 @@
+﻿@model API.Data.DuAn
+
+@{
+    Layout = null; // Quan trọng để modal không nhúng layout cha
+}
+
+<h4 class="text-primary fw-bold mb-3">📌 Thêm Dự Án</h4>
+
+<form asp-action="Create" id="form-create-duan">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <!-- Tên dự án -->
+    <div class="mb-3">
+        <label asp-for="TenDuAn" class="form-label">Tên dự án</label>
+        <input asp-for="TenDuAn" class="form-control" />
+        <span asp-validation-for="TenDuAn" class="text-danger"></span>
+    </div>
+
+    <!-- Mô tả -->
+    <div class="mb-3">
+        <label asp-for="MoTa" class="form-label">Mô tả</label>
+        <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="MoTa" class="text-danger"></span>
+    </div>
+
+    <!-- Cấp độ -->
+    <div class="mb-3">
+        <label asp-for="IdCDDA" class="form-label">Cấp độ dự án</label>
+        <select asp-for="IdCDDA" class="form-select" asp-items="ViewBag.IdCDDA">
+            <option value="">-- Chọn cấp độ --</option>
+        </select>
+        <span asp-validation-for="IdCDDA" class="text-danger"></span>
+    </div>
+
+    <!-- Bộ môn -->
+    <div class="mb-3">
+        <label asp-for="IdBoMon" class="form-label">Bộ môn</label>
+        <select asp-for="IdBoMon" class="form-select" asp-items="ViewBag.IdBoMon">
+            <option value="">-- Chọn bộ môn --</option>
+        </select>
+        <span asp-validation-for="IdBoMon" class="text-danger"></span>
+    </div>
+
+    <!-- Học kỳ -->
+    <div class="mb-3">
+        <label asp-for="IdHocKy" class="form-label">Học kỳ</label>
+        <select asp-for="IdHocKy" class="form-select" asp-items="ViewBag.IdHocKy">
+            <option value="">-- Chọn học kỳ --</option>
+        </select>
+        <span asp-validation-for="IdHocKy" class="text-danger"></span>
+    </div>
+
+    <!-- Trạng thái -->
+    <div class="form-check mb-3">
+        <input class="form-check-input" asp-for="TrangThai" />
+        <label class="form-check-label" asp-for="TrangThai">Hoạt động</label>
+    </div>
+
+    <!-- Nút lưu -->
+    <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-save"></i> Lưu
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

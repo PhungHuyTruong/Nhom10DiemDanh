@@ -1,4 +1,5 @@
 ﻿using API.Data;
+using API.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,30 +18,33 @@ namespace API.Controllers
 
         // GET: api/DuAns
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<IEnumerable<DuAnDto>>> GetAll()
         {
-            try
-            {
-                var data = await _context.DuAns
-                    .Where(x => x.TrangThai == true)
-                    .Select(x => new
-                    {
-                        idDuAn = x.IdDuAn,
-                        tenDuAn = x.TenDuAn
-                    })
-                    .ToListAsync();
+            var data = await _context.DuAns
+                .Include(x => x.CapDoDuAn)
+                .Include(x => x.QuanLyBoMon)
+                .Include(x => x.HocKy)
+                .Select(x => new DuAnDto
+                {
+                    IdDuAn = x.IdDuAn,
+                    TenDuAn = x.TenDuAn,
+                    MoTa = x.MoTa,
+                    TrangThai = x.TrangThai,
+                    IdCDDA = x.IdCDDA,
+                    TenCapDo = x.CapDoDuAn != null ? x.CapDoDuAn.TenCapDoDuAn : null,
+                    IdBoMon = x.IdBoMon,
+                    TenBoMon = x.QuanLyBoMon != null ? x.QuanLyBoMon.TenBoMon : null,
+                    IdHocKy = x.IdHocKy,
+                    TenHocKy = x.HocKy != null ? x.HocKy.TenHocKy : null
+                })
+                .ToListAsync();
 
-                return Ok(data);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Lỗi nội bộ: {ex.Message}");
-            }
+            return Ok(data);
         }
 
         // GET: api/DuAns/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<DuAn>> GetDuAn(Guid id)
+        public async Task<ActionResult<DuAnDto>> GetDuAn(Guid id)
         {
             var duAn = await _context.DuAns
                 .Include(x => x.CapDoDuAn)
@@ -51,7 +55,18 @@ namespace API.Controllers
             if (duAn == null)
                 return NotFound();
 
-            return duAn;
+            var dto = new DuAnDto
+            {
+                IdDuAn = duAn.IdDuAn,
+                TenDuAn = duAn.TenDuAn,
+                MoTa = duAn.MoTa,
+                TrangThai = duAn.TrangThai,
+                TenCapDo = duAn.CapDoDuAn?.TenCapDoDuAn,
+                TenHocKy = duAn.HocKy?.TenHocKy,
+                TenBoMon = duAn.QuanLyBoMon?.TenBoMon
+            };
+
+            return Ok(dto);
         }
 
         // POST: api/DuAns
@@ -68,25 +83,34 @@ namespace API.Controllers
 
         // PUT: api/DuAns/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutDuAn(Guid id, DuAn duAn)
+        public async Task<IActionResult> PutDuAn(Guid id, DuAnDto dto)
         {
-            if (id != duAn.IdDuAn)
-                return BadRequest("Id không khớp");
+            if (id != dto.IdDuAn)
+                return BadRequest("Id không khớp.");
 
-            var existing = await _context.DuAns.FindAsync(id);
-            if (existing == null)
+            var duAn = await _context.DuAns.FindAsync(id);
+            if (duAn == null)
                 return NotFound();
 
-            existing.TenDuAn = duAn.TenDuAn;
-            existing.MaDuAn = duAn.MaDuAn;
-            existing.MoTa = duAn.MoTa;
-            existing.IdCDDA = duAn.IdCDDA;
-            existing.IdBoMon = duAn.IdBoMon;
-            existing.IdHocKy = duAn.IdHocKy;
-            existing.TrangThai = duAn.TrangThai;
-            existing.NgayCapNhat = DateTime.Now;
+            // Kiểm tra khóa ngoại có tồn tại
+            if (!await _context.CapDoDuAns.AnyAsync(x => x.IdCDDA == dto.IdCDDA))
+                return BadRequest("IdCDDA không hợp lệ.");
 
-            _context.Entry(existing).State = EntityState.Modified;
+            if (!await _context.QuanLyBoMons.AnyAsync(x => x.IDBoMon == dto.IdBoMon))
+                return BadRequest("IdBoMon không hợp lệ.");
+
+            if (!await _context.HocKys.AnyAsync(x => x.IdHocKy == dto.IdHocKy))
+                return BadRequest("IdHocKy không hợp lệ.");
+
+            // Gán giá trị từ DTO vào entity
+            duAn.TenDuAn = dto.TenDuAn;
+            duAn.MoTa = dto.MoTa;
+            duAn.TrangThai = dto.TrangThai;
+            duAn.IdCDDA = dto.IdCDDA;
+            duAn.IdBoMon = dto.IdBoMon;
+            duAn.IdHocKy = dto.IdHocKy;
+            duAn.NgayCapNhat = DateTime.Now;
+
             await _context.SaveChangesAsync();
 
             return NoContent();

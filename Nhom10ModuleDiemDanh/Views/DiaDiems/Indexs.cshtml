@@ -1,207 +1,166 @@
 ﻿@model IEnumerable<API.Data.DiaDiem>
 @{
     Layout = "~/Views/Shared/CanBoDaoTaoLayout.cshtml";
-    ViewData["Title"] = "Quản lý Địa điểm";
-    var idCoSo = ViewBag.IdCoSo as Guid?;
+    var currentFilter = ViewData["CurrentSearch"] as string;
+    var currentStatus = ViewData["CurrentStatus"] as string;
 }
 
-<h1 class="text-white mb-4">@ViewData["Title"]</h1>
-
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-funnel-fill me-2"></i>Bộ lọc và Tìm kiếm</h5>
-    </div>
-    <div class="card-body">
-        <form method="get" asp-action="Indexs" class="row g-3 align-items-center">
-            <div class="col-md-5">
-                <input type="text" name="searchString" class="form-control" placeholder="Tìm kiếm theo tên địa điểm..." value="@ViewData["CurrentSearch"]" />
-            </div>
-            <div class="col-md-4">
-                <select name="status" class="form-select">
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="true" selected="@("true".Equals(ViewData["CurrentStatus"] as string))">Hoạt động</option>
-                    <option value="false" selected="@("false".Equals(ViewData["CurrentStatus"] as string))">Ngưng hoạt động</option>
-                </select>
-            </div>
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Lọc</button>
-                <a asp-action="Indexs" class="btn btn-outline-secondary w-100" title="Đặt lại bộ lọc"><i class="bi bi-arrow-clockwise"></i> Reset</a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="card shadow-sm">
-    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="bi bi-table me-2"></i>Danh sách địa điểm</h5>
-        @if (idCoSo != null && idCoSo != Guid.Empty)
-        {
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalFormCreate">
-                ➕ Thêm địa điểm
-            </button>
-        }
-    </div>
-    <div class="table-responsive">
-        <table class="table table-hover mb-0 align-middle">
-            <thead class="table-light text-center">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col" class="text-start">Tên địa điểm</th>
-                    <th scope="col">Trạng thái</th>
-                    <th scope="col">Chức năng</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model != null && Model.Any())
-                {
-                    var index = 1;
-                    foreach (var item in Model)
-                    {
-                        <tr>
-                            <td class="text-center">@(index++)</td>
-                            <td class="text-start">@item.TenDiaDiem</td>
-                            <td class="text-center">
-                                <div class="form-check form-switch d-flex justify-content-center">
-                                    <input class="form-check-input status-toggle" type="checkbox" role="switch"
-                                    @(item.TrangThai ? "checked" : "") data-id="@item.IdDiaDiem" title="@(item.TrangThai ? "Bấm để ngưng hoạt động" : "Bấm để kích hoạt")">
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group" role="group">
-                                    <a asp-action="Details" asp-route-id="@item.IdDiaDiem" class="btn btn-sm btn-outline-info" title="Xem chi tiết"><i class="bi bi-eye"></i> Xem</a>
-                                    <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalEdit_@item.IdDiaDiem" title="Sửa">
-                                        <i class="bi bi-pencil-square"></i> Sửa
-                                    </button>
-                                    <form asp-action="Delete" asp-route-id="@item.IdDiaDiem" method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa"
-                                                onclick="return confirm('Bạn có chắc muốn xóa địa điểm này?');">
-                                            <i class="bi bi-trash"></i> Xóa
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                }
-                else
-                {
-                    <tr><td colspan="4" class="text-center p-4">Không có địa điểm nào để hiển thị.</td></tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
-
-@if (Model != null)
-{
-    foreach (var item in Model)
-    {
-        <div class="modal fade" id="modalEdit_@item.IdDiaDiem" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <form asp-action="Edit" asp-controller="DiaDiems" method="post">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Chỉnh sửa Địa điểm</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-                            <input type="hidden" name="IdDiaDiem" value="@item.IdDiaDiem" />
-                            <input type="hidden" name="IdCoSo" value="@item.IdCoSo" />
-                            <div class="form-floating mb-3">
-                                <input type="text" name="TenDiaDiem" class="form-control" placeholder="Tên địa điểm*" value="@item.TenDiaDiem" required>
-                                <label>Tên địa điểm*</label>
-                            </div>
-                            <div class="row g-2 mb-3">
-                                <div class="col-md">
-                                    <div class="form-floating">
-                                        <input type="number" step="any" name="ViDo" class="form-control" placeholder="Vĩ độ*" value="@item.ViDo" required>
-                                        <label>Vĩ độ*</label>
-                                    </div>
-                                </div>
-                                <div class="col-md">
-                                    <div class="form-floating">
-                                        <input type="number" step="any" name="KinhDo" class="form-control" placeholder="Kinh độ*" value="@item.KinhDo" required>
-                                        <label>Kinh độ*</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-floating mb-3">
-                                <input type="number" step="any" name="BanKinh" class="form-control" placeholder="Bán kính (mét)*" value="@item.BanKinh" required>
-                                <label>Bán kính (mét)*</label>
-                            </div>
-                            <div class="form-check form-switch">
-                                <input type="checkbox" name="TrangThai" value="true" class="form-check-input" checked="@item.TrangThai">
-                                <label class="form-check-label">Kích hoạt</label>
-                                <input type="hidden" name="TrangThai" value="false" />
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                            <button type="submit" class="btn btn-warning"><i class="bi bi-save"></i> Lưu thay đổi</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
     }
-}
 
-<div class="modal fade" id="modalFormCreate" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+        .switch input {
+            display: none;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .slider {
+        background-color: #28a745;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+</style>
+<h1 class="text-white" style="margin-bottom: 50px">Quản lý địa điểm</h1>
+
+<div class="card">
+    <!-- Bộ lọc -->
+    <div class="card-header fw-bold">¥ Bộ lọc</div>
+    <form method="get" asp-action="Indexs" class="row g-3 mb-3" style="margin-left: 10px; margin-top: 10px">
+        <div class="col-md-4">
+            <input type="text" name="searchString" class="form-control" placeholder="Tìm kiếm theo tên"
+                   value="@(currentFilter ?? "")" />
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">Tất cả trạng thái</option>
+                <option value="true" selected="@(currentStatus == "true" ? "selected" : null)">Hoạt động</option>
+                <option value="false" selected="@(currentStatus == "false" ? "selected" : null)">Ngưng hoạt động</option>
+            </select>
+        </div>
+        <div class="col-md-5 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Lọc</button>
+            <a asp-action="Indexs" class="btn btn-outline-secondary">Đặt lại</a>
+        </div>
+    </form>
+</div>
+
+
+
+
+
+<div class="card" style="margin-top: 50px">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">≡ Danh sách địa điểm</h4>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalFormCreate">
+            <i class="bi bi-plus-lg"></i> Thêm địa điểm
+        </button>
+    </div>
+
+    <!-- Bảng -->
+    <table class="table table-bordered table-hover mb-0 text-center">
+        <thead class="table-secondary">
+            <tr>
+                <th>#</th>
+                <th>Tên địa điểm</th>
+                <th>Trạng thái</th>
+                <th>Chức năng</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                int index = 1;
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@index</td>
+                        <td>@item.TenDiaDiem</td>
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox"
+                                @(item.TrangThai ? "checked" : "")
+                                       onchange="onStatusChange(event, '@item.IdDiaDiem')">
+                                <span class="slider"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@item.IdDiaDiem" class="btn btn-sm btn-info">Xem</a>
+                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalFormEdit_@item.IdDiaDiem">
+                                <i class="bi bi-pencil-square"></i> Sửa
+                            </button>
+                            <a asp-action="Delete" asp-route-id="@item.IdDiaDiem" class="btn btn-sm btn-danger"
+                               onclick="return confirm('Bạn có chắc muốn xóa địa điểm này?');">Xóa</a>
+                        </td>
+                    </tr>
+                    index++;
+                    <div class="modal fade" id="modalFormEdit_@item.IdDiaDiem" tabindex="-1" aria-labelledby="editModalLabel_@item.IdDiaDiem" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <form asp-action="Edit" method="post">
+                                    <div class="modal-body">
+                                        @await Html.PartialAsync("Edit", item)
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                }
+            }
+            else
+            {
+                <tr><td colspan="5">Không có địa điểm nào.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<!-- Modal thêm mới -->
+<div class="modal fade" id="modalFormCreate" tabindex="-1" aria-labelledby="modalFormLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="createModalLabel">Thêm địa điểm</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                @await Html.PartialAsync("Create", new API.Data.DiaDiem { IdCoSo = idCoSo.Value })
-            </div>
+            @Html.Partial("Create", new API.Data.DiaDiem())
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // JAVASCRIPT CHO TOGGLE STATUS DÙNG AJAX
-            const toggleSwitches = document.querySelectorAll('.status-toggle');
-            const antiForgeryToken = document.querySelector('form[action^="/DiaDiems/Delete"] input[name="__RequestVerificationToken"]')?.value;
-
-            toggleSwitches.forEach(sw => {
-                sw.addEventListener('change', function () {
-                    const id = this.getAttribute('data-id');
-                    this.disabled = true;
-
-                    if (!antiForgeryToken) {
-                        alert('Lỗi bảo mật: không tìm thấy token.');
-                        this.disabled = false;
-                        return;
-                    }
-
-                    fetch('@Url.Action("ToggleStatus", "DiaDiems")', {
-                        method: 'POST',
-                        body: 'id=' + id,
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'RequestVerificationToken': antiForgeryToken
-                        }
-                    }).catch(error => {
-                        alert('Không thể thay đổi trạng thái do lỗi kết nối.');
-                        this.checked = !this.checked;
-                    }).finally(() => {
-                        this.disabled = false;
-                    });
+                function onStatusChange(event, id) {
+            const isChecked = event.target.checked;
+            $.post('@Url.Action("ToggleStatus", "DiaDiems")', { id: id }, function () {
+                    location.reload();
                 });
-            });
-        });
-
-        $('#modalFormCreate').on('shown.bs.modal', function () {
-            $.validator.unobtrusive.parse($(this));
-        });
-        $('#modalFormEdit').on('shown.bs.modal', function () {
-            $.validator.unobtrusive.parse($(this));
-        });
+        }
     </script>
 }
