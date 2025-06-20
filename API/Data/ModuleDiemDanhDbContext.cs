@@ -13,7 +13,7 @@ namespace API.Data
         {
         }
 
-        public DbSet<HocKy> hocKy { get; set; }
+        public DbSet<HocKy> HocKys { get; set; }
         public DbSet<SinhVien> SinhViens { get; set; }
         public DbSet<DiemDanh> DiemDanhs { get; set; }
         public DbSet<NhomXuong> NhomXuongs { get; set; }
@@ -203,6 +203,11 @@ namespace API.Data
                 .HasForeignKey(v => v.IdVaiTro)
                 .OnDelete(DeleteBehavior.Restrict);
 
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer("Server=DESKTOP-0O61DM6\\TRUNGTT;Database=nhom10diemdanh;Trusted_Connection=True;TrustServerCertificate=True");
         }
     }
 }

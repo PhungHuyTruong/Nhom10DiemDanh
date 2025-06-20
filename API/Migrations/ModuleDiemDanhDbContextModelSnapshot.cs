@@ -292,9 +292,6 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CapDoDuAnIdCDDA")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("IdBoMon")
                         .HasColumnType("uniqueidentifier");
 
@@ -304,13 +301,10 @@ namespace API.Migrations
                     b.Property<Guid?>("IdHocKy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("MaDuAn")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("MoTa")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<DateTime?>("NgayCapNhat")
                         .HasColumnType("datetime2");
@@ -320,16 +314,17 @@ namespace API.Migrations
 
                     b.Property<string>("TenDuAn")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<bool>("TrangThai")
                         .HasColumnType("bit");
 
                     b.HasKey("IdDuAn");
 
-                    b.HasIndex("CapDoDuAnIdCDDA");
-
                     b.HasIndex("IdBoMon");
+
+                    b.HasIndex("IdCDDA");
 
                     b.HasIndex("IdHocKy");
 
@@ -363,7 +358,7 @@ namespace API.Migrations
 
                     b.HasKey("IdHocKy");
 
-                    b.ToTable("hocKy");
+                    b.ToTable("HocKys");
                 });
 
             modelBuilder.Entity("API.Data.IP", b =>
@@ -1000,13 +995,13 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.DuAn", b =>
                 {
-                    b.HasOne("API.Data.CapDoDuAn", "CapDoDuAn")
-                        .WithMany("DuAns")
-                        .HasForeignKey("CapDoDuAnIdCDDA");
-
                     b.HasOne("API.Data.QuanLyBoMon", "QuanLyBoMon")
                         .WithMany("DuAns")
                         .HasForeignKey("IdBoMon");
+
+                    b.HasOne("API.Data.CapDoDuAn", "CapDoDuAn")
+                        .WithMany("DuAns")
+                        .HasForeignKey("IdCDDA");
 
                     b.HasOne("API.Data.HocKy", "HocKy")
                         .WithMany("DuAns")
