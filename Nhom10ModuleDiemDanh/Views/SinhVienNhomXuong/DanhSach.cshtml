@@ -70,7 +70,7 @@
                                 </span>
                             </td>
                             <td>
-                                <a class="btn btn-info btn-sm" href="@Url.Action("Details", "SinhVien", new { id = item.IdSinhVien })">👁️ Xem</a>
+                                <a class="btn btn-info btn-sm" href="@Url.Action("Details", "SinhVienNhomXuong", new { id = item.IdSinhVien })">👁️ Xem</a>
                                 <form asp-action="XoaKhoiNhom" asp-controller="SinhVienNhomXuong" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@item.IdSinhVien" />
                                     <input type="hidden" name="idNhomXuong" value="@idNhomXuong" />

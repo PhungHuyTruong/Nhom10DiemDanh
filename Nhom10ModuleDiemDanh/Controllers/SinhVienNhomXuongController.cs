@@ -80,6 +80,15 @@ namespace Nhom10ModuleDiemDanh.Controllers
             return RedirectToAction("DanhSach", new { idNhomXuong });
         }
 
+        public async Task<IActionResult> Details(Guid id)
+        {
+            var response = await _httpClient.GetAsync($"https://localhost:7296/api/SinhVien/{id}");
+            if (!response.IsSuccessStatusCode) return NotFound();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var sinhVien = JsonConvert.DeserializeObject<SinhVien>(json);
+            return View(sinhVien);
+        }
 
     }
 }
