@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ModuleDiemDanhDbContext))]
-    [Migration("20250620031620_564322")]
-    partial class _564322
+    [Migration("20250621070944_666")]
+    partial class _666
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -695,16 +695,13 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("DuAnIdDuAn")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("IdBoMon")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("IdDuAn")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("IdPhuTrachXuong")
+                    b.Property<Guid>("IdPhuTrachXuong")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("MoTa")
@@ -728,9 +725,9 @@ namespace API.Migrations
 
                     b.HasKey("IdNhomXuong");
 
-                    b.HasIndex("DuAnIdDuAn");
-
                     b.HasIndex("IdBoMon");
+
+                    b.HasIndex("IdDuAn");
 
                     b.HasIndex("IdPhuTrachXuong");
 
@@ -1168,17 +1165,19 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Data.NhomXuong", b =>
                 {
-                    b.HasOne("API.Data.DuAn", "DuAn")
-                        .WithMany("NhomXuongs")
-                        .HasForeignKey("DuAnIdDuAn");
-
                     b.HasOne("API.Data.QuanLyBoMon", "QuanLyBoMon")
                         .WithMany("NhomXuongs")
                         .HasForeignKey("IdBoMon");
 
+                    b.HasOne("API.Data.DuAn", "DuAn")
+                        .WithMany("NhomXuongs")
+                        .HasForeignKey("IdDuAn");
+
                     b.HasOne("API.Data.PhuTrachXuong", "PhuTrachXuong")
                         .WithMany("NhomXuongs")
-                        .HasForeignKey("IdPhuTrachXuong");
+                        .HasForeignKey("IdPhuTrachXuong")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("DuAn");
 

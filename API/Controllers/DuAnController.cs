@@ -63,7 +63,10 @@ namespace API.Controllers
                 TrangThai = duAn.TrangThai,
                 TenCapDo = duAn.CapDoDuAn?.TenCapDoDuAn,
                 TenHocKy = duAn.HocKy?.TenHocKy,
-                TenBoMon = duAn.QuanLyBoMon?.TenBoMon
+                TenBoMon = duAn.QuanLyBoMon?.TenBoMon,
+                IdCDDA = duAn.IdCDDA,          // ✅ Bổ sung
+                IdBoMon = duAn.IdBoMon,        // ✅ Bổ sung
+                IdHocKy = duAn.IdHocKy
             };
 
             return Ok(dto);
