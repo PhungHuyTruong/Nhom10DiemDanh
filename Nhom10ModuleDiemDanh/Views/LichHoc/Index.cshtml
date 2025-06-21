@@ -1,0 +1,76 @@
+﻿@model IEnumerable<API.Data.LichHoc>
+
+@{
+    ViewBag.Title = "Danh sách Lịch Học";
+}
+
+<h2>Danh sách Lịch Học</h2>
+
+<form method="get" asp-action="Index">
+    <div class="form-inline mb-3">
+        <label for="idHocKy">ID Học Kỳ:</label>
+        <input type="text" name="idHocKy" value="@ViewBag.IdHocKy" class="form-control mx-2" placeholder="Nhập ID Học Kỳ" />
+
+        <label for="trangThai">Trạng thái:</label>
+        <select name="trangThai" class="form-control mx-2">
+            @foreach (var item in (List<SelectListItem>)ViewBag.TrangThaiList)
+            {
+                <option value="@item.Value" selected="@item.Selected.ToString().ToLower()">@item.Text</option>
+            }
+        </select>
+
+
+        <button type="submit" class="btn btn-primary">Lọc</button>
+        <a asp-action="Create" class="btn btn-success ml-2">Thêm mới</a>
+    </div>
+</form>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>ID Học Kỳ</th>
+            <th>ID Nhóm Xưởng</th>
+            <th>ID NXCH</th>
+            <th>Trạng Thái</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.IDLichHoc</td>
+                    <td>@item.IDHocKy</td>
+                    <td>@item.IdNhomXuong</td>
+                    <td>@item.IdNXCH</td>
+                    <td>@(item.TrangThai == 1 ? "Đã học" : "Chưa học")</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.IDLichHoc" class="btn btn-sm btn-warning">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.IDLichHoc" class="btn btn-sm btn-danger"
+                           onclick="return confirm('Bạn có chắc muốn xóa?');">Xóa</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" class="text-center">Không có dữ liệu</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav>
+    <ul class="pagination">
+        @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(i == (int)ViewBag.CurrentPage ? "active" : "")">
+                <a class="page-link" href="?page=@i&idHocKy=@ViewBag.IdHocKy&trangThai=@ViewBag.TrangThai">@i</a>
+            </li>
+        }
+    </ul>
+</nav>

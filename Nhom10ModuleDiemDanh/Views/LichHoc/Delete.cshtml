@@ -1,0 +1,40 @@
+﻿@model API.Data.LichHoc
+
+@{
+    ViewBag.Title = "Xóa Lịch Học";
+}
+
+<h2>Xác nhận xóa Lịch Học</h2>
+
+<div class="alert alert-warning">
+    <p>Bạn có chắc chắn muốn xóa bản ghi này không?</p>
+</div>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID</th>
+        <td>@Model.IDLichHoc</td>
+    </tr>
+    <tr>
+        <th>ID Học Kỳ</th>
+        <td>@Model.IDHocKy</td>
+    </tr>
+    <tr>
+        <th>ID Nhóm Xưởng</th>
+        <td>@Model.IdNhomXuong</td>
+    </tr>
+    <tr>
+        <th>ID NXCH</th>
+        <td>@Model.IdNXCH</td>
+    </tr>
+    <tr>
+        <th>Trạng Thái</th>
+        <td>@(Model.TrangThai == 1 ? "Đã học" : "Chưa học")</td>
+    </tr>
+</table>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="IDLichHoc" />
+    <button type="submit" class="btn btn-danger">Xóa</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>
