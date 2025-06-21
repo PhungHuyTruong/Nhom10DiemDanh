@@ -2,9 +2,11 @@
 using System.Text.Json;
 using System.Text;
 using API.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Nhom10ModuleDiemDanh.Controllers
 {
+    [Authorize(Roles = "GiangVien")]
     public class LichGiangDayController : Controller
     {
         private readonly HttpClient _client;
