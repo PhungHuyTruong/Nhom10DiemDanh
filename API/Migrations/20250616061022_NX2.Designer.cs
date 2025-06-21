@@ -12,8 +12,13 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ModuleDiemDanhDbContext))]
+<<<<<<<< HEAD:API/Migrations/20250616061158_kkkkkl.Designer.cs
     [Migration("20250616061158_kkkkkl")]
     partial class kkkkkl
+========
+    [Migration("20250616061022_NX2")]
+    partial class NX2
+>>>>>>>> origin/KhanhNX:API/Migrations/20250616061022_NX2.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -704,7 +709,7 @@ namespace API.Migrations
                     b.Property<Guid?>("IdDuAn")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("IdPhuTrachXuong")
+                    b.Property<Guid>("IdPhuTrachXuong")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("MoTa")
@@ -1186,7 +1191,9 @@ namespace API.Migrations
 
                     b.HasOne("API.Data.PhuTrachXuong", "PhuTrachXuong")
                         .WithMany("NhomXuongs")
-                        .HasForeignKey("IdPhuTrachXuong");
+                        .HasForeignKey("IdPhuTrachXuong")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("DuAn");
 

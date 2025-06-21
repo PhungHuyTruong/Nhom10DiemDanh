@@ -129,5 +129,22 @@ namespace API.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("bo-mon/{idDuAn}")]
+        public async Task<IActionResult> GetBoMonTheoDuAn(Guid idDuAn)
+        {
+            var duAn = await _context.DuAns
+                .Include(x => x.QuanLyBoMon)
+                .FirstOrDefaultAsync(x => x.IdDuAn == idDuAn);
+
+            if (duAn == null || duAn.QuanLyBoMon == null)
+                return NotFound("Không tìm thấy mã bộ môn");
+
+            return Ok(new
+            {
+                idBoMon = duAn.IdBoMon,
+                maBoMon = duAn.QuanLyBoMon.MaBoMon
+            });
+        }
     }
 }

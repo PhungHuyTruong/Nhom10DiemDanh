@@ -1,5 +1,4 @@
-﻿
-@model IEnumerable<API.Data.NhomXuong>
+﻿@model IEnumerable<API.Data.NhomXuong>
 @{
     Layout = "~/Views/Shared/PhuTrachXuongLayout.cshtml";
 }
@@ -66,7 +65,11 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span class="fw-bold">Danh sách nhóm xưởng</span>
-        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreate">+ Thêm mới</button>
+        <div class="d-flex gap-2">
+            <a class="btn btn-success btn-sm" asp-action="DownloadTemplate" asp-controller="NhomXuongs">📥 Tải Template</a>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">⬆️ Import Excel</button>
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreate">+ Thêm mới</button>
+        </div>
     </div>
     <div class="card-body p-0">
         <table class="table table-bordered table-hover mb-0 text-center">
@@ -87,10 +90,14 @@
                 {
                     <tr>
                         <td>@(item.i + 1)</td>
-                        <td>@item.x.TenNhomXuong</td>
-                        <td>@item.x.DuAn?.TenDuAn ?? "Không có"</td>
-                        <td>@item.x.QuanLyBoMon?.MaBoMon ?? "Không có"</td>
-                        <td>@item.x.PhuTrachXuong?.TenNhanVien ?? "Không có"</td>
+                        <td>
+                            <a asp-controller="SinhVienNhomXuong" asp-action="DanhSach" asp-route-idNhomXuong="@item.x.IdNhomXuong">
+                                @item.x.TenNhomXuong
+                            </a>
+                        </td>
+                        <td>@(item.x.DuAn != null ? item.x.DuAn.TenDuAn : "Không có")</td>
+                        <td>@(item.x.QuanLyBoMon != null ? item.x.QuanLyBoMon.MaBoMon : "Không có")</td>
+                        <td>@(item.x.PhuTrachXuong != null ? item.x.PhuTrachXuong.TenNhanVien : "Không có")</td>
                         <td>@item.x.MoTa</td>
                         <td>
                             <form asp-action="ToggleStatus" method="post">
@@ -190,6 +197,112 @@
     </div>
 </div>
 
+<!-- MODAL IMPORT EXCEL -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="ImportExcel" asp-controller="NhomXuongs" method="post" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Import nhóm xưởng từ Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Chọn file Excel (.xlsx)</label>
+                        <input type="file" class="form-control" name="file" accept=".xlsx" required />
+                    </div>
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger">@ViewBag.Error</div>
+                    }
+
+                    @if (ViewBag.Result != null)
+                    {
+                        <div class="alert alert-success">@ViewBag.Result</div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">⬆ Import</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
-    @Html.Partial("_ValidationScriptsPartial")
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Hàm xử lý logic khi chọn Dự án
+            function handleDuAnChange(select, display, hidden) {
+                const duAnId = select.value;
+
+                if (!duAnId) {
+                    display.value = '';
+                    hidden.value = '';
+                    return;
+                }
+
+                fetch(`/NhomXuongs/GetBoMonByDuAn?id=${duAnId}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error("Không tìm thấy bộ môn");
+                        return res.json();
+                    })
+                    .then(data => {
+                        display.value = data.maBoMon || 'Không có';
+                        hidden.value = data.idBoMon || '';
+                        console.log("✅ Gán bộ môn:", data);
+                    })
+                    .catch(err => {
+                        console.error('❌ Lỗi API:', err);
+                        display.value = 'Không có';
+                        hidden.value = '';
+                    });
+            }
+
+            // Hàm gắn sự kiện vào từng modal khi mở
+            function bindModalHandler(modal) {
+                modal.addEventListener('shown.bs.modal', function () {
+                    const duAnSelect = modal.querySelector('.du-an-select');
+                    const maBoMonDisplay = modal.querySelector('.ma-bo-mon-display');
+                    const idBoMonInput = modal.querySelector('.id-bo-mon-input');
+
+                    if (!duAnSelect || !maBoMonDisplay || !idBoMonInput) {
+                        console.warn("❌ Thiếu field trong modal", modal);
+                        return;
+                    }
+
+                    // Gỡ event cũ nếu đã có
+                    duAnSelect.removeEventListener('change', duAnSelect._handler || (() => {}));
+
+                    const handler = function () {
+                        handleDuAnChange(duAnSelect, maBoMonDisplay, idBoMonInput);
+                    };
+
+                    duAnSelect._handler = handler;
+                    duAnSelect.addEventListener('change', handler);
+
+                    // Nếu có sẵn dự án thì gọi luôn
+                    if (duAnSelect.value) {
+                        duAnSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            // Gắn cho modal Thêm
+            const modalCreate = document.getElementById('modalCreate');
+            if (modalCreate) {
+                bindModalHandler(modalCreate);
+            }
+
+            // Gắn cho tất cả modal Sửa
+            const modalEdits = document.querySelectorAll('[id^="modalEdit_"]');
+            modalEdits.forEach(modal => {
+                bindModalHandler(modal);
+            });
+        });
+    </script>
 }
+
+

@@ -12,8 +12,13 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ModuleDiemDanhDbContext))]
+<<<<<<<< HEAD:API/Migrations/20250616032304_llll.Designer.cs
     [Migration("20250616032304_llll")]
     partial class llll
+========
+    [Migration("20250616030438_khanh")]
+    partial class khanh
+>>>>>>>> origin/KhanhNX:API/Migrations/20250616030438_khanh.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -1,6 +1,7 @@
 ﻿using API.Data;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Data
 {
@@ -16,6 +17,7 @@ namespace API.Data
         public string MoTa { get; set; }
 
         public Guid? IdCDDA { get; set; }
+    
         public Guid? IdBoMon { get; set; }
         public Guid? IdHocKy { get; set; }
 
@@ -25,8 +27,6 @@ namespace API.Data
 
         [ForeignKey("IdCDDA")]
         public virtual CapDoDuAn? CapDoDuAn { get; set; }
-
-        [ForeignKey("IdBoMon")]
         public virtual QuanLyBoMon? QuanLyBoMon { get; set; }
 
         [ForeignKey("IdHocKy")]
