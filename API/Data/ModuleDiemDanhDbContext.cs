@@ -35,6 +35,7 @@ namespace API.Data
         public DbSet<DiaDiem> DiaDiems { get; set; }
         public DbSet<IP> IPs { get; set; }
         public DbSet<LichSuDiemDanh> LichSuDiemDanhs { get; set; }
+        public DbSet<ImportHistory> ImportHistory { get; set; } // Add this line
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

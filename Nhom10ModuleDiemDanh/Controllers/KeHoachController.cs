@@ -204,12 +204,12 @@ namespace Nhom10ModuleDiemDanh.Controllers
             return Json(new { success = true });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ToggleStatus(Guid id)
-        {
-            await _keHoachService.ToggleStatus(id);
-            var keHoach = await _keHoachService.GetKeHoachById(id);
-            return Json(new { success = true, trangThai = keHoach.TrangThai == 1 ? "Hoạt động" : "Ngừng hoạt động" });
-        }
+        //[HttpPost]
+        //public async Task<IActionResult> ToggleStatus(Guid id)
+        //{
+        //    await _keHoachService.ToggleStatus(id);
+        //    var keHoach = await _keHoachService.GetKeHoachById(id);
+        //    return Json(new { success = true, trangThai = keHoach.TrangThai == 1 ? "Hoạt động" : "Ngừng hoạt động" });
+        //}
     }
 }

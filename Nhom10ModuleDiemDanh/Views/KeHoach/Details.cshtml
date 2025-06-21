@@ -1,5 +1,8 @@
 ﻿@model KeHoachViewModel
-
+@{
+    Layout = null;
+}
+<div class="card shadow p-4 bg-white">
 <div>
     <dl class="row">
         <dt class="col-sm-4">Tên kế hoạch</dt>
@@ -14,7 +17,28 @@
         <dd class="col-sm-8">@(Model.TenCapDoDuAn ?? "Chưa có")</dd>
         <dt class="col-sm-4">Thời gian diễn ra</dt>
         <dd class="col-sm-8">@Model.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm") - @Model.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm")</dd>
-        <dt class="col-sm-4">Trạng thái</dt>
-        <dd class="col-sm-8">@(Model.TrangThai == 1 ? "Hoạt động" : "Ngừng hoạt động")</dd>
+            <dt class="col-sm-4">Trạng thái</dt>
+            <dd class="col-sm-8">
+                @{
+                    var now = DateTime.Now;
+                    var start = Model.ThoiGianBatDau;
+                    var end = Model.ThoiGianKetThuc;
+                    string statusText;
+                    if (now < start)
+                    {
+                        statusText = "Sắp diễn ra";
+                    }
+                    else if (now >= start && now <= end)
+                    {
+                        statusText = "Đang diễn ra";
+                    }
+                    else
+                    {
+                        statusText = "Đã diễn ra";
+                    }
+                }
+                @statusText
+            </dd>
     </dl>
+</div>
 </div>

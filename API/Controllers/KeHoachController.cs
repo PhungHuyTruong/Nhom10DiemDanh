@@ -33,7 +33,10 @@ namespace API.Controllers
                         join h in _context.HocKys on d.IdHocKy equals h.IdHocKy into hocKyGroup
                         from h in hocKyGroup.DefaultIfEmpty()
                         where (string.IsNullOrEmpty(tuKhoa) || k.TenKeHoach.Contains(tuKhoa)) &&
-                              (string.IsNullOrEmpty(trangThai) || (trangThai == "Hoạt động" && k.TrangThai == 1) || (trangThai == "Ngừng hoạt động" && k.TrangThai == 0)) &&
+                             (string.IsNullOrEmpty(trangThai) || trangThai == "Tất cả trạng thái" ||
+                            (trangThai == "sapdienra" && k.ThoiGianBatDau > DateTime.Now) ||
+                            (trangThai == "dangdienra" && k.ThoiGianBatDau <= DateTime.Now && k.ThoiGianKetThuc >= DateTime.Now) ||
+                            (trangThai == "dadienra" && k.ThoiGianKetThuc < DateTime.Now)) &&
                               (string.IsNullOrEmpty(idBoMon) || (d != null && d.IdBoMon.ToString() == idBoMon)) &&
                               (string.IsNullOrEmpty(idCapDoDuAn) || (d != null && d.IdCDDA.ToString() == idCapDoDuAn)) &&
                               (string.IsNullOrEmpty(idHocKy) || (d != null && d.IdHocKy.ToString() == idHocKy)) &&
@@ -197,20 +200,20 @@ namespace API.Controllers
             return Ok(new { success = true });
         }
 
-        [HttpPost("ToggleStatus/{id}")]
-        public async Task<IActionResult> ToggleStatus(Guid id)
-        {
-            var keHoach = await _context.KeHoachs.FindAsync(id);
-            if (keHoach == null)
-            {
-                return NotFound();
-            }
+        //[HttpPost("ToggleStatus/{id}")]
+        //public async Task<IActionResult> ToggleStatus(Guid id)
+        //{
+        //    var keHoach = await _context.KeHoachs.FindAsync(id);
+        //    if (keHoach == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            keHoach.TrangThai = keHoach.TrangThai == 1 ? 0 : 1;
-            keHoach.NgayCapNhat = DateTime.Now;
-            await _context.SaveChangesAsync();
+        //    keHoach.TrangThai = keHoach.TrangThai == 1 ? 0 : 1;
+        //    keHoach.NgayCapNhat = DateTime.Now;
+        //    await _context.SaveChangesAsync();
 
-            return Ok(new { success = true, trangThai = keHoach.TrangThai == 1 ? "Hoạt động" : "Ngừng hoạt động" });
-        }
+        //    return Ok(new { success = true, trangThai = keHoach.TrangThai == 1 ? "Hoạt động" : "Ngừng hoạt động" });
+        //}
     }
 }

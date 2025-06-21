@@ -1,0 +1,107 @@
+﻿@model IEnumerable<API.Data.ImportHistory>
+
+@{
+    Layout = "~/Views/Shared/PhuTrachXuongLayout.cshtml";
+    ViewData["Title"] = "Lịch sử Import";
+}
+
+<!-- TIÊU ĐỀ -->
+<div class="card bg-primary text-white mb-4">
+    <div class="card-body">
+        <h2 class="card-title">Quản lý lịch sử import</h2>
+    </div>
+</div>
+
+<!-- DANH SÁCH LỊCH SỬ IMPORT -->
+<div class="card" id="indexContent">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">Danh sách lịch sử import</span>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-bordered table-hover mb-0 text-center" id="dataTable">
+            <thead class="table-light">
+                <tr>
+                    <th>Tên file</th>
+                    <th>Loại</th>
+                    <th>Ngày import</th>
+                    <th>Người import</th>
+                    <th>Trạng thái</th>
+                    <th>Thông báo</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.FileName</td>
+                            <td>
+                                <span class="badge rounded-pill bg-info">@item.Type</span>
+                            </td>
+                            <td>@item.ImportDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.ImportedBy</td>
+                            <td>
+                                @if (item.Status == "Success")
+                                {
+                                    <span class="badge rounded-pill bg-success">Thành công</span>
+                                }
+                                else if (item.Status == "Failed")
+                                {
+                                    <span class="badge rounded-pill bg-danger">Thất bại</span>
+                                }
+                                else if (item.Status == "PartialSuccess")
+                                {
+                                    <span class="badge rounded-pill bg-warning text-dark">Thành công một phần</span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill bg-secondary">@item.Status</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.Message.Length > 50)
+                                {
+                                    <span title="@item.Message" data-bs-toggle="tooltip" data-bs-placement="top">@item.Message.Substring(0, 50)...</span>
+                                }
+                                else
+                                {
+                                    @item.Message
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">🔍</a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="7" class="text-center">Không có dữ liệu</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#dataTable').DataTable({
+                "order": [[2, "desc"]], // Sắp xếp theo ngày import giảm dần
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Vietnamese.json"
+                }
+            });
+
+            // Khởi tạo tooltip cho thông báo dài
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}
