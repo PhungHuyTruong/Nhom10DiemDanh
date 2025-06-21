@@ -33,7 +33,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
                 return View(duAnList);
             }
 
-            return View(new List<DuAn>());
+            return View(new List<DuAnDto>());
         }
 
         // 🧠 Tải danh sách dropdown dùng chung (có selected)
