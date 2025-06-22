@@ -7,14 +7,14 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
         <!-- Main Content -->
-        <div class="col-md-10 p-4">
+        <div class="col">
             <div class="bg-primary text-white p-3 rounded mb-3">
                 <h3 class="m-0">📘 Danh Sách Dự Án</h3>
             </div>
 
             <!-- Bộ lọc -->
             <div class="bg-light border p-3 rounded mb-3">
-                <h5>Bộ lọc</h5>
+                <h5 style="color: black">Bộ lọc</h5>
                 <form method="get" asp-action="Index" class="row g-2 align-items-center">
                     <div class="col-md-3">
                         <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm kiếm theo tên" />
@@ -53,10 +53,15 @@
 
             <!-- Danh sách -->
             <div class="card shadow-sm mb-4">
-                <div class="card-header fw-bold">📋 Danh sách dự án</div>
+                <div class="card-header d-flex justify-content-between align-items-center fw-bold">
+                    <h5 class="mb-0">📋 Danh sách dự án</h5>
+                    <button type="button" class="btn btn-success" id="btn-show-create">
+                        <i class="bi bi-plus-lg"></i> Thêm
+                    </button>
+                </div>
                 <div class="card-body p-0">
-                    <table class="table table-striped m-0">
-                        <thead class="table-primary">
+                    <table class="table">
+                        <thead class="table table-light">
                             <tr>
                                 <th>#</th>
                                 <th>Tên</th>
@@ -99,8 +104,8 @@
                                             }
                                         </td>
                                         <td>
-                                            <button class="btn btn-sm btn-primary btn-edit-duan" data-id="@item.IdDuAn">
-                                                <i class="bi bi-pencil-square"></i>
+                                            <button class="btn btn-sm btn-warning btn-edit-duan" data-id="@item.IdDuAn">
+                                                <i class="bi bi-pencil-square">Sửa</i>
                                             </button>
                                         </td>
                                     </tr>
@@ -114,15 +119,14 @@
             </div>
 
             <!-- Nút Thêm -->
-            <button class="btn btn-primary" id="btn-show-create"><i class="bi bi-plus-lg"></i> Thêm</button>
         </div>
 
 <!-- Modal Create -->
 <div class="modal fade" id="modal-create" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Thêm Dự Án</h5>
+            <div class="modal-header" style="background-color: forestgreen">
+                <h4 class="text-black fw-bold mb-3" style="color: black">📌 Thêm Dự Án</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="modal-create-body"></div>
@@ -134,8 +138,8 @@
 <div class="modal fade" id="modal-edit" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Chỉnh sửa Dự Án</h5>
+            <div class="modal-header" style="background-color: yellow">
+                <h4 class="text-black fw-bold mb-3">✏️ Chỉnh sửa Dự Án</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="modal-edit-body"></div>

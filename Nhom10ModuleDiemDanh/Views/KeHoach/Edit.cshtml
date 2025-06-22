@@ -6,29 +6,29 @@
 <form id="editForm" asp-action="Edit" asp-controller="KeHoach" method="post">
     <input type="hidden" asp-for="IdKeHoach" />
     <div class="mb-3">
-        <label class="form-label">Tên kế hoạch</label>
+        <label class="form-label" style="color: black">Tên kế hoạch</label>
         <input asp-for="TenKeHoach" class="form-control" />
         <span asp-validation-for="TenKeHoach" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <label asp-for="IdDuAn"></label>
+        <label asp-for="IdDuAn" style="color: black"></label>
         <select asp-for="IdDuAn" asp-items="ViewBag.DuAnList" class="form-control">
             <option value="">-- Chọn dự án --</option>
         </select>
         <span asp-validation-for="IdDuAn" class="text-danger"></span>
     </div>
     <div class="mb-3">
-        <label class="form-label">Nội dung</label>
+        <label class="form-label" style="color: black">Nội dung</label>
         <textarea asp-for="NoiDung" class="form-control"></textarea>
         <span asp-validation-for="NoiDung" class="text-danger"></span>
     </div>
     <div class="mb-3">
-        <label class="form-label">Thời gian bắt đầu</label>
+        <label class="form-label" style="color: black">Thời gian bắt đầu</label>
         <input asp-for="ThoiGianBatDau" type="datetime-local" class="form-control" value="@Model.ThoiGianBatDau.ToString("yyyy-MM-ddTHH:mm")" />
         <span asp-validation-for="ThoiGianBatDau" class="text-danger"></span>
     </div>
     <div class="mb-3">
-        <label class="form-label">Thời gian kết thúc</label>
+        <label class="form-label" style="color: black">Thời gian kết thúc</label>
         <input asp-for="ThoiGianKetThuc" type="datetime-local" class="form-control" value="@Model.ThoiGianKetThuc.ToString("yyyy-MM-ddTHH:mm")" />
         <span asp-validation-for="ThoiGianKetThuc" class="text-danger"></span>
     </div>

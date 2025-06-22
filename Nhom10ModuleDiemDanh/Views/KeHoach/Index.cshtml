@@ -88,7 +88,7 @@
                         <tr>
                             <td>@(item.index + 1)</td>
                             <td>
-                                <a asp-controller="KeHoachNhomXuongs" asp-action="Index" asp-route-idKeHoach="@item.value.IdKeHoach">
+                                <a asp-action="Index" asp-controller="KeHoachNhomXuong" asp-route-idKeHoach="@item.value.IdKeHoach">
                                     @item.value.TenKeHoach
                                 </a>
                             </td>
@@ -207,12 +207,12 @@
 <div class="modal fade" id="noiDungModal" tabindex="-1" aria-labelledby="noiDungModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="noiDungModalLabel">Chi tiết nội dung</h5>
+            <div class="modal-header" style="background-color: deepskyblue">
+                <h5 class="modal-title" id="noiDungModalLabel" style="color: black">Chi tiết nội dung</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
             <div class="modal-body">
-                <p id="noiDungContent" class="mb-0 text-break"></p>
+                <p id="noiDungContent" class="mb-0 text-black"></p>
             </div>
         </div>
     </div>

@@ -1,7 +1,7 @@
 ﻿@model API.Data.DiaDiem
 
 <div class="minimal-form">
-    <center><h3>🗺️ Thêm địa điểm</h3></center>
+    <center><h3 style="color: deepskyblue">🗺️ Thêm địa điểm</h3></center>
     <form asp-action="Create" method="post">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="IdCoSo" />
@@ -18,7 +18,7 @@
         <div class="d-flex justify-content-between mt-2">
             <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary">←</button>
             <div>
-                <label class="form-check-label small me-2">Kích hoạt</label>
+                <label class="form-check-label small me-2" style="color: black">Kích hoạt</label>
                 <input asp-for="TrangThai" class="form-check-input me-2">
                 <button type="submit" class="btn btn-sm btn-primary">Thêm</button>
             </div>

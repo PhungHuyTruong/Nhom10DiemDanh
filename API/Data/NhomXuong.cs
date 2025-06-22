@@ -29,7 +29,7 @@ namespace API.Data
         public virtual DuAn? DuAn { get; set; }
         public virtual QuanLyBoMon? QuanLyBoMon { get; set; }
         public virtual PhuTrachXuong? PhuTrachXuong { get; set; }
-        public virtual ICollection<SinhVien>? SinhViens { get; set; }
+        public virtual ICollection<SinhVien>? SinhViens { get; set; } = new List<SinhVien>();
         public virtual ICollection<DiemDanh>? DiemDanhs { get; set; }
         public virtual ICollection<LichHoc>? LichHocs { get; set; }
         public virtual ICollection<LichGiangDay>? LichGiangDays { get; set; }

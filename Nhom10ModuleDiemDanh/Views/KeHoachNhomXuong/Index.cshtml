@@ -1,0 +1,75 @@
+﻿@model IEnumerable<API.Data.KeHoachNhomXuong>
+@{
+    Layout = "~/Views/Shared/PhuTrachXuongLayout.cshtml";
+}
+
+<!-- TIÊU ĐỀ -->
+<div class="card bg-primary text-white mb-4">
+    <div class="card-body">
+        <h2 class="card-title mb-0">📋 Danh sách Kế hoạch - Nhóm xưởng</h2>
+        @* <div class="mt-1 fw-light fst-italic">🗂 Kế hoạch: @ViewBag.TenKeHoach</div> *@
+    </div>
+</div>
+
+<!-- DANH SÁCH -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">Chi tiết nhóm xưởng theo kế hoạch</span>
+        <a asp-action="Create" asp-route-idKeHoach="@ViewBag.IdKeHoach" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Thêm mới
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-bordered table-hover mb-0 text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Tên Nhóm Xưởng</th>
+                    <th>Giảng viên phụ trách</th>
+                    <th>Thời Gian Thực Tế</th>
+                    <th>Số Buổi</th>
+                    <th>Số Sinh Viên</th>
+                    @* <th>Ngày Tạo</th>
+                    <th>Ngày Cập Nhật</th> *@
+                    <th>Trạng Thái</th>
+                    <th>Chức năng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Select((x, i) => new { x, i }))
+                {
+                    <tr>
+                        <td>@(item.i + 1)</td>
+                        <td>
+                            <a asp-controller="KHNXCaHocs" asp-action="Index"
+                               asp-route-idKHNX="@item.x.IdKHNX"
+                               asp-route-tenNhomXuong="@item.x.TenNhomXuong">
+                                @item.x.TenNhomXuong
+                            </a>
+                        </td>
+                        <td>@item.x.TenPhuTrachXuong</td>
+                        <td>@item.x.NgayBatDau?.ToString("dd/MM/yyyy") - @item.x.NgayKetThuc?.ToString("dd/MM/yyyy")</td>
+                        <td>@item.x.SoBuoi</td>
+                        <td>@item.x.SoSinhVien</td>
+                        @* <td>@item.x.NgayTao.ToString("dd/MM/yyyy")</td>
+                        <td>@(item.x.NgayCapNhat?.ToString("dd/MM/yyyy"))</td> *@
+                        <td>
+                            <span class="badge @(item.x.TrangThai == 1 ? "bg-success" : "bg-secondary")">
+                                @(item.x.TrangThai == 1 ? "Hoạt động" : "Ngừng")
+                            </span>
+                        </td>
+                        <td>
+                            @* <a asp-action="Edit" asp-route-id="@item.x.IdKHNX" class="btn btn-sm btn-warning">Sửa</a>
+                            <form asp-action="DeleteConfirmed" asp-route-id="@item.x.IdKHNX" method="post" style="display:inline" onsubmit="return confirm('Bạn có chắc muốn xoá?');">
+                                <input type="hidden" name="id" value="@item.x.IdKHNX" />
+                                <button type="submit" class="btn btn-sm btn-danger">Xoá</button>
+                            </form> *@
+
+                            <a asp-action="Details" asp-route-id="@item.x.IdKHNX" class="btn btn-sm btn-primary">Chi tiết</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

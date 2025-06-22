@@ -1,0 +1,88 @@
+﻿@model API.Data.KeHoachNhomXuong
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    Layout = "~/Views/Shared/PhuTrachXuongLayout.cshtml";
+
+
+}
+@* 
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+
+<div class="container mt-5">
+    <h2 class="text-primary mb-4"><i class="bi bi-plus-circle"></i> Tạo mới Kế hoạch - Nhóm xưởng</h2> *@
+
+    <form asp-action="Create" method="post">
+        <input type="hidden" asp-for="IdKeHoach" />
+
+        <div class="mb-3">
+            <label asp-for="IdNhomXuong" class="form-label">Nhóm xưởng</label>
+            <select asp-for="IdNhomXuong" class="form-select" asp-items="@(ViewBag.DanhSachNhomXuong as SelectList)">
+                <option value="">-- Chọn nhóm xưởng --</option>
+            </select>
+            <span asp-validation-for="IdNhomXuong" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            @* <label asp-for="SoBuoi" class="form-label">Số buổi</label>
+            <input asp-for="SoBuoi" class="form-control" />
+            <span asp-validation-for="SoBuoi" class="text-danger"></span> *@
+            <input type="hidden" asp-for="SoBuoi" value="0" />
+        </div>
+
+        <div class="mb-3">
+            @* <label asp-for="SoSinhVien" class="form-label">Số sinh viên</label>
+            <input type="text" asp-for="SoSinhVien" class="form-control" readonly />
+            <span asp-validation-for="SoSinhVien" class="text-danger"></span> *@
+        <input type="hidden" asp-for="SoSinhVien" value="0" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="NgayBatDau" class="form-label">Ngày bắt đầu</label>
+            <input asp-for="NgayBatDau" type="date" class="form-control" />
+            <span asp-validation-for="NgayBatDau" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="NgayKetThuc" class="form-label">Ngày kết thúc</label>
+            <input asp-for="NgayKetThuc" type="date" class="form-control" />
+            <span asp-validation-for="NgayKetThuc" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+            <select asp-for="TrangThai" class="form-select">
+                <option value="1">Hoạt động</option>
+                <option value="0">Ngừng</option>
+            </select>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Lưu</button>
+            <a asp-action="ByKeHoach" asp-route-idKeHoach="@Model.IdKeHoach" class="btn btn-secondary">
+                <i class="bi bi-arrow-left-circle"></i> Quay lại
+            </a>
+
+        </div>
+    </form>
+@* </div> *@
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+                $('#IdNhomXuong').change(function () {
+            const idNhom = $(this).val();
+            if (idNhom) {
+                fetch(`/api/SinhVienNhomXuongApi/${idNhom}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        $('#SoSinhVien').val(data.length); // gán lại số sinh viên
+                    });
+            } else {
+                $('#SoSinhVien').val(0);
+            }
+        });
+
+    </script>
+}

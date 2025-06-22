@@ -3,7 +3,6 @@
     Layout = null; // Không dùng layout khi dùng modal
 }
 
-<h4 class="text-primary fw-bold mb-3">✏️ Chỉnh sửa Dự Án</h4>
 
 <form asp-controller="DuAns" asp-action="Edit" id="form-edit-duan">
     @* Hidden fields *@
@@ -13,41 +12,41 @@
 
     <!-- Tên dự án -->
     <div class="mb-3">
-        <label asp-for="TenDuAn" class="form-label">Tên dự án</label>
+        <label asp-for="TenDuAn" class="form-label" style="color: black">Tên dự án</label>
         <input asp-for="TenDuAn" class="form-control" placeholder="Nhập tên dự án" />
         <span asp-validation-for="TenDuAn" class="text-danger"></span>
     </div>
 
     <!-- Mô tả -->
     <div class="mb-3">
-        <label asp-for="MoTa" class="form-label">Mô tả</label>
+        <label asp-for="MoTa" class="form-label" style="color: black">Mô tả</label>
         <textarea asp-for="MoTa" class="form-control" rows="3" placeholder="Nhập mô tả..."></textarea>
         <span asp-validation-for="MoTa" class="text-danger"></span>
     </div>
 
     <!-- Cấp độ dự án -->
     <div class="mb-3">
-        <label asp-for="IdCDDA" class="form-label">Cấp độ dự án</label>
+        <label asp-for="IdCDDA" class="form-label" style="color: black">Cấp độ dự án</label>
         <select asp-for="IdCDDA" class="form-select" asp-items="ViewBag.IdCDDA">
-            <option value="">-- Chọn cấp độ --</option>
+            <option value=""></option>
         </select>
         <span asp-validation-for="IdCDDA" class="text-danger"></span>
     </div>
 
     <!-- Bộ môn -->
     <div class="mb-3">
-        <label asp-for="IdBoMon" class="form-label">Bộ môn</label>
+        <label asp-for="IdBoMon" class="form-label" style="color: black">Bộ môn</label>
         <select asp-for="IdBoMon" class="form-select" asp-items="ViewBag.IdBoMon">
-            <option value="">-- Chọn bộ môn --</option>
+            <option value=""></option>
         </select>
         <span asp-validation-for="IdBoMon" class="text-danger"></span>
     </div>
 
     <!-- Học kỳ -->
     <div class="mb-3">
-        <label asp-for="IdHocKy" class="form-label">Học kỳ</label>
+        <label asp-for="IdHocKy" class="form-label" style="color: black">Học kỳ</label>
         <select asp-for="IdHocKy" class="form-select" asp-items="ViewBag.IdHocKy">
-            <option value="">-- Chọn học kỳ --</option>
+            <option value=""></option>
         </select>
         <span asp-validation-for="IdHocKy" class="text-danger"></span>
     </div>
@@ -55,7 +54,7 @@
     <!-- Trạng thái -->
     <div class="form-check mb-3">
         <input class="form-check-input" asp-for="TrangThai" />
-        <label class="form-check-label" asp-for="TrangThai">Hoạt động</label>
+        <label class="form-check-label" asp-for="TrangThai" style="color: black">Hoạt động</label>
     </div>
 
     <!-- Nút lưu -->

@@ -119,6 +119,10 @@
                         <div class="modal fade" id="modalEdit_@item.x.IdNhomXuong" tabindex="-1">
                             <div class="modal-dialog">
                                 <div class="modal-content">
+                                    <div class="modal-header" style="background-color: yellow">
+                                        <h5 class="modal-title" style="color: black">Sửa nhóm xưởng</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                                    </div>
                                     <div class="modal-body">
                                         @await Html.PartialAsync("Edit", item.x)
                                     </div>
@@ -186,8 +190,8 @@
 <div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Thêm nhóm xưởng</h5>
+            <div class="modal-header" style="background-color: forestgreen">
+                <h5 class="modal-title" style="color: black">Thêm nhóm xưởng</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
             <div class="modal-body">

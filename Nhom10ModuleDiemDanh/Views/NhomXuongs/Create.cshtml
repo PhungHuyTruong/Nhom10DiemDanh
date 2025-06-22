@@ -8,21 +8,21 @@
 
     <!-- Tên nhóm xưởng -->
     <div class="mb-3">
-        <label asp-for="TenNhomXuong" class="form-label fw-semibold">Tên nhóm xưởng</label>
+        <label asp-for="TenNhomXuong" class="form-label fw-semibold" style="color: black">Tên nhóm xưởng</label>
         <input asp-for="TenNhomXuong" class="form-control" placeholder="Nhập tên nhóm xưởng" />
         <span asp-validation-for="TenNhomXuong" class="text-danger small"></span>
     </div>
 
     <!-- Mô tả -->
     <div class="mb-3">
-        <label asp-for="MoTa" class="form-label fw-semibold">Mô tả</label>
+        <label asp-for="MoTa" class="form-label fw-semibold" style="color: black">Mô tả</label>
         <textarea asp-for="MoTa" class="form-control" placeholder="Nhập mô tả..."></textarea>
         <span asp-validation-for="MoTa" class="text-danger small"></span>
     </div>
 
     <!-- Giảng viên phụ trách -->
     <div class="mb-3">
-        <label asp-for="IdPhuTrachXuong" class="form-label fw-semibold">Giảng viên giảng dạy</label>
+        <label asp-for="IdPhuTrachXuong" class="form-label fw-semibold" style="color: black">Giảng viên giảng dạy</label>
         <select asp-for="IdPhuTrachXuong" class="form-select" asp-items="ViewBag.GiangViens">
             <option value="">-- Chọn giảng viên --</option>
         </select>
@@ -31,7 +31,7 @@
 
     <!-- Dự án -->
     <div class="mb-3">
-        <label asp-for="IdDuAn" class="form-label fw-semibold">Dự án</label>
+        <label asp-for="IdDuAn" class="form-label fw-semibold" style="color: black">Dự án</label>
         <select asp-for="IdDuAn" class="form-select du-an-select" asp-items="ViewBag.DuAns">
             <option value="">-- Chọn dự án --</option>
         </select>
@@ -40,7 +40,7 @@
 
     <!-- Mã Bộ Môn -->
     <div class="mb-3">
-        <label class="form-label fw-semibold">Mã bộ môn</label>
+        <label class="form-label fw-semibold" style="color: black">Mã bộ môn</label>
         <input class="form-control ma-bo-mon-display" type="text" readonly placeholder="Mã bộ môn sẽ tự hiển thị" />
     </div>
 

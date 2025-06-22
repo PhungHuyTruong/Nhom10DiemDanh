@@ -553,7 +553,13 @@ namespace API.Migrations
                     b.Property<Guid>("IdNhomXuong")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("NgayBatDau")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("NgayCapNhat")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("NgayKetThuc")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("NgayTao")
@@ -564,11 +570,6 @@ namespace API.Migrations
 
                     b.Property<int>("SoSinhVien")
                         .HasColumnType("int");
-
-                    b.Property<string>("ThoiGianThucTe")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("TrangThai")
                         .HasColumnType("int");

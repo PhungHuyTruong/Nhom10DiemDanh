@@ -1,75 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-using API.Data; // Assuming your DbContext and Models are here
+using API.Data;
+using API.Models;
 
 namespace API.Controllers
 {
-    #region Data Transfer Objects (DTOs)
-
-    /// <summary>
-    /// DTO for creating a new KeHoachNhomXuong.
-    /// </summary>
-    public class CreateKeHoachNhomXuongDto
-    {
-        [Required]
-        public Guid IdNhomXuong { get; set; }
-
-        [Required]
-        public Guid IdKeHoach { get; set; }
-
-        [MaxLength(100)]
-        public string ThoiGianThucTe { get; set; }
-
-        public int SoBuoi { get; set; }
-        public int SoSinhVien { get; set; }
-        public int TrangThai { get; set; }
-    }
-
-    /// <summary>
-    /// DTO for updating an existing KeHoachNhomXuong.
-    /// </summary>
-    public class UpdateKeHoachNhomXuongDto
-    {
-        [MaxLength(100)]
-        public string ThoiGianThucTe { get; set; }
-        public int SoBuoi { get; set; }
-        public int SoSinhVien { get; set; }
-        public int TrangThai { get; set; }
-    }
-
-    /// <summary>
-    /// DTO for returning KeHoachNhomXuong data to the client.
-    /// Includes related data for context.
-    /// </summary>
-    public class KeHoachNhomXuongDto
-    {
-        public Guid IdKHNX { get; set; }
-        public Guid IdNhomXuong { get; set; }
-        public Guid IdKeHoach { get; set; }
-        
-        // NOTE: Assuming KeHoach has 'TenKeHoach' and NhomXuong has 'TenNhom' properties.
-        // Adjust these property names if they are different in your actual models.
-        public string TenKeHoach { get; set; }
-        public string TenNhomXuong { get; set; }
-        
-        public string ThoiGianThucTe { get; set; }
-        public int SoBuoi { get; set; }
-        public int SoSinhVien { get; set; }
-        public DateTime NgayTao { get; set; }
-        public DateTime? NgayCapNhat { get; set; }
-        public int TrangThai { get; set; }
-    }
-
-    #endregion
-
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class KeHoachNhomXuongsController : ControllerBase
     {
         private readonly ModuleDiemDanhDbContext _context;
@@ -80,173 +17,146 @@ namespace API.Controllers
         }
 
         // GET: api/KeHoachNhomXuongs
-        /// <summary>
-        /// Gets a list of all KeHoachNhomXuong entries, including related KeHoach and NhomXuong information.
-        /// </summary>
+        // GET: api/KeHoachNhomXuongs
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<KeHoachNhomXuongDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<KeHoachNhomXuongDto>>> GetKeHoachNhomXuongs()
+        public async Task<IActionResult> GetAll()
         {
-            var keHoachNhomXuongs = await _context.KeHoachNhomXuongs
-                .AsNoTracking() // Use AsNoTracking for read-only queries to improve performance.
-                .Include(k => k.KeHoach) // Eagerly load the related KeHoach.
-                .Include(k => k.NhomXuong) // Eagerly load the related NhomXuong.
-                .Select(k => new KeHoachNhomXuongDto
-                {
-                    IdKHNX = k.IdKHNX,
-                    IdKeHoach = k.IdKeHoach,
-                    IdNhomXuong = k.IdNhomXuong,
-                    // Assuming property names, adjust if necessary
-                    TenKeHoach = k.KeHoach.TenKeHoach, 
-                    TenNhomXuong = k.NhomXuong.TenNhomXuong,
-                    ThoiGianThucTe = k.ThoiGianThucTe,
-                    SoBuoi = k.SoBuoi,
-                    SoSinhVien = k.SoSinhVien,
-                    NgayTao = k.NgayTao,
-                    NgayCapNhat = k.NgayCapNhat,
-                    TrangThai = k.TrangThai
-                })
+            var data = await _context.KeHoachNhomXuongs
+                .Include(k => k.KeHoach)
+                .Include(k => k.NhomXuong).ThenInclude(nx => nx.PhuTrachXuong).Include(k => k.KHNXCaHocs)
                 .ToListAsync();
 
-            return Ok(keHoachNhomXuongs);
+            // Set TenNhomXuong thủ công
+            foreach (var item in data)
+            {
+                item.TenNhomXuong = item.NhomXuong?.TenNhomXuong ?? "";
+                item.TenPhuTrachXuong = item.NhomXuong?.PhuTrachXuong?.TenNhanVien ?? "";
+                item.SoBuoi = item.KHNXCaHocs?.Count ?? 0;
+            }
+            data = data.OrderByDescending(x => x.SoBuoi).ToList();
+
+            return Ok(data);
         }
 
-        // GET: api/KeHoachNhomXuongs/5
-        /// <summary>
-        /// Gets a specific KeHoachNhomXuong by its ID.
-        /// </summary>
-        [HttpGet("{id}")]
-        [ProducesResponseType(typeof(KeHoachNhomXuongDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<KeHoachNhomXuongDto>> GetKeHoachNhomXuong(Guid id)
+        // GET: api/KeHoachNhomXuongs/ByKeHoach/{idKeHoach}
+        [HttpGet("ByKeHoach/{idKeHoach}")]
+        public async Task<IActionResult> GetByKeHoach(Guid idKeHoach)
         {
-            var keHoachNhomXuong = await _context.KeHoachNhomXuongs
-                .AsNoTracking()
+            var data = await _context.KeHoachNhomXuongs
+                .Where(k => k.IdKeHoach == idKeHoach)
+                .Include(k => k.KeHoach)
+                .Include(k => k.NhomXuong).ThenInclude(nx => nx.PhuTrachXuong).Include(k => k.KHNXCaHocs)
+                .ToListAsync();
+
+            foreach (var item in data)
+            {
+                item.TenNhomXuong = item.NhomXuong?.TenNhomXuong ?? "";
+                item.TenPhuTrachXuong = item.NhomXuong?.PhuTrachXuong?.TenNhanVien ?? "";
+                item.SoBuoi = item.KHNXCaHocs?.Count ?? 0;
+            }
+
+            foreach (var item in data)
+            {
+                item.SoSinhVien = await _context.SinhViens.CountAsync(sv => sv.IdNhomXuong == item.IdNhomXuong);
+            }
+
+
+            return Ok(data);
+        }
+
+        // GET: api/KeHoachNhomXuongs/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var item = await _context.KeHoachNhomXuongs
                 .Include(k => k.KeHoach)
                 .Include(k => k.NhomXuong)
-                .Select(k => new KeHoachNhomXuongDto
-                {
-                    IdKHNX = k.IdKHNX,
-                    IdKeHoach = k.IdKeHoach,
-                    IdNhomXuong = k.IdNhomXuong,
-                    TenKeHoach = k.KeHoach.TenKeHoach,
-                    TenNhomXuong = k.NhomXuong.TenNhomXuong,
-                    ThoiGianThucTe = k.ThoiGianThucTe,
-                    SoBuoi = k.SoBuoi,
-                    SoSinhVien = k.SoSinhVien,
-                    NgayTao = k.NgayTao,
-                    NgayCapNhat = k.NgayCapNhat,
-                    TrangThai = k.TrangThai
-                })
                 .FirstOrDefaultAsync(k => k.IdKHNX == id);
 
-            if (keHoachNhomXuong == null)
-            {
-                return NotFound();
-            }
+            if (item == null) return NotFound();
 
-            return Ok(keHoachNhomXuong);
+            item.TenNhomXuong = item.NhomXuong?.TenNhomXuong ?? "";
+
+            return Ok(item);
         }
+
 
         // POST: api/KeHoachNhomXuongs
-        /// <summary>
-        /// Creates a new KeHoachNhomXuong entry.
-        /// </summary>
         [HttpPost]
-        [ProducesResponseType(typeof(KeHoachNhomXuongDto), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<KeHoachNhomXuongDto>> PostKeHoachNhomXuong(CreateKeHoachNhomXuongDto createDto)
+        public async Task<IActionResult> Create([FromBody] KeHoachNhomXuong model)
         {
-            // Map DTO to the entity model
-            var keHoachNhomXuong = new KeHoachNhomXuong
+            // Kiểm tra IdKeHoach và IdNhomXuong có tồn tại không
+            var keHoachExists = await _context.KeHoachs.AnyAsync(kh => kh.IdKeHoach == model.IdKeHoach);
+            var nhomXuong = await _context.NhomXuongs
+                .Include(nx => nx.SinhViens)
+                .FirstOrDefaultAsync(nx => nx.IdNhomXuong == model.IdNhomXuong);
+
+            if (!keHoachExists || nhomXuong == null)
             {
-                IdKeHoach = createDto.IdKeHoach,
-                IdNhomXuong = createDto.IdNhomXuong,
-                ThoiGianThucTe = createDto.ThoiGianThucTe,
-                SoBuoi = createDto.SoBuoi,
-                SoSinhVien = createDto.SoSinhVien,
-                TrangThai = createDto.TrangThai
-                // IdKHNX and NgayTao are set by default in the model
-            };
+                return BadRequest("Kế hoạch hoặc Nhóm xưởng không hợp lệ.");
+            }
 
-            _context.KeHoachNhomXuongs.Add(keHoachNhomXuong);
+            // ✅ Gán lại số sinh viên dựa vào nhóm xưởng
+            model.SoSinhVien = nhomXuong.SinhViens?.Count ?? 0;
+
+            _context.KeHoachNhomXuongs.Add(model);
             await _context.SaveChangesAsync();
-            
-            // To return the created object with details, we can fetch it again
-            var createdDto = await GetKeHoachNhomXuong(keHoachNhomXuong.IdKHNX);
 
-            return CreatedAtAction(nameof(GetKeHoachNhomXuong), new { id = keHoachNhomXuong.IdKHNX }, createdDto.Value);
+            // Load lại để trả về với Include
+            var createdItem = await _context.KeHoachNhomXuongs
+                .Include(k => k.NhomXuong)
+                .Include(k => k.KeHoach)
+                .FirstOrDefaultAsync(k => k.IdKHNX == model.IdKHNX);
+
+            return CreatedAtAction(nameof(GetById), new { id = model.IdKHNX }, createdItem);
         }
-        
-        // PUT: api/KeHoachNhomXuongs/5
-        /// <summary>
-        /// Updates an existing KeHoachNhomXuong.
-        /// </summary>
+
+
+        // PUT: api/KeHoachNhomXuongs/{id}
         [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PutKeHoachNhomXuong(Guid id, UpdateKeHoachNhomXuongDto updateDto)
+        public async Task<IActionResult> Update(Guid id, [FromBody] KeHoachNhomXuong model)
         {
-            var keHoachNhomXuongFromDb = await _context.KeHoachNhomXuongs.FindAsync(id);
+            if (id != model.IdKHNX) return BadRequest();
 
-            if (keHoachNhomXuongFromDb == null)
-            {
-                return NotFound();
-            }
-
-            // Update properties from the DTO
-            keHoachNhomXuongFromDb.ThoiGianThucTe = updateDto.ThoiGianThucTe;
-            keHoachNhomXuongFromDb.SoBuoi = updateDto.SoBuoi;
-            keHoachNhomXuongFromDb.SoSinhVien = updateDto.SoSinhVien;
-            keHoachNhomXuongFromDb.TrangThai = updateDto.TrangThai;
-            
-            // Automatically set the update timestamp
-            keHoachNhomXuongFromDb.NgayCapNhat = DateTime.Now;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!KeHoachNhomXuongExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
+            _context.Entry(model).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
-        // DELETE: api/KeHoachNhomXuongs/5
-        /// <summary>
-        /// Deletes a KeHoachNhomXuong by its ID.
-        /// </summary>
+        // DELETE: api/KeHoachNhomXuongs/{id}
+        // Bổ sung: Thêm action Delete
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteKeHoachNhomXuong(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            var keHoachNhomXuong = await _context.KeHoachNhomXuongs.FindAsync(id);
-            if (keHoachNhomXuong == null)
+            var item = await _context.KeHoachNhomXuongs.FindAsync(id);
+            if (item == null)
             {
                 return NotFound();
             }
 
-            _context.KeHoachNhomXuongs.Remove(keHoachNhomXuong);
+            _context.KeHoachNhomXuongs.Remove(item);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool KeHoachNhomXuongExists(Guid id)
+        // GET: api/KeHoachNhomXuongs/NhomXuongs/ByKeHoach/{idKeHoach}
+        // Cải thiện: Sửa lại logic để lấy các nhóm xưởng CHƯA được phân công
+        [HttpGet("NhomXuongs/ByKeHoach/{idKeHoach}")]
+        public async Task<IActionResult> GetNhomXuongsByKeHoach(Guid idKeHoach)
         {
-            return _context.KeHoachNhomXuongs.Any(e => e.IdKHNX == id);
+            // Lấy danh sách ID của các nhóm xưởng đã được gán cho kế hoạch này
+            var assignedNhomXuongIds = await _context.KeHoachNhomXuongs
+                .Where(x => x.IdKeHoach == idKeHoach)
+                .Select(x => x.IdNhomXuong)
+                .ToListAsync();
+
+            // Lấy tất cả nhóm xưởng mà ID không nằm trong danh sách đã được gán
+            var unassignedNhomXuongs = await _context.NhomXuongs
+                .Where(nx => !assignedNhomXuongIds.Contains(nx.IdNhomXuong))
+                .ToListAsync();
+
+            return Ok(unassignedNhomXuongs);
         }
     }
 }
