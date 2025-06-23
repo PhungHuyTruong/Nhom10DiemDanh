@@ -9,7 +9,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
     {
         public IActionResult Index()
         {
-            return View("SinhVien");
+            return View("SinhViens");
         }
 
     }

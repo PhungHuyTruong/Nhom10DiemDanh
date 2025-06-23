@@ -13,10 +13,18 @@ namespace Nhom10ModuleDiemDanh.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string error = null)
         {
+            if (!string.IsNullOrEmpty(error))
+            {
+                ViewBag.ErrorMessage = error.Contains("access_denied")
+                    ? "B?n ?ã h?y ??ng nh?p Google."
+                    : "?ã x?y ra l?i khi ??ng nh?p. Vui lòng th? l?i!";
+            }
+
             return View();
         }
+
 
         public IActionResult Privacy()
         {
