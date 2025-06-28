@@ -1,0 +1,191 @@
+﻿@{
+    ViewData["Title"] = "Lịch sử điểm danh";
+    Layout = "~/Views/Shared/SinhVienLayout.cshtml"; // Hoặc layout phù hợp
+
+}
+
+<div class="container-fluid p-4">
+    <div class="card bg-primary text-white mb-4">
+        <div class="card-body">
+            <h2 class="card-title">Lịch sử điểm danh</h2>
+        </div>
+    </div>
+
+    <!-- Bộ lọc -->
+    <div class="card mb-3 shadow-sm">
+        <div class="card-header fw-bold text-primary">
+            <i class="fa fa-filter me-2"></i> Bộ lọc
+        </div>
+        <div class="card-body">
+            <form id="filterForm" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="hocKy" class="form-label">Học kỳ</label>
+                    <select id="hocKy" class="form-select">
+                        <option value="">Tất cả học kỳ</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="nhomXuong" class="form-label">Nhóm xưởng</label>
+                    <select id="nhomXuong" class="form-select">
+                        <option value="">Tất cả xưởng</option>
+                    </select>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button type="button" class="btn btn-primary w-100" id="btnFilter">Lọc</button>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button type="button" class="btn btn-outline-secondary w-100" id="btnReset">Hủy lọc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="card rounded-0">
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5 class="fw-bold text-primary mb-0">
+                <i class="fa fa-table me-2"></i> Danh sách điểm danh
+            </h5>
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-outline-secondary btn-sm" id="btnExportPDF">
+                    <i class="fa fa-file-pdf me-1"></i> Xuất PDF
+                </button>
+                <a class="btn btn-outline-secondary btn-sm" id="btnDownloadTemplate">
+                    <i class="fa fa-download me-1"></i> Tải xuống template
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng danh sách -->
+    <div class="table-responsive shadow-sm">
+        <table class="table table-bordered table-hover text-center align-middle" id="lichSuDiemDanhTable">
+            <thead class="table-light">
+                <tr>
+                    <th>STT</th>
+                    <th>Ngày học</th>
+                    <th>Ca học</th>
+                    <th>Điểm danh muộn tối đa (phút)</th>
+                    <th>Nội dung</th>
+                    <th>Trạng thái đi học</th>
+                    <th>Nhóm xưởng</th>
+                    <th>Học kỳ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dữ liệu sẽ được render bằng JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // TODO: Lấy IdSinhVien thực tế từ session hoặc ViewBag, tạm hardcode để test
+          //  var idSinhVien = '2b23a17d-2c87-4e49-91be-8014f2ee50d6'; // Thay bằng Id thực tế
+          // Lấy IdSinhVien từ ViewBag
+            var idSinhVien = '@ViewBag.SinhVienId';
+
+            // Hàm load dữ liệu lịch sử điểm danh
+            function loadLichSuDiemDanh() {
+                var idHocKy = $('#hocKy').val();
+                var idNhomXuong = $('#nhomXuong').val();
+
+                $.ajax({
+                    url: 'https://localhost:7296/api/LichSuDiemDanh',
+                    type: 'GET',
+                    data: {
+                        IdSinhVien: idSinhVien,
+                        IdHocKy: idHocKy || null,
+                        IdNhomXuong: idNhomXuong || null
+                    },
+                    success: function (data) {
+                        renderTable(data);
+                    },
+                    error: function () {
+                        alert('Không lấy được dữ liệu!');
+                    }
+                });
+            }
+
+            // Hàm render dữ liệu ra bảng
+            function renderTable(data) {
+                var tbody = $('#lichSuDiemDanhTable tbody');
+                tbody.empty();
+                if (!data || data.length === 0) {
+                    tbody.append('<tr><td colspan="8" class="text-center">Không có dữ liệu</td></tr>');
+                    return;
+                }
+                $.each(data, function (i, item) {
+                    var trangThai = item.trangThaiDiHoc === 1 ?
+                        '<span class="badge bg-success">Có mặt</span>' :
+                        '<span class="badge bg-danger">Vắng mặt</span>';
+                    var row = `<tr>
+                        <td>${i + 1}</td>
+                        <td>${formatDate(item.ngayHoc)}</td>
+                        <td>${item.caHoc}</td>
+                        <td>${item.diemDanhMuonToiDa}</td>
+                        <td>${item.noiDung || ''}</td>
+                        <td>${trangThai}</td>
+                        <td>${item.nhomXuong}</td>
+                        <td>${item.hocKy}</td>
+                    </tr>`;
+                    tbody.append(row);
+                });
+            }
+
+            // Hàm format ngày
+            function formatDate(dateStr) {
+                var d = new Date(dateStr);
+                return d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            // Sự kiện lọc
+            $('#btnFilter').click(function () {
+                loadLichSuDiemDanh();
+            });
+
+            // Sự kiện huỷ lọc
+            $('#btnReset').click(function () {
+                $('#hocKy').val('');
+                $('#nhomXuong').val('');
+                loadLichSuDiemDanh();
+            });
+
+            // Sự kiện tải template
+            $('#btnDownloadTemplate').click(function () {
+                var idHocKy = $('#hocKy').val();
+                var idNhomXuong = $('#nhomXuong').val();
+
+                var url = '/LichSuDiemDanh/DownloadTemplate?';
+                var params = [];
+                if (idHocKy) params.push('IdHocKy=' + idHocKy);
+                if (idNhomXuong) params.push('IdNhomXuong=' + idNhomXuong);
+                if (idSinhVien) params.push('IdSinhVien=' + idSinhVien);
+
+                window.location.href = url + params.join('&');
+            });
+
+            // Lấy danh sách học kỳ
+            $.get('/api/HocKy', function (data) {
+                var hocKySelect = $('#hocKy');
+                $.each(data, function (i, item) {
+                    hocKySelect.append('<option value="' + item.idHocKy + '">' + item.tenHocKy + '</option>');
+                });
+            });
+
+            // Lấy danh sách nhóm xưởng
+            $.get('/api/NhomXuongs/paging?page=1&pagesize=100', function (data) {
+                var nhomXuongSelect = $('#nhomXuong');
+                $.each(data.data, function (i, item) {
+                    nhomXuongSelect.append('<option value="' + item.idNhomXuong + '">' + item.tenNhomXuong + '</option>');
+                });
+            });
+
+            // Gọi lần đầu khi load trang
+            loadLichSuDiemDanh();
+        });
+    </script>
+}

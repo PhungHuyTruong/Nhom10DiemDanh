@@ -565,7 +565,7 @@ namespace API.Migrations
                     b.Property<DateTime>("NgayTao")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("SoBuoi")
+                    b.Property<int?>("SoBuoi")
                         .HasColumnType("int");
 
                     b.Property<int>("SoSinhVien")

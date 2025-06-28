@@ -19,4 +19,8 @@
     <ProjectReference Include="..\API\API.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\Rotativa\" />
+  </ItemGroup>
+
 </Project>

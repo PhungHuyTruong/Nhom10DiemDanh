@@ -2,11 +2,68 @@
     Layout = "~/Views/Shared/SinhVienLayout.cshtml";
 }
 
+<div class="container-fluid p-4">
+    <div class="card bg-primary text-white mb-4">
+        <div class="card-body">
+            <h2 class="card-title">Chào mừng sinh viên</h2>
+            <p class="card-text">Hệ thống quản lý điểm danh xưởng</p>
+        </div>
+    </div>
 
-<h1>Sinh viên</h1>
-<p>Chào mừng đến với hệ thống sinh viên.</p>
-
-<button class="logout-button" onclick="logout()">Đăng xuất</button>
+    <!-- Thông tin sinh viên -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fa fa-user me-2"></i>Thông tin sinh viên</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Tên sinh viên:</strong> @ViewBag.SinhVienTen</p>
+                    <p><strong>Mã sinh viên:</strong> @ViewBag.SinhVienMa</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Email:</strong> @ViewBag.SinhVienEmail</p>
+                    <p><strong>ID:</strong> @ViewBag.SinhVienId</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    @*
+    <!-- Menu chức năng -->
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fa fa-history fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Lịch sử điểm danh</h5>
+                    <p class="card-text">Xem lịch sử điểm danh của bạn</p>
+                    <a href="@Url.Action("Index", "LichSuDiemDanh")" class="btn btn-primary">Xem lịch sử</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fa fa-calendar fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Lịch học</h5>
+                    <p class="card-text">Xem lịch học của bạn</p>
+                    <a href="@Url.Action("Index", "LichHoc")" class="btn btn-success">Xem lịch học</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fa fa-check-circle fa-3x text-info mb-3"></i>
+                    <h5 class="card-title">Điểm danh</h5>
+                    <p class="card-text">Thực hiện điểm danh</p>
+                    <a href="@Url.Action("Index", "DiemDanh")" class="btn btn-info">Điểm danh</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+*@
 
 <script>
     function logout() {
