@@ -134,7 +134,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
                     case "sinhvien":
                         // Kiểm tra email trong bảng SinhVien
                         var sinhVien = await _dbContext.SinhViens
-        .FirstOrDefaultAsync(s => s.Email == email && s.TrangThai);
+                            .FirstOrDefaultAsync(s => s.Email == email && s.TrangThai);
                         isAuthorized = sinhVien != null;
 
                         if (isAuthorized)

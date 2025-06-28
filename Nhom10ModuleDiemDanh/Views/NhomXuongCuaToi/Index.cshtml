@@ -1,0 +1,105 @@
+﻿@model IEnumerable<API.Data.NhomXuong>
+@{
+    Layout = "~/Views/Shared/GiangVienLayout.cshtml";
+}
+
+<!-- TIÊU ĐỀ -->
+<div class="card bg-primary text-white mb-4">
+    <div class="card-body">
+        <h2 class="card-title">Nhóm xưởng của tôi</h2>
+    </div>
+</div>
+
+<!-- BỘ LỌC -->
+<form method="get" class="card mb-4">
+    <div class="card-header fw-bold">Bộ lọc</div>
+    <div class="card-body row g-3">
+        <div class="col-md-6">
+            <label for="search">Tìm kiếm tên nhóm xưởng:</label>
+            <input id="search" name="search" value="@ViewBag.Search" type="text" class="form-control" placeholder="Nhập tên nhóm xưởng" />
+        </div>
+        <div class="col-md-4">
+            <label for="status">Trạng thái</label>
+            <select id="status" name="status" class="form-select">
+                <option value="" selected="@(ViewBag.Status == "" ? "selected" : null)">Tất cả</option>
+                <option value="active" selected="@(ViewBag.Status == "active" ? "selected" : null)">Đang hoạt động</option>
+                <option value="inactive" selected="@(ViewBag.Status == "inactive" ? "selected" : null)">Ngừng</option>
+
+            </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Lọc</button>
+        </div>
+    </div>
+</form>
+
+<!-- DANH SÁCH -->
+<div class="card">
+    <div class="card-header fw-bold">Danh sách nhóm xưởng phụ trách</div>
+    <div class="card-body p-0">
+        <table class="table table-bordered table-hover mb-0 text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Tên nhóm xưởng</th>
+                    <th>Dự án</th>
+                    <th>Bộ môn</th>
+                    <th>Mô tả</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Select((x, i) => new { x, i }))
+                {
+                    <tr>
+                        <td>@(item.i + 1)</td>
+                        <td>@item.x.TenNhomXuong</td>
+                        <td>@(item.x.DuAn?.TenDuAn ?? "Không có")</td>
+                        <td>@(item.x.QuanLyBoMon?.MaBoMon ?? "Không có")</td>
+                        <td>@item.x.MoTa</td>
+                        <td>
+                            <span class="badge bg-@(item.x.TrangThai == 1 ? "success" : "secondary")">
+                                @(item.x.TrangThai == 1 ? "Đang hoạt động" : "Ngừng")
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- PHÂN TRANG -->
+@if (ViewBag.Pagination != null)
+{
+    var p = ViewBag.Pagination;
+    int currentPage = p.currentPage;
+    int totalPages = p.totalPages;
+    string search = ViewBag.Search ?? "";
+    string status = ViewBag.Status ?? "";
+
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            @if (currentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1, search, status })">◀</a>
+                </li>
+            }
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { page = i, search, status })">@i</a>
+                </li>
+            }
+
+            @if (currentPage < totalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1, search, status })">▶</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
