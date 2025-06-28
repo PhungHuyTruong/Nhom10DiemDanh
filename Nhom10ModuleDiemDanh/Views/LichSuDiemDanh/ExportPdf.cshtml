@@ -1,0 +1,41 @@
+﻿@model List<Nhom10ModuleDiemDanh.Models.LichSuDiemDanhViewModel>
+@{
+    Layout = null;
+}
+<h2 style="text-align:center;">Lịch sử điểm danh</h2>
+<table border="1" cellpadding="5" cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <th>STT</th>
+            <th>Ngày học</th>
+            <th>Ca học</th>
+            <th>Điểm danh muộn tối đa (phút)</th>
+            <th>Nội dung</th>
+            <th>Trạng thái đi học</th>
+            <th>Nhóm xưởng</th>
+            <th>Học kỳ</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null)
+        {
+            int stt = 1;
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@stt</td>
+                    <td>@item.NgayHoc</td>
+                    <td>@item.CaHoc</td>
+                    <td>@item.DiemDanhMuonToiDa</td>
+                    <td>@item.NoiDung</td>
+                    <td>
+                        @(item.TrangThaiDiHoc == 1 ? "Có mặt" : "Vắng mặt")
+                    </td>
+                    <td>@item.NhomXuong</td>
+                    <td>@item.HocKy</td>
+                </tr>
+                stt++;
+            }
+        }
+    </tbody>
+</table>
