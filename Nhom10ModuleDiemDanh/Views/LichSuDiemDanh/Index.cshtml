@@ -168,6 +168,17 @@
                 window.location.href = url + params.join('&');
             });
 
+            // Sự kiện tải PDF
+            $('#btnExportPDF').click(function () {
+                var idHocKy = $('#hocKy').val();
+                var idNhomXuong = $('#nhomXuong').val();
+                var url = '/LichSuDiemDanh/ExportPdf?';
+                var params = [];
+                if (idHocKy) params.push('IdHocKy=' + idHocKy);
+                if (idNhomXuong) params.push('IdNhomXuong=' + idNhomXuong);
+                window.open(url + params.join('&'), '_blank');
+            });
+
             // Lấy danh sách học kỳ
             $.get('/api/HocKy', function (data) {
                 var hocKySelect = $('#hocKy');

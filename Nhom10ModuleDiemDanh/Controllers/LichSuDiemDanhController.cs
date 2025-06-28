@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Nhom10ModuleDiemDanh.Models;
+using Rotativa.AspNetCore;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace Nhom10ModuleDiemDanh.Controllers
 {
@@ -54,6 +57,35 @@ namespace Nhom10ModuleDiemDanh.Controllers
 
             var bytes = await response.Content.ReadAsByteArrayAsync();
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "LichSuDiemDanh.xlsx");
+        }
+
+        public async Task<IActionResult> ExportPdf(Guid? IdHocKy, Guid? IdNhomXuong)
+        {
+            var sinhVienId = HttpContext.Session.GetString("SinhVienId");
+            if (string.IsNullOrEmpty(sinhVienId)) return RedirectToAction("Index", "Home");
+
+            var queryParams = new List<string>();
+            queryParams.Add($"IdSinhVien={sinhVienId}");
+            if (IdHocKy.HasValue) queryParams.Add($"IdHocKy={IdHocKy}");
+            if (IdNhomXuong.HasValue) queryParams.Add($"IdNhomXuong={IdNhomXuong}");
+            var queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+
+            var response = await _httpClient.GetAsync($"LichSuDiemDanh{queryString}");
+            if (!response.IsSuccessStatusCode)
+                return Content("Không lấy được dữ liệu để xuất PDF!");
+
+            var json = await response.Content.ReadAsStringAsync();
+            var data = JsonSerializer.Deserialize<List<LichSuDiemDanhViewModel>>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return new Rotativa.AspNetCore.ViewAsPdf("ExportPdf", data)
+            {
+                FileName = "LichSuDiemDanh.pdf",
+                PageSize = Rotativa.AspNetCore.Options.Size.A4,
+                PageOrientation = Rotativa.AspNetCore.Options.Orientation.Landscape
+            };
         }
     }
 }

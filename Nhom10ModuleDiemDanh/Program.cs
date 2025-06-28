@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.OAuth;
+using Rotativa.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,6 +98,8 @@ app.UseRouting();
 app.UseSession(); 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRotativa(); // <-- Thêm dòng này
 
 app.MapControllerRoute(
     name: "default",
