@@ -53,6 +53,16 @@ namespace Nhom10ModuleDiemDanh.Controllers
             var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
             var selectedRole = HttpContext.Session.GetString("SelectedRole")?.ToLower() ?? "";
 
+            if (string.IsNullOrEmpty(email))
+            {
+                Console.WriteLine("Không lấy được email từ Google.");
+                TempData["Error"] = "Không thể xác thực email.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            HttpContext.Session.SetString("UserEmail", email!); // OK vì đã kiểm tra null
+
+
             Console.WriteLine($"Đăng nhập thành công với email: {email}, vai trò được chọn: {selectedRole}");
 
             if (string.IsNullOrEmpty(email))
@@ -85,7 +95,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
                             .Include(v => v.VaiTro)
                             .AnyAsync(v => (v.PhuTrachXuong.EmailFE == email || v.PhuTrachXuong.EmailFPT == email)
                                         && v.TrangThai
-                                        && v.VaiTro.TenVaiTro.ToLower() == "phutrachxuong");
+                                        && v.VaiTro.TenVaiTro.ToLower() == "Phụ Trách xưởng");
                         redirectController = "PhuTrachXuong";
                         Console.WriteLine($"Kiểm tra quyền phụ trách xưởng: {(isAuthorized ? "Thành công" : "Thất bại")}");
                         break;
@@ -97,7 +107,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
                             .Include(v => v.VaiTro)
                             .AnyAsync(v => (v.PhuTrachXuong.EmailFE == email || v.PhuTrachXuong.EmailFPT == email)
                                         && v.TrangThai
-                                        && v.VaiTro.TenVaiTro.ToLower() == "giangvien");
+                                        && v.VaiTro.TenVaiTro.ToLower() == "Giảng Viên");
                         redirectController = "GiangVien";
                         Console.WriteLine($"Kiểm tra quyền giảng viên: {(isAuthorized ? "Thành công" : "Thất bại")}");
                         break;
