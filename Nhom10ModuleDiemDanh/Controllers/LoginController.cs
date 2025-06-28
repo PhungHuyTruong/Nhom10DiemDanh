@@ -134,7 +134,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
                     case "sinhvien":
                         // Kiểm tra email trong bảng SinhVien
                         var sinhVien = await _dbContext.SinhViens
-                            .FirstOrDefaultAsync(s => s.Email == email && s.TrangThai);
+        .FirstOrDefaultAsync(s => s.Email == email && s.TrangThai);
                         isAuthorized = sinhVien != null;
 
                         if (isAuthorized)
@@ -144,14 +144,10 @@ namespace Nhom10ModuleDiemDanh.Controllers
                             HttpContext.Session.SetString("SinhVienEmail", sinhVien.Email);
                             HttpContext.Session.SetString("SinhVienTen", sinhVien.TenSinhVien);
                             HttpContext.Session.SetString("SinhVienMa", sinhVien.MaSinhVien);
-                        }
 
-                        var sinhVien = await _dbContext.SinhViens.FirstOrDefaultAsync(s => s.Email == email && s.TrangThai);
-                        if (sinhVien != null)
-                        {
-                            isAuthorized = true;
                             HttpContext.Session.SetString("IdSinhVien", sinhVien.IdSinhVien.ToString());
                         }
+
                         redirectController = "SinhViens";
                         Console.WriteLine($"Kiểm tra quyền sinh viên: {(isAuthorized ? "Thành công" : "Thất bại")}");
                         break;
