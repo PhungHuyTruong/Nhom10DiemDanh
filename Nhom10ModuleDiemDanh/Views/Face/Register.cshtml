@@ -1,0 +1,46 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var idSinhVien = ViewBag.IdSinhVien as string ?? "";
+}
+
+<h2>Đăng ký khuôn mặt</h2>
+<p id="instruction" style="font-weight: bold; color: blue;"></p>
+
+<video id="video" width="640" height="480" autoplay muted playsinline></video>
+<canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+
+<div id="status" style="margin-top: 10px; font-weight: bold; color: green;"></div>
+<button id="btnDeleteFace" style="margin-top: 10px;">🗑️ Xoá khuôn mặt</button>
+
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="~/js/face.js"></script>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const idSinhVien = '@idSinhVien';
+        const statusDiv = document.getElementById('status');
+
+        loopCapture(idSinhVien, '/Face/SaveFace');
+
+        document.getElementById('btnDeleteFace').addEventListener('click', async () => {
+            if (!confirm("Bạn có chắc muốn xoá khuôn mặt đã đăng ký không?")) return;
+
+            try {
+                const res = await fetch('/Face/DeleteFace?idSinhVien=' + idSinhVien, { method: 'POST' });
+                const msg = await res.text();
+
+                if (res.ok) {
+                    alert("✅ " + msg);
+                    statusDiv.innerText = "✅ Đã xoá khuôn mặt.";
+                    location.reload();
+                } else {
+                    alert("❌ " + msg);
+                    statusDiv.innerText = "❌ Không xoá được: " + msg;
+                }
+            } catch (err) {
+                alert("❌ Lỗi khi xoá: " + err.message);
+                statusDiv.innerText = "❌ Xoá thất bại.";
+            }
+        });
+    });
+</script>

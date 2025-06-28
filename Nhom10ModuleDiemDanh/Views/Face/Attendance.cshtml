@@ -1,0 +1,43 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Điểm danh khuôn mặt</h2>
+
+<video id="video" width="640" height="480" autoplay muted></video>
+<canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+
+<div id="instruction" style="margin-top: 10px; font-weight: bold;"></div>
+<div id="status" style="margin-top: 10px; font-weight: bold; color: green;"></div>
+<div id="result" style="margin-top: 10px; font-weight: bold; color: blue;"></div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="~/js/face.js" asp-append-version="true"></script>
+
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+            console.log("📌 DOM Loaded");
+            let retry = 0;
+
+            const checkAndStart = () => {
+                if (typeof initAttendance === "function") {
+                    console.log("🚀 Gọi initAttendance()");
+                    initAttendance("/Face/RecognizeFace");
+                } else if (retry < 10) {
+                    retry++;
+                    console.log(`⏳ Chờ initAttendance lần ${retry}...`);
+                    setTimeout(checkAndStart, 300);
+                } else {
+                    console.error("❌ initAttendance vẫn chưa sẵn sàng sau 10 lần thử.");
+                }
+            };
+
+            checkAndStart();
+        });
+    </script>
+}
+
+
+
+
+

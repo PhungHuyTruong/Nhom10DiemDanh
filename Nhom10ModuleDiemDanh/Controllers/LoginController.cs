@@ -146,6 +146,12 @@ namespace Nhom10ModuleDiemDanh.Controllers
                             HttpContext.Session.SetString("SinhVienMa", sinhVien.MaSinhVien);
                         }
 
+                        var sinhVien = await _dbContext.SinhViens.FirstOrDefaultAsync(s => s.Email == email && s.TrangThai);
+                        if (sinhVien != null)
+                        {
+                            isAuthorized = true;
+                            HttpContext.Session.SetString("IdSinhVien", sinhVien.IdSinhVien.ToString());
+                        }
                         redirectController = "SinhViens";
                         Console.WriteLine($"Kiểm tra quyền sinh viên: {(isAuthorized ? "Thành công" : "Thất bại")}");
                         break;
