@@ -1,0 +1,108 @@
+﻿@model List<ScheduleDto>
+@{
+    ViewData["Title"] = "Điểm danh";
+    Layout = "~/Views/Shared/SinhVienLayout.cshtml";
+}
+
+<h1>Điểm danh</h1>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+    <a href="@Url.Action("Index", "SinhViens")" class="btn btn-secondary">Go to Students</a>
+}
+
+@if (Model == null || !Model.Any())
+{
+    <p>No schedules found for today.</p>
+    <a href="@Url.Action("Index", "SinhViens")" class="btn btn-secondary">Go to Students</a>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Thời gian</th>
+                <th>Ca học</th>
+                <th>Lớp học</th>
+                <th>Giảng viên</th>
+                <th>Điểm danh trễ</th>
+                <th>Chức năng</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@(item.ThoiGian ?? "N/A")</td>
+                    <td>@(item.CaHoc ?? "N/A")</td>
+                    <td>@(item.LopHoc ?? "N/A")</td>
+                    <td>@(item.GiangVien ?? "N/A")</td>
+                    <td>@(item.DiemDanhTre ?? "0") minutes</td>
+                    <td>
+                        <div id="function-@item.IdNXCH" class="function-area">
+                            @if (item.CanCheckIn)
+                            {
+                                <button class="btn btn-primary check-btn"
+                                        data-id="@item.IdNXCH"
+                                        data-type="checkin">
+                                    Check In
+                                </button>
+                            }
+                            @if (item.CanCheckOut)
+                            {
+                                <button class="btn btn-primary check-btn"
+                                        data-id="@item.IdNXCH"
+                                        data-type="checkout">
+                                    Check Out
+                                </button>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.check-btn').click(function() {
+                var id = $(this).data('id');
+                var isCheckIn = $(this).data('type') === 'checkin';
+                var $functionArea = $('#function-' + id);
+
+                $.ajax({
+                    url: '@Url.Action("CheckAttendance", "ClientAttendance")',
+                    type: 'POST',
+                    data: { idNXCH: id, isCheckIn: isCheckIn },
+                    success: function(result) {
+                        alert(result.message);
+                        if (result.success) {
+                            if (isCheckIn) {
+                                // Hide Check In button and show "Đã check in thành công"
+                                $functionArea.html('<span class="text-success">Đã check in thành công</span>');
+                            }
+                            // Reload page to update CanCheckOut status if needed
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Error occurred while checking attendance: ' + xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+    <style>
+        .function-area {
+            display: inline-block;
+        }
+        .text-success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+}

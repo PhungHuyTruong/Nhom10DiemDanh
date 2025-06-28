@@ -78,28 +78,47 @@ namespace Nhom10ModuleDiemDanh.Controllers
                         Console.WriteLine($"Kiểm tra quyền cán bộ đào tạo: {(isAuthorized ? "Thành công" : "Thất bại")}");
                         break;
 
+                    //case "phutrachxuong":
+                    //    // Kiểm tra email và vai trò phụ trách xưởng
+                    //    isAuthorized = await _dbContext.VaiTroNhanViens
+                    //        .Include(v => v.PhuTrachXuong)
+                    //        .Include(v => v.VaiTro)
+                    //        .AnyAsync(v => (v.PhuTrachXuong.EmailFE == email || v.PhuTrachXuong.EmailFPT == email)
+                    //                    && v.TrangThai
+                    //                    && v.VaiTro.TenVaiTro.ToLower() == "phutrachxuong");
+                    //    redirectController = "PhuTrachXuong";
+                    //    Console.WriteLine($"Kiểm tra quyền phụ trách xưởng: {(isAuthorized ? "Thành công" : "Thất bại")}");
+                    //    break;
+
+                    //case "giangvien":
+                    //    // Kiểm tra email và vai trò giảng viên
+                    //    isAuthorized = await _dbContext.VaiTroNhanViens
+                    //        .Include(v => v.PhuTrachXuong)
+                    //        .Include(v => v.VaiTro)
+                    //        .AnyAsync(v => (v.PhuTrachXuong.EmailFE == email || v.PhuTrachXuong.EmailFPT == email)
+                    //                    && v.TrangThai
+                    //                    && v.VaiTro.TenVaiTro.ToLower() == "giangvien");
+                    //    redirectController = "GiangVien";
+                    //    Console.WriteLine($"Kiểm tra quyền giảng viên: {(isAuthorized ? "Thành công" : "Thất bại")}");
+                    //    break;
                     case "phutrachxuong":
-                        // Kiểm tra email và vai trò phụ trách xưởng
+                        // Chỉ kiểm tra email, không kiểm tra vai trò nữa
                         isAuthorized = await _dbContext.VaiTroNhanViens
                             .Include(v => v.PhuTrachXuong)
-                            .Include(v => v.VaiTro)
                             .AnyAsync(v => (v.PhuTrachXuong.EmailFE == email || v.PhuTrachXuong.EmailFPT == email)
-                                        && v.TrangThai
-                                        && v.VaiTro.TenVaiTro.ToLower() == "phutrachxuong");
+                                        && v.TrangThai);
                         redirectController = "PhuTrachXuong";
-                        Console.WriteLine($"Kiểm tra quyền phụ trách xưởng: {(isAuthorized ? "Thành công" : "Thất bại")}");
+                        Console.WriteLine($"Kiểm tra quyền phụ trách xưởng (theo email): {(isAuthorized ? "Thành công" : "Thất bại")}");
                         break;
 
                     case "giangvien":
-                        // Kiểm tra email và vai trò giảng viên
+                        // Chỉ kiểm tra email, không kiểm tra vai trò nữa
                         isAuthorized = await _dbContext.VaiTroNhanViens
                             .Include(v => v.PhuTrachXuong)
-                            .Include(v => v.VaiTro)
                             .AnyAsync(v => (v.PhuTrachXuong.EmailFE == email || v.PhuTrachXuong.EmailFPT == email)
-                                        && v.TrangThai
-                                        && v.VaiTro.TenVaiTro.ToLower() == "giangvien");
+                                        && v.TrangThai);
                         redirectController = "GiangVien";
-                        Console.WriteLine($"Kiểm tra quyền giảng viên: {(isAuthorized ? "Thành công" : "Thất bại")}");
+                        Console.WriteLine($"Kiểm tra quyền giảng viên (theo email): {(isAuthorized ? "Thành công" : "Thất bại")}");
                         break;
 
                     case "sinhvien":
