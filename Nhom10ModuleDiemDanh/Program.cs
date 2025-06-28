@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using Nhom10ModuleDiemDanh.Services;
+using Rotativa.AspNetCore;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Rotativa.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +60,7 @@ builder.Services.AddHttpClient<IKeHoachService, KeHoachService>(client =>
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 });
 
+
 builder.Services.AddScoped<IKeHoachService, KeHoachService>();
 
 //builder.Services.AddHttpClient("MyApi", client =>
@@ -88,7 +91,7 @@ if (!app.Environment.IsDevelopment())
 }
 builder.Services.AddSession();
 app.UseSession();
-
+app.UseRotativa();
 app.UseAuthentication();  
 app.UseHttpsRedirection();
 app.UseStaticFiles();

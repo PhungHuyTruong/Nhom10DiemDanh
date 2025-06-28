@@ -1,0 +1,43 @@
+﻿@model List<API.Data.LichGiangDayDTO>
+
+<h3 style="text-align:center; margin-bottom: 20px;">📘 LỊCH GIẢNG DẠY</h3>
+
+<table border="1" cellspacing="0" cellpadding="5" width="100%">
+    <thead style="background-color: #f0f0f0;">
+        <tr>
+            <th>#</th>
+            <th>Ngày</th>
+            <th>Thời gian</th>
+            <th>Ca học</th>
+            <th>Xưởng</th>
+            <th>Dự án</th>
+            <th>Địa điểm</th>
+            <th>Hình thức</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            int index = 1;
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@index++</td>
+                    <td>@item.NgayTao.ToString("dd/MM/yyyy")</td>
+                    <td>@item.NgayTao.ToString("HH:mm")</td>
+                    <td>@item.TenCaHoc</td>
+                    <td>@item.TenNhomXuong</td>
+                    <td>@item.TenDuAn</td>
+                    <td>@item.TenDiaDiem</td>
+                    <td>@item.HTGiangDay</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="8" style="text-align:center;">Không có dữ liệu</td>
+            </tr>
+        }
+    </tbody>
+</table>
