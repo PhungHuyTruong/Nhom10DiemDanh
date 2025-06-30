@@ -123,6 +123,15 @@ namespace Nhom10ModuleDiemDanh.Controllers
 
                     case "giangvien":
                         // Chỉ kiểm tra email, không kiểm tra vai trò nữa
+                        var nhanVien = await _dbContext.PhuTrachXuongs
+                            .FirstOrDefaultAsync(p => p.EmailFE == email || p.EmailFPT == email);
+
+                        if (nhanVien != null)
+                        {
+                            HttpContext.Session.SetString("IdNhanVien", nhanVien.IdNhanVien.ToString());
+                            HttpContext.Session.SetString("TenNhanVien", nhanVien.TenNhanVien);
+                        }
+
                         isAuthorized = await _dbContext.VaiTroNhanViens
                             .Include(v => v.PhuTrachXuong)
                             .AnyAsync(v => (v.PhuTrachXuong.EmailFE == email || v.PhuTrachXuong.EmailFPT == email)

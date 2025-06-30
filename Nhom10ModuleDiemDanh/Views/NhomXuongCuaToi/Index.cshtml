@@ -24,7 +24,6 @@
                 <option value="" selected="@(ViewBag.Status == "" ? "selected" : null)">Tất cả</option>
                 <option value="active" selected="@(ViewBag.Status == "active" ? "selected" : null)">Đang hoạt động</option>
                 <option value="inactive" selected="@(ViewBag.Status == "inactive" ? "selected" : null)">Ngừng</option>
-
             </select>
         </div>
         <div class="col-md-2 d-flex align-items-end">
@@ -53,7 +52,12 @@
                 {
                     <tr>
                         <td>@(item.i + 1)</td>
-                        <td>@item.x.TenNhomXuong</td>
+                        <td>
+                            <a asp-action="DanhSachSinhVien" asp-route-idNhomXuong="@item.x.IdNhomXuong">
+                                @item.x.TenNhomXuong
+                            </a>
+
+                        </td>
                         <td>@(item.x.DuAn?.TenDuAn ?? "Không có")</td>
                         <td>@(item.x.QuanLyBoMon?.MaBoMon ?? "Không có")</td>
                         <td>@item.x.MoTa</td>

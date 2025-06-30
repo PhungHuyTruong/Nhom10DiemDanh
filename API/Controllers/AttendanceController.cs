@@ -36,7 +36,7 @@ namespace API.Controllers
                                    where sinhVien.Email == email
                                    && khnxCaHoc.NgayHoc.Date == today
                                    && lichHoc.TrangThai == 1
-                                   && khnxCaHoc.TrangThai == 1
+                                   && khnxCaHoc.TrangThai == 0
                                    select new
                                    {
                                        ThoiGian = $"{caHoc.ThoiGianBatDau} - {caHoc.ThoiGianKetThuc}",
@@ -72,7 +72,7 @@ namespace API.Controllers
 
             var khnxCaHoc = await _context.KHNXCaHocs
                 .Include(k => k.CaHoc)
-                .FirstOrDefaultAsync(k => k.IdNXCH == dto.IdNXCH && k.TrangThai == 1);
+                .FirstOrDefaultAsync(k => k.IdNXCH == dto.IdNXCH && k.TrangThai == 0);
 
             if (khnxCaHoc == null || khnxCaHoc.CaHoc == null)
                 return NotFound("Session not found");

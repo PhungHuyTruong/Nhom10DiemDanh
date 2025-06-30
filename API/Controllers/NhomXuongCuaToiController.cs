@@ -63,5 +63,26 @@ namespace API.Controllers
 
             return Ok(nhomXuongs);
         }
+
+        //[HttpPost("doi-trang-thai")]
+        //public async Task<IActionResult> DoiTrangThai([FromBody] Guid idSinhVien)
+        //{
+        //    Console.WriteLine($"👉 Nhận yêu cầu đổi trạng thái sinh viên: {idSinhVien}");
+
+        //    var sv = await _context.SinhViens.FindAsync(idSinhVien);
+        //    if (sv == null)
+        //    {
+        //        Console.WriteLine("❌ Không tìm thấy sinh viên");
+        //        return NotFound();
+        //    }
+
+        //    sv.TrangThai = !sv.TrangThai;
+        //    sv.NgayCapNhat = DateTime.Now;
+        //    await _context.SaveChangesAsync();
+
+        //    Console.WriteLine($"✅ Trạng thái mới: {sv.TrangThai}");
+        //    return Ok(new { success = true, newStatus = sv.TrangThai });
+        //}
+
     }
 }

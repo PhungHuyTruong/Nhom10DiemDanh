@@ -110,7 +110,7 @@
     <div class="my-container">
         <div class="sidebar">
             <div class="logo">DD10</div>
-            <a href="@Url.Action("Index", "LichGiangDay")"><button class="menu-button">Lịch giảng dạy</button></a>
+            <a href="@Url.Action("Schedule", "LichGiangDays")"><button class="menu-button">Lịch giảng dạy</button></a>
             <a href="@Url.Action("Index", "NhomXuongCuaToi")"><button class="menu-button">Nhóm xưởng của tôi</button></a>
         </div>
         <div class="main-content">
@@ -125,5 +125,6 @@
 
         </div>
     </div>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

@@ -53,7 +53,7 @@ namespace ClienNhom10ModuleDiemDanht.Controllers
                 {
                     Console.WriteLine($"No schedules found for email {email}");
                     ViewBag.Error = "No schedules found for today.";
-                    return RedirectToAction("Index", "SinhViens");
+                    return View(schedules);
                 }
 
                 return View(schedules);
@@ -77,6 +77,59 @@ namespace ClienNhom10ModuleDiemDanht.Controllers
                 return RedirectToAction("Index", "SinhViens");
             }
         }
+
+        //public async Task<IActionResult> Index()
+        //{
+        //    var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        //    if (string.IsNullOrEmpty(email))
+        //    {
+        //        Console.WriteLine("No email found in claims, redirecting to login.");
+        //        return RedirectToAction("Login", "Account");
+        //    }
+
+        //    List<ScheduleDto> schedules = null;
+
+        //    try
+        //    {
+        //        var response = await _httpClient.GetAsync($"{_apiUrl}/schedule?email={email}");
+        //        if (!response.IsSuccessStatusCode)
+        //        {
+        //            var errorContent = await response.Content.ReadAsStringAsync();
+        //            Console.WriteLine($"API call failed with status {response.StatusCode}: {errorContent}");
+        //            ViewBag.Error = $"API error: {errorContent}";
+        //            return View(schedules); // Không redirect về chính mình
+        //        }
+
+        //        schedules = await response.Content.ReadFromJsonAsync<List<ScheduleDto>>();
+        //        Console.WriteLine($"Successfully retrieved {schedules?.Count ?? 0} schedules for email {email}");
+
+        //        if (schedules == null || !schedules.Any())
+        //        {
+        //            Console.WriteLine($"No schedules found for email {email}");
+        //            ViewBag.Error = "Không có lịch học nào cho hôm nay.";
+        //        }
+
+        //        return View(schedules);
+        //    }
+        //    catch (JsonException ex)
+        //    {
+        //        Console.WriteLine($"Failed to deserialize API response for email {email}: {ex.Message}");
+        //        ViewBag.Error = "Lỗi xử lý dữ liệu.";
+        //        return View(schedules);
+        //    }
+        //    catch (HttpRequestException ex)
+        //    {
+        //        Console.WriteLine($"HTTP request failed for email {email}: {ex.Message}");
+        //        ViewBag.Error = "Lỗi kết nối đến server.";
+        //        return View(schedules);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Unexpected error for email {email}: {ex.Message}");
+        //        ViewBag.Error = "Đã xảy ra lỗi không xác định.";
+        //        return View(schedules);
+        //    }
+        //}
 
         // Handle check-in/check-out
         [HttpPost]

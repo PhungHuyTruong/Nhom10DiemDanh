@@ -1,0 +1,189 @@
+﻿@model List<Nhom10ModuleDiemDanh.Models.LichGiangDayViewModel>
+@{
+    Layout = "~/Views/Shared/GiangVienLayout.cshtml";
+    var today = DateTime.Today;
+
+    var httpRequest = ViewContext.HttpContext.Request;
+    var timeRange = httpRequest.Query["timeRange"].ToString();
+    var mode = httpRequest.Query["mode"].ToString();
+
+    // Lọc lịch hôm nay
+    var lichHomNay = Model.Where(x => x.NgayHoc.Date == today).ToList();
+
+    // var lichKhac = Model.Where(x => x.NgayHoc.Date != today).ToList();
+    var lichKhac = Model.Where(x => x.NgayHoc.Date > today).ToList();
+
+    if (timeRange == "7")
+    {
+        lichKhac = Model.Where(x => x.NgayHoc.Date > today && x.NgayHoc.Date <= today.AddDays(7)).ToList();
+    }
+    else if (timeRange == "14")
+    {
+        lichKhac = Model.Where(x => x.NgayHoc.Date > today && x.NgayHoc.Date <= today.AddDays(14)).ToList();
+    }
+
+
+    // Lọc theo hình thức học
+    if (mode == "Online" || mode == "Offline")
+    {
+        lichHomNay = lichHomNay.Where(x => x.HinhThuc == mode).ToList();
+        lichKhac = lichKhac.Where(x => x.HinhThuc == mode).ToList();
+    }
+
+    int stt1 = 1;
+    int stt2 = 1;
+}
+
+
+<h3 class="mb-3">📅 Lịch giảng dạy</h3>
+
+<!-- Bộ lọc -->
+<form method="get" asp-controller="LichGiangDays" asp-action="Schedule" class="card mb-4">
+    <div class="card-body row">
+        <div class="col-md-4">
+            <label>Khoảng thời gian:</label>
+            <select class="form-control" name="timeRange">
+                <option value="7" selected="@(timeRange == "7" ? "selected" : null)">7 ngày tới</option>
+                <option value="14" selected="@(timeRange == "14" ? "selected" : null)">14 ngày tới</option>
+                <option value="all" selected="@(string.IsNullOrEmpty(timeRange) || timeRange == "all" ? "selected" : null)">Tất cả</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label>Hình thức học:</label>
+            <select class="form-control" name="mode">
+                <option value="all" selected="@(string.IsNullOrEmpty(mode) || mode == "all" ? "selected" : null)">Tất cả hình thức học</option>
+                <option value="Online" selected="@(mode == "Online" ? "selected" : null)">Online</option>
+                <option value="Offline" selected="@(mode == "Offline" ? "selected" : null)">Offline</option>
+            </select>
+        </div>
+        <div class="col-md-4 mt-4">
+            <button type="submit" class="btn btn-primary mt-2">Lọc</button>
+        </div>
+    </div>
+</form>
+
+<!-- Lịch hôm nay -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">📌 Lịch dạy hôm nay</div>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Thời gian</th>
+                    <th>Ca học</th>
+                    <th>Điểm danh muộn</th>
+                    <th>Xưởng</th>
+                    <th>Dự án</th>
+                    <th>Địa điểm</th>
+                    <th>Link học</th>
+                    <th>Hình thức</th>
+                    <th>Chi tiết</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in lichHomNay)
+                {
+                    <tr>
+                        <td>@(stt1++)</td>
+                        <td>@item.ThoiGian</td>
+                        <td>@item.Ca</td>
+                        <td class="text-warning">@item.DiemDanhTre</td>
+                        <td>@item.TenNhomXuong</td>
+                        <td>@Html.Raw(item.DuAn)</td>
+                        <td>
+                            @if (string.IsNullOrEmpty(item.LinkOnline))
+                            {
+                                @item.DiaDiem
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.LinkOnline))
+                            {
+                                <a href="@item.LinkOnline" target="_blank">Vào lớp</a>
+                            }
+                            else
+                            {
+
+                                <span>-</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge bg-@(item.HinhThuc == "Online" ? "success" : "secondary")">
+                                @item.HinhThuc
+                            </span>
+                        </td>
+                        <td><a href="#">Chi tiết</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Danh sách lịch giảng dạy -->
+<div class="card">
+    <div class="card-header bg-info text-white">📚 Danh sách lịch dạy</div>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Ngày dạy</th>
+                    <th>Thời gian</th>
+                    <th>Ca học</th>
+                    <th>Điểm danh muộn</th>
+                    <th>Xưởng</th>
+                    <th>Dự án</th>
+                    <th>Địa điểm</th>
+                    <th>Hình thức</th>
+                    <th>Link học</th>
+                    <th>Chi tiết</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in lichKhac)
+                {
+                    <tr>
+                        <td>@(stt2++)</td>
+                        <td>@item.NgayHoc.ToString("dddd, dd/MM/yyyy")</td>
+                        <td>@item.ThoiGian</td>
+                        <td>@item.Ca</td>
+                        <td class="text-warning">@item.DiemDanhTre</td>
+                        <td>@item.TenNhomXuong</td>
+                        <td>@Html.Raw(item.DuAn)</td>
+                        <td>
+                            @if (string.IsNullOrEmpty(item.LinkOnline))
+                            {
+                                @item.DiaDiem
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge bg-@(item.HinhThuc == "Online" ? "success" : "secondary")">@item.HinhThuc</span>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.LinkOnline))
+                            {
+                                <a href="@item.LinkOnline" target="_blank">Vào lớp</a>
+                            }
+                            else
+                            {
+
+                                <span>-</span>
+                            }
+                        </td>
+                        <td><a href="#">Chi tiết</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

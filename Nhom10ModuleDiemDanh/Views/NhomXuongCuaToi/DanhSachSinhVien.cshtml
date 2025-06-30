@@ -1,0 +1,86 @@
+﻿@model List<API.Data.SinhVien>
+@{
+    Layout = "~/Views/Shared/GiangVienLayout.cshtml";
+}
+
+<!-- TIÊU ĐỀ -->
+<div class="card bg-primary text-white mb-4">
+    <div class="card-body">
+        <h2 class="card-title">Danh sách sinh viên nhóm xưởng</h2>
+    </div>
+</div>
+
+<!-- BỘ LỌC -->
+<form method="get" class="card mb-4">
+    <div class="card-header fw-bold">Bộ lọc</div>
+    <div class="card-body row g-3">
+        <input type="hidden" name="idNhomXuong" value="@ViewBag.IdNhomXuong" />
+
+        <div class="col-md-6">
+            <label for="search">Tìm kiếm tên sinh viên:</label>
+            <input id="search" name="search" value="@ViewBag.Search" type="text" class="form-control" placeholder="Nhập tên sinh viên" />
+        </div>
+
+        <div class="col-md-4">
+            <label for="status">Trạng thái:</label>
+            <select id="status" name="status" class="form-select">
+                <option value="" selected="@(ViewBag.Status == "" ? "selected" : null)">Tất cả</option>
+                <option value="active" selected="@(ViewBag.Status == "active" ? "selected" : null)">Hoạt động</option>
+                <option value="inactive" selected="@(ViewBag.Status == "inactive" ? "selected" : null)">Ngừng</option>
+            </select>
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Lọc</button>
+        </div>
+    </div>
+</form>
+
+
+<!-- DANH SÁCH SINH VIÊN -->
+<div class="card">
+    <div class="card-header fw-bold">Sinh viên trong nhóm</div>
+    <div class="card-body p-0">
+        <table class="table table-bordered table-hover mb-0 text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Tên sinh viên</th>
+                    <th>Email</th>
+                    <th>Mã SV</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    var sv = Model[i];
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td>@sv.TenSinhVien</td>
+                        <td>@sv.Email</td>
+                        <td>@sv.MaSinhVien</td>
+                        <td>
+                            <span class="badge bg-@(sv.TrangThai ? "success" : "secondary")">
+                                @(sv.TrangThai ? "Hoạt động" : "Ngừng")
+                            </span>
+                        </td>
+                        <td>
+                            <form asp-action="DoiTrangThaiSinhVien" method="post" class="d-inline">
+                                <input type="hidden" name="idSinhVien" value="@sv.IdSinhVien" />
+                                <input type="hidden" name="idNhomXuong" value="@ViewBag.IdNhomXuong" />
+                                <button type="submit" class="btn btn-sm btn-warning">Đổi trạng thái</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- NÚT QUAY LẠI -->
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-secondary">← Quay lại nhóm xưởng của tôi</a>
+</div>
