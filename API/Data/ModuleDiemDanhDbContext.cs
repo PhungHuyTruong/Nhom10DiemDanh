@@ -148,10 +148,10 @@ namespace API.Data
                 .WithMany(v => v.VaiTroNhanViens)
                 .HasForeignKey(v => v.IdVaiTro);
 
-            modelBuilder.Entity<LichSuDiemDanh>()
-                .HasOne(l => l.DiemDanh)
-                .WithMany(d => d.LichSuDiemDanhs)
-                .HasForeignKey(l => l.IdDiemDanh);
+            //modelBuilder.Entity<LichSuDiemDanh>()
+            //    .HasOne(l => l.DiemDanh)
+            //    .WithMany(d => d.LichSuDiemDanhs)
+            //    .HasForeignKey(l => l.IdDiemDanh);
 
             modelBuilder.Entity<DuAn>()
                 .HasOne(d => d.HocKy)
@@ -176,11 +176,11 @@ namespace API.Data
                 .HasForeignKey(l => l.IdNhomXuong)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<LichSuDiemDanh>()
-                .HasOne(l => l.DiemDanh)
-                .WithMany(d => d.LichSuDiemDanhs)
-                .HasForeignKey(l => l.IdDiemDanh)
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<LichSuDiemDanh>()
+            //    .HasOne(l => l.DiemDanh)
+            //    .WithMany(d => d.LichSuDiemDanhs)
+            //    .HasForeignKey(l => l.IdDiemDanh)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<LichSuDiemDanh>()
                 .HasOne(lsdd => lsdd.KHNXCaHoc)
@@ -208,7 +208,7 @@ namespace API.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=PHUNGHUYTRUONG\\SQLEXPRESS01;Database=nhom10diemdanh;Trusted_Connection=True;TrustServerCertificate=True");
+            optionsBuilder.UseSqlServer("Server=GIGABYTE\\SQLEXPRESS;Database=nhom10diemdanh;Trusted_Connection=True;TrustServerCertificate=True");
         }
 
     }

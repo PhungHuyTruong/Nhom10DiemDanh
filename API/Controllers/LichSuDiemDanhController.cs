@@ -20,7 +20,7 @@ namespace API.Controllers
         public async Task<IActionResult> GetLichSuDiemDanh(Guid IdSinhVien, Guid? IdHocKy, Guid? IdNhomXuong)
         {
             var query = _context.LichSuDiemDanhs
-            .Include(lsdd => lsdd.DiemDanh)
+           // .Include(lsdd => lsdd.DiemDanh)
             .Include(lsdd => lsdd.KHNXCaHoc)
                 .ThenInclude(khnxch => khnxch.CaHoc)
             .Include(lsdd => lsdd.KHNXCaHoc)
@@ -30,7 +30,8 @@ namespace API.Controllers
                 .ThenInclude(khnxch => khnxch.KeHoachNhomXuong)
                     .ThenInclude(khnx => khnx.KeHoach)
                         .ThenInclude(kh => kh.DuAn)
-            .Where(lsdd => lsdd.DiemDanh.IdSinhVien == IdSinhVien);
+            //  .Where(lsdd => lsdd.DiemDanh.IdSinhVien == IdSinhVien);
+              .Where(lsdd => lsdd.IdSinhVien == IdSinhVien);
 
             if (IdHocKy.HasValue)
             {
@@ -64,7 +65,7 @@ namespace API.Controllers
         public async Task<IActionResult> DownloadTemplate([FromQuery] Guid? IdSinhVien, [FromQuery] Guid? IdHocKy, [FromQuery] Guid? IdNhomXuong)
         {
             var query = _context.LichSuDiemDanhs
-                .Include(lsdd => lsdd.DiemDanh)
+              //  .Include(lsdd => lsdd.DiemDanh)
                 .Include(lsdd => lsdd.KHNXCaHoc)
                     .ThenInclude(khnxch => khnxch.CaHoc)
                 .Include(lsdd => lsdd.KHNXCaHoc)
@@ -79,7 +80,8 @@ namespace API.Controllers
 
             if (IdSinhVien.HasValue)
             {
-                query = query.Where(lsdd => lsdd.DiemDanh.IdSinhVien == IdSinhVien.Value);
+                // query = query.Where(lsdd => lsdd.DiemDanh.IdSinhVien == IdSinhVien.Value);
+                query = query.Where(lsdd => lsdd.IdSinhVien == IdSinhVien.Value);
             }
             if (IdHocKy.HasValue)
             {

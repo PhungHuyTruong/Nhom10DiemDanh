@@ -7,7 +7,11 @@ namespace API.Data
     {
         [Key]
         public Guid IdLSDD { get; set; } = Guid.NewGuid();
-        public Guid IdDiemDanh { get; set; }
+        //public Guid IdDiemDanh { get; set; }
+
+        //thêm mới dòng này
+        public Guid IdSinhVien { get; set; }
+
         public Guid IdNXCH { get; set; }
         public DateTime ThoiGianDiemDanh { get; set; }
         public string NoiDungBuoiHoc { get; set; }
@@ -20,7 +24,7 @@ namespace API.Data
         public int TrangThaiDuyet { get; set; } = 1;
 
         // Navigation properties
-        public virtual DiemDanh DiemDanh { get; set; }
+       // public virtual DiemDanh DiemDanh { get; set; }
         public virtual KHNXCaHoc KHNXCaHoc { get; set; }
     }
 }

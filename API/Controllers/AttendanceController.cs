@@ -144,7 +144,10 @@ namespace API.Controllers
 
             var lichSuDiemDanh = new LichSuDiemDanh
             {
-                IdDiemDanh = diemDanh.IdDiemDanh,
+                //IdDiemDanh = diemDanh.IdDiemDanh,
+                //thêm trường này
+                IdSinhVien = student.IdSinhVien, // Gán đúng trường mới
+
                 IdNXCH = khnxCaHoc.IdNXCH,
                 ThoiGianDiemDanh = now,
                 NoiDungBuoiHoc = "Buổi học thực hành", // Thêm nội dung buổi học
