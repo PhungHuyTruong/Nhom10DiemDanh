@@ -125,7 +125,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
                         // Kiểm tra email trong bảng SinhVien
                         isAuthorized = await _dbContext.SinhViens   
                             .AnyAsync(s => s.Email == email && s.TrangThai);
-                        redirectController = "SinhViens";
+                        redirectController = "ClientAttendance";
                         Console.WriteLine($"Kiểm tra quyền sinh viên: {(isAuthorized ? "Thành công" : "Thất bại")}");
                         break;
 

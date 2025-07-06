@@ -33,27 +33,30 @@ namespace ClienNhom10ModuleDiemDanht.Controllers
             if (string.IsNullOrEmpty(email))
             {
                 Console.WriteLine("No email found in claims, redirecting to login.");
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Index", "Home");
             }
 
             try
             {
                 var response = await _httpClient.GetAsync($"{_apiUrl}/schedule?email={email}");
+                Console.WriteLine($"API response status: {response.StatusCode} for email: {email}");
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API call failed with status {response.StatusCode}: {errorContent}");
-                    ViewBag.Error = $"API error: {errorContent}";
-                    return RedirectToAction("Index", "SinhViens");
+                    ViewBag.Error = $"Lỗi API: {errorContent}";
+                    return View(new List<ScheduleDto>());
                 }
 
                 var schedules = await response.Content.ReadFromJsonAsync<List<ScheduleDto>>();
                 Console.WriteLine($"Successfully retrieved {schedules?.Count ?? 0} schedules for email {email}");
+
                 if (schedules == null || !schedules.Any())
                 {
                     Console.WriteLine($"No schedules found for email {email}");
-                    ViewBag.Error = "No schedules found for today.";
-                    return RedirectToAction("Index", "SinhViens");
+                    ViewBag.Error = "Không tìm thấy lịch học cho hôm nay.";
+                    return View(new List<ScheduleDto>());
                 }
 
                 return View(schedules);
@@ -61,20 +64,20 @@ namespace ClienNhom10ModuleDiemDanht.Controllers
             catch (JsonException ex)
             {
                 Console.WriteLine($"Failed to deserialize API response for email {email}: {ex.Message}");
-                ViewBag.Error = "Error processing schedule data.";
-                return RedirectToAction("Index", "SinhViens");
+                ViewBag.Error = "Lỗi xử lý dữ liệu lịch học.";
+                return View(new List<ScheduleDto>());
             }
             catch (HttpRequestException ex)
             {
                 Console.WriteLine($"HTTP request failed for email {email}: {ex.Message}");
-                ViewBag.Error = "Error connecting to server.";
-                return RedirectToAction("Index", "SinhViens");
+                ViewBag.Error = "Lỗi kết nối đến server.";
+                return View(new List<ScheduleDto>());
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Unexpected error for email {email}: {ex.Message}");
-                ViewBag.Error = "An unexpected error occurred.";
-                return RedirectToAction("Index", "SinhViens");
+                ViewBag.Error = "Đã xảy ra lỗi không mong muốn.";
+                return View(new List<ScheduleDto>());
             }
         }
 
@@ -84,7 +87,9 @@ namespace ClienNhom10ModuleDiemDanht.Controllers
         {
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(email))
-                return Json(new { success = false, message = "Please login" });
+            {
+                return Json(new { success = false, message = "Vui lòng đăng nhập" });
+            }
 
             var dto = new
             {
@@ -116,12 +121,12 @@ namespace ClienNhom10ModuleDiemDanht.Controllers
             catch (JsonException ex)
             {
                 Console.WriteLine($"Failed to deserialize API response for IdNXCH {idNXCH}: {ex.Message}");
-                return Json(new { success = false, message = $"Error: {ex.Message}" });
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error during check attendance for IdNXCH {idNXCH}: {ex.Message}");
-                return Json(new { success = false, message = $"Error: {ex.Message}" });
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
         }
     }

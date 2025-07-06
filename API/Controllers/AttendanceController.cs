@@ -27,32 +27,70 @@ namespace API.Controllers
                 return BadRequest("Email is required");
 
             var today = DateTime.Today;
-            var schedules = await (from lichHoc in _context.LichHocs
-                                   join khnxCaHoc in _context.KHNXCaHocs on lichHoc.IdNXCH equals khnxCaHoc.IdNXCH
+            Console.WriteLine($"Fetching schedules for email: {email}, date: {today:yyyy-MM-dd HH:mm:ss.fff}");
+
+            var schedules = await (from khnxCaHoc in _context.KHNXCaHocs
                                    join caHoc in _context.CaHocs on khnxCaHoc.IdCaHoc equals caHoc.IdCaHoc
-                                   join nhomXuong in _context.NhomXuongs on lichHoc.IdNhomXuong equals nhomXuong.IdNhomXuong
+                                   join keHoachNhomXuong in _context.KeHoachNhomXuongs on khnxCaHoc.IdKHNX equals keHoachNhomXuong.IdKHNX
+                                   join nhomXuong in _context.NhomXuongs on keHoachNhomXuong.IdNhomXuong equals nhomXuong.IdNhomXuong
                                    join sinhVien in _context.SinhViens on nhomXuong.IdNhomXuong equals sinhVien.IdNhomXuong
                                    join phuTrachXuong in _context.PhuTrachXuongs on nhomXuong.IdPhuTrachXuong equals phuTrachXuong.IdNhanVien
                                    where sinhVien.Email == email
                                    && khnxCaHoc.NgayHoc.Date == today
-                                   && lichHoc.TrangThai == 1
                                    && khnxCaHoc.TrangThai == 1
-                                   select new
+                                   let hasCheckedIn = _context.LichSuDiemDanhs
+                                       .Any(ls => ls.IdNXCH == khnxCaHoc.IdNXCH
+                                               && ls.IdDiemDanh == (_context.DiemDanhs
+                                                   .Where(d => d.IdSinhVien == sinhVien.IdSinhVien
+                                                           && d.IdCaHoc == khnxCaHoc.IdCaHoc)
+                                                   .Select(d => d.IdDiemDanh)
+                                                   .FirstOrDefault())
+                                               && ls.ThoiGianDiemDanh.Date == today
+                                               && ls.TrangThai >= 3 && ls.TrangThai <= 4)
+                                   let hasCheckedOut = _context.LichSuDiemDanhs
+                                       .Any(ls => ls.IdNXCH == khnxCaHoc.IdNXCH
+                                               && ls.IdDiemDanh == (_context.DiemDanhs
+                                                   .Where(d => d.IdSinhVien == sinhVien.IdSinhVien
+                                                           && d.IdCaHoc == khnxCaHoc.IdCaHoc)
+                                                   .Select(d => d.IdDiemDanh)
+                                                   .FirstOrDefault())
+                                               && ls.ThoiGianDiemDanh.Date == today
+                                               && ls.TrangThai >= 5 && ls.TrangThai <= 6)
+                                   let checkInTime = caHoc.ThoiGianBatDau.HasValue ? caHoc.ThoiGianBatDau.Value.Add(TimeSpan.FromMinutes(-5)) : (TimeSpan?)null
+                                   let lateCheckInTime = caHoc.ThoiGianBatDau.HasValue ? caHoc.ThoiGianBatDau.Value.Add(TimeSpan.FromMinutes(double.Parse(khnxCaHoc.DiemDanhTre ?? "0"))) : (TimeSpan?)null
+                                   let isBeforeCheckIn = caHoc.ThoiGianBatDau.HasValue && DateTime.Now.TimeOfDay < checkInTime
+                                   let isAfterCheckIn = caHoc.ThoiGianBatDau.HasValue && DateTime.Now.TimeOfDay > lateCheckInTime
+                                   select new ScheduleViewModel
                                    {
                                        ThoiGian = $"{caHoc.ThoiGianBatDau} - {caHoc.ThoiGianKetThuc}",
                                        CaHoc = caHoc.TenCaHoc,
                                        LopHoc = nhomXuong.TenNhomXuong,
                                        GiangVien = phuTrachXuong.TenNhanVien,
                                        DiemDanhTre = khnxCaHoc.DiemDanhTre,
-                                       CheckInTime = caHoc.ThoiGianBatDau.HasValue ? caHoc.ThoiGianBatDau.Value.Add(TimeSpan.FromMinutes(-5)) : (TimeSpan?)null,
+                                       CheckInTime = checkInTime,
                                        CheckOutTime = caHoc.ThoiGianKetThuc,
                                        IdNXCH = khnxCaHoc.IdNXCH,
                                        CanCheckIn = caHoc.ThoiGianBatDau.HasValue && caHoc.ThoiGianKetThuc.HasValue
-                                                   && DateTime.Now.TimeOfDay >= caHoc.ThoiGianBatDau.Value.Add(TimeSpan.FromMinutes(-5))
-                                                   && DateTime.Now.TimeOfDay <= caHoc.ThoiGianKetThuc.Value,
+                                                   && DateTime.Now.TimeOfDay >= checkInTime
+                                                   && DateTime.Now.TimeOfDay <= lateCheckInTime
+                                                   && !hasCheckedIn,
                                        CanCheckOut = caHoc.ThoiGianKetThuc.HasValue
                                                    && DateTime.Now.TimeOfDay >= caHoc.ThoiGianKetThuc.Value
+                                                   && !hasCheckedOut,
+                                       Status = hasCheckedOut ? "Đã check-out" :
+                                                hasCheckedIn ? "Đã check-in" :
+                                                isBeforeCheckIn ? "Chưa đến thời gian check-in" :
+                                                isAfterCheckIn ? "Đã quá thời gian check-in" :
+                                                "Chưa điểm danh",
+                                       HasCheckedIn = hasCheckedIn,
+                                       HasCheckedOut = hasCheckedOut
                                    }).ToListAsync();
+
+            Console.WriteLine($"Found {schedules.Count} schedules for email: {email}");
+            foreach (var schedule in schedules)
+            {
+                Console.WriteLine($"Schedule: IdNXCH={schedule.IdNXCH}, CanCheckIn={schedule.CanCheckIn}, CanCheckOut={schedule.CanCheckOut}, Status={schedule.Status}, HasCheckedIn={schedule.HasCheckedIn}, HasCheckedOut={schedule.HasCheckedOut}");
+            }
 
             return Ok(schedules);
         }
@@ -93,6 +131,9 @@ namespace API.Controllers
                 if (now.TimeOfDay < checkInTime)
                     return BadRequest("Too early to check-in");
 
+                if (now.TimeOfDay > lateTime)
+                    return BadRequest("Too late to check-in");
+
                 status = now.TimeOfDay <= lateTime ? 3 : 4; // 3: Normal check-in, 4: Late check-in
                 isLate = status == 4;
             }
@@ -112,24 +153,23 @@ namespace API.Controllers
                 isLate = status == 6;
             }
 
+            // Get IdNhomXuong from KHNXCaHocs and KeHoachNhomXuongs
+            var nhomXuongId = await (from khnx in _context.KHNXCaHocs
+                                     join keHoachNhomXuong in _context.KeHoachNhomXuongs on khnx.IdKHNX equals keHoachNhomXuong.IdKHNX
+                                     where khnx.IdNXCH == dto.IdNXCH
+                                     select keHoachNhomXuong.IdNhomXuong).FirstOrDefaultAsync();
+
+            if (nhomXuongId == Guid.Empty)
+                return BadRequest("Invalid group assignment");
+
             // Save attendance record
             var diemDanh = await _context.DiemDanhs
                 .FirstOrDefaultAsync(d => d.IdSinhVien == student.IdSinhVien
                     && d.IdCaHoc == khnxCaHoc.IdCaHoc
-                    && d.IdNhomXuong == (
-                        from lichHoc in _context.LichHocs
-                        where lichHoc.IdNXCH == khnxCaHoc.IdNXCH
-                        select lichHoc.IdNhomXuong).FirstOrDefault());
+                    && d.IdNhomXuong == nhomXuongId);
 
             if (diemDanh == null)
             {
-                var nhomXuongId = await (from lichHoc in _context.LichHocs
-                                         where lichHoc.IdNXCH == khnxCaHoc.IdNXCH
-                                         select lichHoc.IdNhomXuong).FirstOrDefaultAsync();
-
-                if (nhomXuongId == Guid.Empty)
-                    return BadRequest("Invalid group assignment");
-
                 diemDanh = new DiemDanh
                 {
                     IdSinhVien = student.IdSinhVien,
@@ -147,27 +187,46 @@ namespace API.Controllers
                 IdDiemDanh = diemDanh.IdDiemDanh,
                 IdNXCH = khnxCaHoc.IdNXCH,
                 ThoiGianDiemDanh = now,
-                NoiDungBuoiHoc = "Buổi học thực hành", // Thêm nội dung buổi học
+                NoiDungBuoiHoc = "Buổi học thực hành",
                 HinhThuc = "Online",
-                DiaDiem = "Phòng Lab 1", // Thêm địa điểm
+                DiaDiem = "Phòng Lab 1",
                 GhiChu = isLate ? "Late" : "On-time",
                 TrangThai = status,
                 NgayTao = now,
-                TrangThaiDuyet = 1 // Giả định trạng thái duyệt mặc định
+                TrangThaiDuyet = 1
             };
 
             _context.LichSuDiemDanhs.Add(lichSuDiemDanh);
             await _context.SaveChangesAsync();
 
+            Console.WriteLine($"Saved LichSuDiemDanh: IdNXCH={khnxCaHoc.IdNXCH}, IdDiemDanh={diemDanh.IdDiemDanh}, Status={status}, Time={now:yyyy-MM-dd HH:mm:ss.fff}");
+
             return Ok(new { Status = status, Message = "Attendance recorded" });
         }
+    }
+    public class ScheduleViewModel
+    {
+        public string ThoiGian { get; set; }
+        public string CaHoc { get; set; }
+        public string LopHoc { get; set; }
+        public string GiangVien { get; set; }
+        public string DiemDanhTre { get; set; }
+        public TimeSpan? CheckInTime { get; set; }
+        public TimeSpan? CheckOutTime { get; set; }
+        public Guid IdNXCH { get; set; }
+        public bool CanCheckIn { get; set; }
+        public bool CanCheckOut { get; set; }
+        public string Status { get; set; }
+        public bool HasCheckedIn { get; set; }
+        public bool HasCheckedOut { get; set; }
     }
 
     public class AttendanceCheckDto
     {
         public Guid IdNXCH { get; set; }
         public string Email { get; set; }
-        // Removed IPAddress since IP check is no longer needed
         public bool IsCheckIn { get; set; }
     }
+
+
 }
