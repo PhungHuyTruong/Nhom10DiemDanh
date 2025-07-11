@@ -208,7 +208,10 @@ namespace API.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=PHUNGHUYTRUONG\\SQLEXPRESS01;Database=nhom10diemdanh;Trusted_Connection=True;TrustServerCertificate=True");
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer("Server=LAPTOP-8CVDJNS6;Database=nhom10diemdanh;Trusted_Connection=True;TrustServerCertificate=True");
+            }
         }
 
     }
