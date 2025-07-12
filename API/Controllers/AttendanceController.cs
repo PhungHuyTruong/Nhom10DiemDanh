@@ -112,35 +112,35 @@ namespace API.Controllers
                 isLate = status == 6;
             }
 
-            // Save attendance record
-            var diemDanh = await _context.DiemDanhs
-                .FirstOrDefaultAsync(d => d.IdSinhVien == student.IdSinhVien
-                    && d.IdCaHoc == khnxCaHoc.IdCaHoc
-                    && d.IdNhomXuong == (
-                        from lichHoc in _context.LichHocs
-                        where lichHoc.IdNXCH == khnxCaHoc.IdNXCH
-                        select lichHoc.IdNhomXuong).FirstOrDefault());
+            //// Save attendance record
+            //var diemDanh = await _context.DiemDanhs
+            //    .FirstOrDefaultAsync(d => d.IdSinhVien == student.IdSinhVien
+            //        && d.IdCaHoc == khnxCaHoc.IdCaHoc
+            //        && d.IdNhomXuong == (
+            //            from lichHoc in _context.LichHocs
+            //            where lichHoc.IdNXCH == khnxCaHoc.IdNXCH
+            //            select lichHoc.IdNhomXuong).FirstOrDefault());
 
-            if (diemDanh == null)
-            {
-                var nhomXuongId = await (from lichHoc in _context.LichHocs
-                                         where lichHoc.IdNXCH == khnxCaHoc.IdNXCH
-                                         select lichHoc.IdNhomXuong).FirstOrDefaultAsync();
+            //if (diemDanh == null)
+            //{
+            //    var nhomXuongId = await (from lichHoc in _context.LichHocs
+            //                             where lichHoc.IdNXCH == khnxCaHoc.IdNXCH
+            //                             select lichHoc.IdNhomXuong).FirstOrDefaultAsync();
 
-                if (nhomXuongId == Guid.Empty)
-                    return BadRequest("Invalid group assignment");
+            //    if (nhomXuongId == Guid.Empty)
+            //        return BadRequest("Invalid group assignment");
 
-                diemDanh = new DiemDanh
-                {
-                    IdSinhVien = student.IdSinhVien,
-                    IdCaHoc = (Guid)khnxCaHoc.IdCaHoc,
-                    IdNhomXuong = nhomXuongId,
-                    IdNhanVien = await (from nx in _context.NhomXuongs
-                                        where nx.IdNhomXuong == nhomXuongId
-                                        select nx.IdPhuTrachXuong).FirstOrDefaultAsync()
-                };
-                _context.DiemDanhs.Add(diemDanh);
-            }
+            //    diemDanh = new DiemDanh
+            //    {
+            //        IdSinhVien = student.IdSinhVien,
+            //        IdCaHoc = (Guid)khnxCaHoc.IdCaHoc,
+            //        IdNhomXuong = nhomXuongId,
+            //        IdNhanVien = await (from nx in _context.NhomXuongs
+            //                            where nx.IdNhomXuong == nhomXuongId
+            //                            select nx.IdPhuTrachXuong).FirstOrDefaultAsync()
+            //    };
+            //    _context.DiemDanhs.Add(diemDanh);
+            //}
 
             var lichSuDiemDanh = new LichSuDiemDanh
             {
