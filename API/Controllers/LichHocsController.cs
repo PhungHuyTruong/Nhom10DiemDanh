@@ -13,15 +13,27 @@ public class LichHocViewsController : ControllerBase
         _context = context;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetLichHocTongHop()
+    [HttpGet("sinhvien/{idSinhVien}")]
+    public async Task<IActionResult> GetLichHocTheoSinhVien(Guid idSinhVien)
     {
+        // Lấy nhóm xưởng của sinh viên
+        var sinhVien = await _context.SinhViens
+            .AsNoTracking()
+            .FirstOrDefaultAsync(sv => sv.IdSinhVien == idSinhVien);
+
+        if (sinhVien == null || sinhVien.IdNhomXuong == null)
+            return NotFound("Không tìm thấy sinh viên hoặc sinh viên chưa thuộc nhóm xưởng");
+
+        Guid idNhomXuong = sinhVien.IdNhomXuong.Value;
+
+        // Truy vấn lịch học thuộc nhóm xưởng của sinh viên
         var data = await (from khnxch in _context.KHNXCaHocs
                           join khnx in _context.KeHoachNhomXuongs on khnxch.IdKHNX equals khnx.IdKHNX
                           join kh in _context.KeHoachs on khnx.IdKeHoach equals kh.IdKeHoach
                           join nx in _context.NhomXuongs on khnx.IdNhomXuong equals nx.IdNhomXuong
                           join da in _context.DuAns on kh.IdDuAn equals da.IdDuAn
                           join hk in _context.HocKys on da.IdHocKy equals hk.IdHocKy
+                          where nx.IdNhomXuong == idNhomXuong // Lọc theo nhóm xưởng của SV
                           select new LichHocViewDto
                           {
                               TenHocKy = hk.TenHocKy,
@@ -37,6 +49,7 @@ public class LichHocViewsController : ControllerBase
 
         return Ok(data);
     }
+
 
     public class LichHocViewDto
     {

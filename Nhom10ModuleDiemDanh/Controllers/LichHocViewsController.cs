@@ -16,7 +16,16 @@ public class LichHocViewsController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var result = await _httpClient.GetFromJsonAsync<List<LichHocViewDto>>("LichHocViews");
+        // Giả sử bạn lưu IdSinhVien vào session khi đăng nhập
+        var idSinhVien = HttpContext.Session.GetString("IdSinhVien");
+
+        if (string.IsNullOrEmpty(idSinhVien))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _httpClient.GetFromJsonAsync<List<LichHocViewDto>>($"LichHocViews/sinhvien/{idSinhVien}");
         return View(result);
     }
+
 }
