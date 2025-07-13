@@ -1,36 +1,30 @@
-﻿@model List<Nhom10ModuleDiemDanh.Models.LichHocViewDto>
-@{
-    Layout = "~/Views/Shared/SinhVienLayout.cshtml";
-}
-<h2>Lịch học của bạn</h2>
-
-<table class="table">
+﻿<table class="table">
     <thead>
         <tr>
-            <th>Học kỳ</th>
             <th>Dự án</th>
-            <th>Kế hoạch</th>
             <th>Nhóm xưởng</th>
             <th>Ngày học</th>
             <th>Buổi</th>
             <th>Thời gian</th>
             <th>Nội dung</th>
             <th>Link</th>
+            <th>Giảng viên</th> <!-- mới -->
+            <th>Địa điểm</th>   <!-- mới -->
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
             <tr>
-                <td>@item.TenHocKy</td>
                 <td>@item.TenDuAn</td>
-                <td>@item.TenKeHoach</td>
                 <td>@item.TenNhomXuong</td>
                 <td>@item.NgayHoc.ToString("dd/MM/yyyy")</td>
                 <td>@item.Buoi</td>
                 <td>@item.ThoiGian</td>
                 <td>@item.NoiDung</td>
                 <td><a href="@item.LinkOnline" target="_blank">Vào lớp</a></td>
+                <td>@item.TenGiangVien</td>
+                <td>@item.TenDiaDiem</td>
             </tr>
         }
     </tbody>
