@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace ClienNhom10ModuleDiemDanht.Controllers
+namespace Nhom10ModuleDiemDanh.Controllers
 {
     public class ClientAttendanceController : Controller
     {
@@ -33,27 +33,30 @@ namespace ClienNhom10ModuleDiemDanht.Controllers
             if (string.IsNullOrEmpty(email))
             {
                 Console.WriteLine("No email found in claims, redirecting to login.");
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Index", "Home");
             }
 
             try
             {
                 var response = await _httpClient.GetAsync($"{_apiUrl}/schedule?email={email}");
+                Console.WriteLine($"API response status: {response.StatusCode} for email: {email}");
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API call failed with status {response.StatusCode}: {errorContent}");
-                    ViewBag.Error = $"API error: {errorContent}";
-                    return RedirectToAction("Index", "SinhViens");
+                    ViewBag.Error = $"Lỗi API: {errorContent}";
+                    return View(new List<ScheduleDto>());
                 }
 
                 var schedules = await response.Content.ReadFromJsonAsync<List<ScheduleDto>>();
                 Console.WriteLine($"Successfully retrieved {schedules?.Count ?? 0} schedules for email {email}");
+
                 if (schedules == null || !schedules.Any())
                 {
                     Console.WriteLine($"No schedules found for email {email}");
-                    ViewBag.Error = "No schedules found for today.";
-                    return View(schedules);
+                    ViewBag.Error = "Không tìm thấy lịch học cho hôm nay.";
+                    return View(new List<ScheduleDto>());
                 }
 
                 return View(schedules);
@@ -61,89 +64,47 @@ namespace ClienNhom10ModuleDiemDanht.Controllers
             catch (JsonException ex)
             {
                 Console.WriteLine($"Failed to deserialize API response for email {email}: {ex.Message}");
-                ViewBag.Error = "Error processing schedule data.";
-                return RedirectToAction("Index", "SinhViens");
+                ViewBag.Error = "Lỗi xử lý dữ liệu lịch học.";
+                return View(new List<ScheduleDto>());
             }
             catch (HttpRequestException ex)
             {
                 Console.WriteLine($"HTTP request failed for email {email}: {ex.Message}");
-                ViewBag.Error = "Error connecting to server.";
-                return RedirectToAction("Index", "SinhViens");
+                ViewBag.Error = "Lỗi kết nối đến server.";
+                return View(new List<ScheduleDto>());
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Unexpected error for email {email}: {ex.Message}");
-                ViewBag.Error = "An unexpected error occurred.";
-                return RedirectToAction("Index", "SinhViens");
+                ViewBag.Error = "Đã xảy ra lỗi không mong muốn.";
+                return View(new List<ScheduleDto>());
             }
         }
 
-        //public async Task<IActionResult> Index()
-        //{
-        //    var email = User.FindFirst(ClaimTypes.Email)?.Value;
-        //    if (string.IsNullOrEmpty(email))
-        //    {
-        //        Console.WriteLine("No email found in claims, redirecting to login.");
-        //        return RedirectToAction("Login", "Account");
-        //    }
-
-        //    List<ScheduleDto> schedules = null;
-
-        //    try
-        //    {
-        //        var response = await _httpClient.GetAsync($"{_apiUrl}/schedule?email={email}");
-        //        if (!response.IsSuccessStatusCode)
-        //        {
-        //            var errorContent = await response.Content.ReadAsStringAsync();
-        //            Console.WriteLine($"API call failed with status {response.StatusCode}: {errorContent}");
-        //            ViewBag.Error = $"API error: {errorContent}";
-        //            return View(schedules); // Không redirect về chính mình
-        //        }
-
-        //        schedules = await response.Content.ReadFromJsonAsync<List<ScheduleDto>>();
-        //        Console.WriteLine($"Successfully retrieved {schedules?.Count ?? 0} schedules for email {email}");
-
-        //        if (schedules == null || !schedules.Any())
-        //        {
-        //            Console.WriteLine($"No schedules found for email {email}");
-        //            ViewBag.Error = "Không có lịch học nào cho hôm nay.";
-        //        }
-
-        //        return View(schedules);
-        //    }
-        //    catch (JsonException ex)
-        //    {
-        //        Console.WriteLine($"Failed to deserialize API response for email {email}: {ex.Message}");
-        //        ViewBag.Error = "Lỗi xử lý dữ liệu.";
-        //        return View(schedules);
-        //    }
-        //    catch (HttpRequestException ex)
-        //    {
-        //        Console.WriteLine($"HTTP request failed for email {email}: {ex.Message}");
-        //        ViewBag.Error = "Lỗi kết nối đến server.";
-        //        return View(schedules);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"Unexpected error for email {email}: {ex.Message}");
-        //        ViewBag.Error = "Đã xảy ra lỗi không xác định.";
-        //        return View(schedules);
-        //    }
-        //}
-
         // Handle check-in/check-out
         [HttpPost]
-        public async Task<IActionResult> CheckAttendance(Guid idNXCH, bool isCheckIn)
+        public async Task<IActionResult> CheckAttendance(Guid idNXCH, bool isCheckIn, string ipAddress = null, double? latitude = null, double? longitude = null)
         {
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(email))
-                return Json(new { success = false, message = "Please login" });
+            {
+                return Json(new { success = false, message = "Vui lòng đăng nhập" });
+            }
+
+            // Get client IP if not provided
+            if (string.IsNullOrEmpty(ipAddress))
+            {
+                ipAddress = GetClientIPAddress();
+            }
 
             var dto = new
             {
                 IdNXCH = idNXCH,
                 Email = email,
-                IsCheckIn = isCheckIn
+                IsCheckIn = isCheckIn,
+                IPAddress = ipAddress,
+                Latitude = latitude,
+                Longitude = longitude
             };
 
             try
@@ -169,13 +130,31 @@ namespace ClienNhom10ModuleDiemDanht.Controllers
             catch (JsonException ex)
             {
                 Console.WriteLine($"Failed to deserialize API response for IdNXCH {idNXCH}: {ex.Message}");
-                return Json(new { success = false, message = $"Error: {ex.Message}" });
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error during check attendance for IdNXCH {idNXCH}: {ex.Message}");
-                return Json(new { success = false, message = $"Error: {ex.Message}" });
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
+        }
+
+        // Get client IP address
+        private string GetClientIPAddress()
+        {
+            var forwarded = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(forwarded))
+            {
+                return forwarded.Split(',')[0].Trim();
+            }
+
+            var realIP = Request.Headers["X-Real-IP"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(realIP))
+            {
+                return realIP;
+            }
+
+            return Request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
         }
     }
 }

@@ -157,7 +157,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
                             HttpContext.Session.SetString("IdSinhVien", sinhVien.IdSinhVien.ToString());
                         }
 
-                        redirectController = "SinhViens";
+                        redirectController = "ClientAttendance";
                         Console.WriteLine($"Kiểm tra quyền sinh viên: {(isAuthorized ? "Thành công" : "Thất bại")}");
                         break;
 
