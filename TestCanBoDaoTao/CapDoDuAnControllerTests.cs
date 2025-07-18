@@ -30,6 +30,10 @@ namespace TestCanBoDaoTao
         public void TearDown()
         {
             _context.Dispose();
+            if (_controller is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
 
         // Các test sẽ viết ở đây
