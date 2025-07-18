@@ -6,31 +6,32 @@
 
 <h1>Điểm danh</h1>
 
-@if (ViewBag.Error != null)
-{
-    <div class="alert alert-danger">@ViewBag.Error</div>
-    <a href="@Url.Action("Index", "SinhViens")" class="btn btn-secondary">Go to Students</a>
-}
+<!-- Location permission notification -->
+<div id="location-notification" class="alert alert-info" style="display: none;">
+    <strong>Lưu ý:</strong> Hệ thống cần quyền truy cập vị trí để điểm danh. Vui lòng cho phép truy cập vị trí khi trình duyệt yêu cầu.
+</div>
 
-@if (Model == null || !Model.Any())
-{
-    <p>No schedules found for today.</p>
-    <a href="@Url.Action("Index", "SinhViens")" class="btn btn-secondary">Go to Students</a>
-}
-else
-{
-    <table class="table">
-        <thead>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Thời gian</th>
+            <th>Ca học</th>
+            <th>Lớp học</th>
+            <th>Giảng viên</th>
+            <th>Điểm danh trễ</th>
+            <th>Trạng thái</th>
+            <th>Chức năng</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model == null || !Model.Any())
+        {
             <tr>
-                <th>Thời gian</th>
-                <th>Ca học</th>
-                <th>Lớp học</th>
-                <th>Giảng viên</th>
-                <th>Điểm danh trễ</th>
-                <th>Chức năng</th>
+                <td colspan="7" class="text-center">Không tìm thấy lịch học cho hôm nay.</td>
             </tr>
-        </thead>
-        <tbody>
+        }
+        else
+        {
             @foreach (var item in Model)
             {
                 <tr>
@@ -38,7 +39,8 @@ else
                     <td>@(item.CaHoc ?? "N/A")</td>
                     <td>@(item.LopHoc ?? "N/A")</td>
                     <td>@(item.GiangVien ?? "N/A")</td>
-                    <td>@(item.DiemDanhTre ?? "0") minutes</td>
+                    <td>@(item.DiemDanhTre ?? "0") phút</td>
+                    <td>@(item.Status ?? "N/A")</td>
                     <td>
                         <div id="function-@item.IdNXCH" class="function-area">
                             @if (item.CanCheckIn)
@@ -61,48 +63,206 @@ else
                     </td>
                 </tr>
             }
-        </tbody>
-    </table>
-}
+        }
+    </tbody>
+</table>
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        // Global variables to store location
+        var currentLatitude = null;
+        var currentLongitude = null;
+        var locationPermissionGranted = false;
+
         $(document).ready(function() {
+            // Request location permission on page load
+            requestLocationPermission();
+
             $('.check-btn').click(function() {
                 var id = $(this).data('id');
                 var isCheckIn = $(this).data('type') === 'checkin';
                 var $functionArea = $('#function-' + id);
 
+                // Check if we have location permission
+                if (!locationPermissionGranted) {
+                    alert('Vui lòng cho phép truy cập vị trí để điểm danh.');
+                    requestLocationPermission();
+                    return;
+                }
+
+                // Show loading state
+                var originalText = $(this).text();
+                $(this).text('Đang xử lý...').prop('disabled', true);
+
                 $.ajax({
                     url: '@Url.Action("CheckAttendance", "ClientAttendance")',
                     type: 'POST',
-                    data: { idNXCH: id, isCheckIn: isCheckIn },
+                    data: {
+                        idNXCH: id,
+                        isCheckIn: isCheckIn,
+                        latitude: currentLatitude,
+                        longitude: currentLongitude
+                    },
                     success: function(result) {
                         alert(result.message);
                         if (result.success) {
                             if (isCheckIn) {
-                                // Hide Check In button and show "Đã check in thành công"
                                 $functionArea.html('<span class="text-success">Đã check in thành công</span>');
+                            } else {
+                                $functionArea.html('<span class="text-success">Đã check out thành công</span>');
                             }
-                            // Reload page to update CanCheckOut status if needed
-                            location.reload();
+                            // Trì hoãn làm mới bảng 2 giây để hiển thị thông báo
+                            setTimeout(function() {
+                                $.ajax({
+                                    url: '@Url.Action("Index", "ClientAttendance")',
+                                    type: 'GET',
+                                    success: function(data) {
+                                        var $newTable = $(data).find('.table');
+                                        $('.table').replaceWith($newTable);
+                                        attachCheckButtonEvents();
+                                    },
+                                    error: function(xhr, status, error) {
+                                        console.error('Error refreshing table:', xhr.responseText);
+                                        alert('Lỗi khi làm mới bảng: ' + xhr.responseText);
+                                    }
+                                });
+                            }, 2000); // 2000ms = 2 giây
                         }
                     },
                     error: function(xhr, status, error) {
-                        alert('Error occurred while checking attendance: ' + xhr.responseText);
+                        console.error('Check attendance error:', xhr.responseText);
+                        alert('Lỗi khi điểm danh: ' + xhr.responseText);
+                    },
+                    complete: function() {
+                        // Restore button state
+                        $(this).text(originalText).prop('disabled', false);
                     }
                 });
             });
+
+            // Hàm để gắn sự kiện cho các nút check-in/check-out
+            function attachCheckButtonEvents() {
+                $('.check-btn').off('click').click(function() {
+                    var id = $(this).data('id');
+                    var isCheckIn = $(this).data('type') === 'checkin';
+                    var $functionArea = $('#function-' + id);
+
+                    // Check if we have location permission
+                    if (!locationPermissionGranted) {
+                        alert('Vui lòng cho phép truy cập vị trí để điểm danh.');
+                        requestLocationPermission();
+                        return;
+                    }
+
+                    // Show loading state
+                    var originalText = $(this).text();
+                    $(this).text('Đang xử lý...').prop('disabled', true);
+
+                    $.ajax({
+                        url: '@Url.Action("CheckAttendance", "ClientAttendance")',
+                        type: 'POST',
+                        data: {
+                            idNXCH: id,
+                            isCheckIn: isCheckIn,
+                            latitude: currentLatitude,
+                            longitude: currentLongitude
+                        },
+                        success: function(result) {
+                            alert(result.message);
+                            if (result.success) {
+                                if (isCheckIn) {
+                                    $functionArea.html('<span class="text-success">Đã check in thành công</span>');
+                                } else {
+                                    $functionArea.html('<span class="text-success">Đã check out thành công</span>');
+                                }
+                                // Trì hoãn làm mới bảng 2 giây để hiển thị thông báo
+                                setTimeout(function() {
+                                    $.ajax({
+                                        url: '@Url.Action("Index", "ClientAttendance")',
+                                        type: 'GET',
+                                        success: function(data) {
+                                            var $newTable = $(data).find('.table');
+                                            $('.table').replaceWith($newTable);
+                                            attachCheckButtonEvents();
+                                        },
+                                        error: function(xhr, status, error) {
+                                            console.error('Error refreshing table:', xhr.responseText);
+                                            alert('Lỗi khi làm mới bảng: ' + xhr.responseText);
+                                        }
+                                    });
+                                }, 2000);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Check attendance error:', xhr.responseText);
+                            alert('Lỗi khi điểm danh: ' + xhr.responseText);
+                        },
+                        complete: function() {
+                            // Restore button state
+                            $(this).text(originalText).prop('disabled', false);
+                        }
+                    });
+                });
+            }
+
+            // Function to request location permission
+            function requestLocationPermission() {
+                if (navigator.geolocation) {
+                    $('#location-notification').show();
+
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            currentLatitude = position.coords.latitude;
+                            currentLongitude = position.coords.longitude;
+                            locationPermissionGranted = true;
+                            $('#location-notification').hide();
+                            console.log('Location obtained:', currentLatitude, currentLongitude);
+                        },
+                        function(error) {
+                            locationPermissionGranted = false;
+                            $('#location-notification').html('<strong>Lỗi:</strong> Không thể lấy vị trí. Lỗi: ' + getLocationErrorMessage(error.code));
+                            console.error('Location error:', error);
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 300000 // 5 minutes
+                        }
+                    );
+                } else {
+                    $('#location-notification').html('<strong>Lỗi:</strong> Trình duyệt không hỗ trợ định vị địa lý.');
+                    locationPermissionGranted = false;
+                }
+            }
+
+            // Function to get location error message
+            function getLocationErrorMessage(errorCode) {
+                switch(errorCode) {
+                    case 1:
+                        return 'Quyền truy cập vị trí bị từ chối';
+                    case 2:
+                        return 'Không thể xác định vị trí';
+                    case 3:
+                        return 'Hết thời gian chờ xác định vị trí';
+                    default:
+                        return 'Lỗi không xác định';
+                }
+            }
         });
     </script>
     <style>
         .function-area {
             display: inline-block;
         }
+
         .text-success {
             color: green;
             font-weight: bold;
+        }
+
+        #location-notification {
+            margin-bottom: 20px;
         }
     </style>
 }
