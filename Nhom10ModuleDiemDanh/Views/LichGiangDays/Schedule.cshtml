@@ -1,70 +1,60 @@
 ﻿@model List<Nhom10ModuleDiemDanh.Models.LichGiangDayViewModel>
+
 @{
     Layout = "~/Views/Shared/GiangVienLayout.cshtml";
     var today = DateTime.Today;
-
-    var httpRequest = ViewContext.HttpContext.Request;
-    var timeRange = httpRequest.Query["timeRange"].ToString();
-    var mode = httpRequest.Query["mode"].ToString();
-
-    // Lọc lịch hôm nay
-    var lichHomNay = Model.Where(x => x.NgayHoc.Date == today).ToList();
-
-    // var lichKhac = Model.Where(x => x.NgayHoc.Date != today).ToList();
-    var lichKhac = Model.Where(x => x.NgayHoc.Date > today).ToList();
-
-    if (timeRange == "7")
-    {
-        lichKhac = Model.Where(x => x.NgayHoc.Date > today && x.NgayHoc.Date <= today.AddDays(7)).ToList();
-    }
-    else if (timeRange == "14")
-    {
-        lichKhac = Model.Where(x => x.NgayHoc.Date > today && x.NgayHoc.Date <= today.AddDays(14)).ToList();
-    }
-
-
-    // Lọc theo hình thức học
-    if (mode == "Online" || mode == "Offline")
-    {
-        lichHomNay = lichHomNay.Where(x => x.HinhThuc == mode).ToList();
-        lichKhac = lichKhac.Where(x => x.HinhThuc == mode).ToList();
-    }
-
     int stt1 = 1;
     int stt2 = 1;
+
+    string GetThuTrongTuan(DateTime date)
+    {
+        return date.DayOfWeek switch
+        {
+            DayOfWeek.Monday => "Monday",
+            DayOfWeek.Tuesday => "Tuesday",
+            DayOfWeek.Wednesday => "Wednesday",
+            DayOfWeek.Thursday => "Thursday",
+            DayOfWeek.Friday => "Friday",
+            DayOfWeek.Saturday => "Saturday",
+            DayOfWeek.Sunday => "Sunday",
+            _ => ""
+        };
+    }
 }
 
+<h3 class="mb-3"><i class="bi bi-calendar3"></i> Lịch giảng dạy</h3>
 
-<h3 class="mb-3">📅 Lịch giảng dạy</h3>
-
-<!-- Bộ lọc -->
-<form method="get" asp-controller="LichGiangDays" asp-action="Schedule" class="card mb-4">
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <i class="bi bi-funnel-fill"></i> Bộ lọc lịch giảng dạy
+    </div>
     <div class="card-body row">
         <div class="col-md-4">
-            <label>Khoảng thời gian:</label>
-            <select class="form-control" name="timeRange">
-                <option value="7" selected="@(timeRange == "7" ? "selected" : null)">7 ngày tới</option>
-                <option value="14" selected="@(timeRange == "14" ? "selected" : null)">14 ngày tới</option>
-                <option value="all" selected="@(string.IsNullOrEmpty(timeRange) || timeRange == "all" ? "selected" : null)">Tất cả</option>
+            <label class="form-label fw-semibold">Khoảng thời gian:</label>
+            <select id="filterDays" class="form-select">
+                <option value="all">Tất cả</option>
+                <option value="7">7 ngày tới</option>
+                <option value="14">14 ngày tới</option>
             </select>
         </div>
         <div class="col-md-4">
-            <label>Hình thức học:</label>
-            <select class="form-control" name="mode">
-                <option value="all" selected="@(string.IsNullOrEmpty(mode) || mode == "all" ? "selected" : null)">Tất cả hình thức học</option>
-                <option value="Online" selected="@(mode == "Online" ? "selected" : null)">Online</option>
-                <option value="Offline" selected="@(mode == "Offline" ? "selected" : null)">Offline</option>
+            <label class="form-label fw-semibold">Hình thức học:</label>
+            <select id="filterMode" class="form-select">
+                <option value="all">Tất cả</option>
+                <option value="Online">Online</option>
+                <option value="Offline">Offline</option>
             </select>
         </div>
-        <div class="col-md-4 mt-4">
-            <button type="submit" class="btn btn-primary mt-2">Lọc</button>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="button" class="btn btn-primary mt-2" onclick="filterLichGiangDay()">Lọc</button>
         </div>
     </div>
-</form>
+</div>
+
 
 <!-- Lịch hôm nay -->
 <div class="card mb-4">
-    <div class="card-header bg-primary text-white">📌 Lịch dạy hôm nay</div>
+    <div class="card-header bg-info text-white"><i class="bi bi-pin-angle-fill"></i> Lịch dạy hôm nay</div>
     <div class="table-responsive">
         <table class="table table-bordered">
             <thead class="table-light">
@@ -82,7 +72,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in lichHomNay)
+                @foreach (var item in Model.Where(x => x.NgayHoc.Date == today))
                 {
                     <tr>
                         <td>@(stt1++)</td>
@@ -90,17 +80,8 @@
                         <td>@item.Ca</td>
                         <td class="text-warning">@item.DiemDanhTre</td>
                         <td>@item.TenNhomXuong</td>
-                        <td>@Html.Raw(item.DuAn)</td>
-                        <td>
-                            @if (string.IsNullOrEmpty(item.LinkOnline))
-                            {
-                                @item.DiaDiem
-                            }
-                            else
-                            {
-                                <span>-</span>
-                            }
-                        </td>
+                        <td>@item.DuAn</td>
+                        <td>@(string.IsNullOrEmpty(item.LinkOnline) ? item.DiaDiem : "-")</td>
                         <td>
                             @if (!string.IsNullOrEmpty(item.LinkOnline))
                             {
@@ -108,15 +89,10 @@
                             }
                             else
                             {
-
                                 <span>-</span>
                             }
                         </td>
-                        <td>
-                            <span class="badge bg-@(item.HinhThuc == "Online" ? "success" : "secondary")">
-                                @item.HinhThuc
-                            </span>
-                        </td>
+                        <td><span class="badge bg-@(item.HinhThuc == "Online" ? "success" : "secondary")">@item.HinhThuc</span></td>
                         <td><a href="#">Chi tiết</a></td>
                     </tr>
                 }
@@ -125,11 +101,11 @@
     </div>
 </div>
 
-<!-- Danh sách lịch giảng dạy -->
+<!-- Danh sách lịch giảng dạy khác -->
 <div class="card">
-    <div class="card-header bg-info text-white">📚 Danh sách lịch dạy</div>
+    <div class="card-header bg-info text-white"><i class="bi bi-journal-text"></i> Danh sách lịch dạy</div>
     <div class="table-responsive">
-        <table class="table table-bordered">
+        <table id="lichGiangDayTable" class="table table-bordered">
             <thead class="table-light">
                 <tr>
                     <th>#</th>
@@ -146,29 +122,18 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in lichKhac)
+                @foreach (var item in Model.Where(x => x.NgayHoc.Date > today).OrderBy(x => x.NgayHoc))
                 {
-                    <tr>
+                    <tr data-ngayhoc="@item.NgayHoc.ToString("yyyy-MM-dd")" data-hinhthuc="@item.HinhThuc">
                         <td>@(stt2++)</td>
-                        <td>@item.NgayHoc.ToString("dddd, dd/MM/yyyy")</td>
+                        <td>@GetThuTrongTuan(item.NgayHoc), @item.NgayHoc.ToString("dd/MM/yyyy")</td>
                         <td>@item.ThoiGian</td>
                         <td>@item.Ca</td>
                         <td class="text-warning">@item.DiemDanhTre</td>
                         <td>@item.TenNhomXuong</td>
-                        <td>@Html.Raw(item.DuAn)</td>
-                        <td>
-                            @if (string.IsNullOrEmpty(item.LinkOnline))
-                            {
-                                @item.DiaDiem
-                            }
-                            else
-                            {
-                                <span>-</span>
-                            }
-                        </td>
-                        <td>
-                            <span class="badge bg-@(item.HinhThuc == "Online" ? "success" : "secondary")">@item.HinhThuc</span>
-                        </td>
+                        <td>@item.DuAn</td>
+                        <td>@(string.IsNullOrEmpty(item.LinkOnline) ? item.DiaDiem : "-")</td>
+                        <td><span class="badge bg-@(item.HinhThuc == "Online" ? "success" : "secondary")">@item.HinhThuc</span></td>
                         <td>
                             @if (!string.IsNullOrEmpty(item.LinkOnline))
                             {
@@ -176,7 +141,6 @@
                             }
                             else
                             {
-
                                 <span>-</span>
                             }
                         </td>
@@ -187,3 +151,40 @@
         </table>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function filterLichGiangDay() {
+            const days = document.getElementById("filterDays").value;
+            const mode = document.getElementById("filterMode").value;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const rows = document.querySelectorAll("#lichGiangDayTable tbody tr");
+
+            rows.forEach(row => {
+                const ngayHocStr = row.getAttribute("data-ngayhoc");
+                const hinhThuc = row.getAttribute("data-hinhthuc");
+
+                const ngayHoc = new Date(ngayHocStr);
+                ngayHoc.setHours(0, 0, 0, 0);
+
+                const diffDays = (ngayHoc - today) / (1000 * 60 * 60 * 24);
+                let show = true;
+
+                if (days !== "all") {
+                    const maxDays = parseInt(days);
+                    if (diffDays < 0 || diffDays > maxDays) show = false;
+                }
+
+                if (mode !== "all" && hinhThuc !== mode) show = false;
+
+                row.style.display = show ? "" : "none";
+            });
+        }
+
+        document.getElementById("filterDays").addEventListener("change", filterLichGiangDay);
+        document.getElementById("filterMode").addEventListener("change", filterLichGiangDay);
+    </script>
+}
