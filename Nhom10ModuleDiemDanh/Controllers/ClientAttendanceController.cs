@@ -19,6 +19,14 @@ namespace Nhom10ModuleDiemDanh.Controllers
             _httpClient = httpClientFactory.CreateClient();
         }
 
+
+        [HttpPost]
+        public IActionResult SetSinhVienSession(Guid idSinhVien)
+        {
+            HttpContext.Session.SetString("IdSinhVien", idSinhVien.ToString());
+            return Ok();
+        }
+
         // Model to deserialize API response
         public class AttendanceResult
         {
@@ -85,6 +93,13 @@ namespace Nhom10ModuleDiemDanh.Controllers
         [HttpPost]
         public async Task<IActionResult> CheckAttendance(Guid idNXCH, bool isCheckIn, string ipAddress = null, double? latitude = null, double? longitude = null)
         {
+            var idSinhVienStr = HttpContext.Session.GetString("IdSinhVien");
+            if (string.IsNullOrEmpty(idSinhVienStr))
+            {
+                return BadRequest(new { success = false, message = "Session not found" });
+            }
+
+            var idSinhVien = Guid.Parse(idSinhVienStr);
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(email))
             {

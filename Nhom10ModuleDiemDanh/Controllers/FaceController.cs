@@ -109,52 +109,135 @@ namespace Nhom10ModuleDiemDanh.Controllers
 
         public IActionResult Attendance() => View();
 
+        // Sửa tất cả các chỗ trả về BadRequest hoặc Content
+        // thành JsonResult hoặc ObjectResult với object JSON
+
+
         [HttpPost]
         public async Task<IActionResult> RecognizeFace(IFormFile image)
         {
             if (image == null || image.Length == 0)
-                return BadRequest("Thiếu ảnh gửi lên.");
+                return BadRequest(new { message = "❌ Thiếu ảnh gửi lên." });
 
-            var sessionId = HttpContext.Session.GetString("IdSinhVien");
-            if (string.IsNullOrEmpty(sessionId))
-                return Unauthorized("❌ Bạn chưa đăng nhập.");
+            // 📁 Tạo file tạm có tên duy nhất
+            var tempFileName = $"{Guid.NewGuid()}.jpg";
+            var tempPath = Path.Combine(_env.WebRootPath, tempFileName);
 
-            var tempPath = Path.Combine(_env.WebRootPath, "temp.jpg");
-            using (var stream = new FileStream(tempPath, FileMode.Create))
-                await image.CopyToAsync(stream);
+            try
+            {
+                // 📥 Lưu ảnh vào file tạm
+                using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    await image.CopyToAsync(stream);
+                }
 
-            var modelPath = Path.Combine(_env.WebRootPath, "model.yml");
-            var mapPath = Path.Combine(_env.WebRootPath, "face-mapping.json");
+                // 🔍 Kiểm tra model và ánh xạ tồn tại
+                var modelPath = Path.Combine(_env.WebRootPath, "model.yml");
+                var mapPath = Path.Combine(_env.WebRootPath, "face-mapping.json");
 
-            if (!System.IO.File.Exists(modelPath) || !System.IO.File.Exists(mapPath))
-                return StatusCode(500, "❌ Thiếu model hoặc dữ liệu ánh xạ.");
+                if (!System.IO.File.Exists(modelPath) || !System.IO.File.Exists(mapPath))
+                    return StatusCode(500, new { message = "❌ Thiếu model hoặc dữ liệu ánh xạ." });
 
-            var recognizer = new LBPHFaceRecognizer();
-            recognizer.Read(modelPath);
+                // 📖 Tải model
+                var recognizer = new LBPHFaceRecognizer();
+                recognizer.Read(modelPath);
 
-            var testImage = new Image<Gray, byte>(tempPath).Resize(200, 200, Emgu.CV.CvEnum.Inter.Linear);
-            var result = recognizer.Predict(testImage);
+                // 🧠 Nhận diện khuôn mặt
+                using (var testImage = new Image<Gray, byte>(tempPath).Resize(200, 200, Emgu.CV.CvEnum.Inter.Linear))
+                {
+                    var result = recognizer.Predict(testImage);
+                    Console.WriteLine($"🔍 Dự đoán: Label={result.Label}, Distance={result.Distance}");
 
-            Console.WriteLine($"🔍 Dự đoán: Label={result.Label}, Distance={result.Distance}");
+                    if (result.Label == -1 || result.Distance > 75)
+                        return Ok(new { success = false, message = "❌ Không nhận diện được khuôn mặt." });
 
-            //if (result.Label == -1 || result.Distance > 60)
-            if (result.Label == -1 || result.Distance > 75)
-                    return Content("❌ Không nhận diện được khuôn mặt.");
+                    // 📑 Đọc file ánh xạ
+                    var json = System.IO.File.ReadAllText(mapPath);
+                    var labelMap = JsonConvert.DeserializeObject<Dictionary<int, string>>(json);
 
-            var json = System.IO.File.ReadAllText(mapPath);
-            var labelMap = JsonConvert.DeserializeObject<Dictionary<int, string>>(json);
+                    if (!labelMap.TryGetValue(result.Label, out var matchedId))
+                        return Ok(new { success = false, message = "❌ Không tìm thấy sinh viên phù hợp." });
 
-            if (!labelMap.TryGetValue(result.Label, out var matchedId))
-                return Content("❌ Không tìm thấy sinh viên phù hợp.");
+                    // 🧑‍🎓 Kiểm tra sinh viên đăng nhập
+                    var loggedInId = HttpContext.Session.GetString("IdSinhVien");
+                    if (string.IsNullOrEmpty(loggedInId))
+                        return Unauthorized(new { message = "⚠️ Chưa đăng nhập." });
 
-            // So sánh ID nhận diện được với ID trong session
-            if (matchedId != sessionId)
-                return Content("❌ Khuôn mặt không khớp với tài khoản đăng nhập.");
+                    if (matchedId != loggedInId)
+                        return Ok(new { success = false, message = "❌ Khuôn mặt không khớp với sinh viên đang đăng nhập." });
 
-            // Lưu điểm danh nếu khớp
-            var status = await LuuDiemDanhNoAuth(matchedId);
-            return Content($"✅ Điểm danh thành công cho sinh viên: {matchedId}\n{status}");
+                    // 💾 Lưu điểm danh
+                    var status = await LuuDiemDanhNoAuth(matchedId);
+
+                    return Ok(new
+                    {
+                        success = true,
+                        message = $"✅ Điểm danh thành công cho sinh viên: {matchedId}",
+                        log = status
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Lỗi nhận diện: {ex.Message}");
+                return StatusCode(500, new { message = "❌ Lỗi xử lý ảnh." });
+            }
+            finally
+            {
+                // 🧹 Xoá file tạm nếu có
+                if (System.IO.File.Exists(tempPath))
+                {
+                    try { System.IO.File.Delete(tempPath); } catch { /* ignore */ }
+                }
+            }
         }
+
+
+
+        //[HttpPost]
+        //public async Task<IActionResult> RecognizeFace(IFormFile image)
+        //{
+        //    if (image == null || image.Length == 0)
+        //        return BadRequest(new { message = "Thiếu ảnh gửi lên." });
+
+        //    var sessionId = HttpContext.Session.GetString("IdSinhVien");
+        //    if (string.IsNullOrEmpty(sessionId))
+        //        return Unauthorized(new { message = "❌ Bạn chưa đăng nhập." });
+
+        //    var tempPath = Path.Combine(_env.WebRootPath, "temp.jpg");
+        //    using (var stream = new FileStream(tempPath, FileMode.Create))
+        //        await image.CopyToAsync(stream);
+
+        //    var modelPath = Path.Combine(_env.WebRootPath, "model.yml");
+        //    var mapPath = Path.Combine(_env.WebRootPath, "face-mapping.json");
+
+        //    if (!System.IO.File.Exists(modelPath) || !System.IO.File.Exists(mapPath))
+        //        return StatusCode(500, new { message = "❌ Thiếu model hoặc dữ liệu ánh xạ." });
+
+        //    var recognizer = new LBPHFaceRecognizer();
+        //    recognizer.Read(modelPath);
+
+        //    var testImage = new Image<Gray, byte>(tempPath).Resize(200, 200, Emgu.CV.CvEnum.Inter.Linear);
+        //    var result = recognizer.Predict(testImage);
+
+        //    Console.WriteLine($"🔍 Dự đoán: Label={result.Label}, Distance={result.Distance}");
+
+        //    if (result.Label == -1 || result.Distance > 75)
+        //        return Ok(new { success = false, message = "❌ Không nhận diện được khuôn mặt." });
+
+        //    var json = System.IO.File.ReadAllText(mapPath);
+        //    var labelMap = JsonConvert.DeserializeObject<Dictionary<int, string>>(json);
+
+        //    if (!labelMap.TryGetValue(result.Label, out var matchedId))
+        //        return Ok(new { success = false, message = "❌ Không tìm thấy sinh viên phù hợp." });
+
+        //    if (matchedId != sessionId)
+        //        return Ok(new { success = false, message = "❌ Khuôn mặt không khớp với tài khoản đăng nhập." });
+
+        //    var status = await LuuDiemDanhNoAuth(matchedId);
+        //    return Ok(new { success = true, message = $"✅ Điểm danh thành công cho sinh viên: {matchedId}", log = status });
+        //}
+
 
 
         private async Task<string> LuuDiemDanhNoAuth(string idSinhVien)

@@ -114,8 +114,8 @@ namespace API.Controllers
                 .Include(k => k.CaHoc)
                 .FirstOrDefaultAsync(k => k.IdNXCH == dto.IdNXCH && k.TrangThai == 1);
 
-            if (khnxCaHoc == null || khnxCaHoc.CaHoc == null)
-                return NotFound("Session not found");
+            //if (khnxCaHoc == null || khnxCaHoc.CaHoc == null)
+            //    return NotFound("Session not found");
 
             // Get location information for this session
             var locationInfo = await (from khnx in _context.KHNXCaHocs
@@ -128,7 +128,17 @@ namespace API.Controllers
                                       select new { diaDiem = diaDiemEntity, coSo = coSoEntity }).FirstOrDefaultAsync();
 
             if (locationInfo?.diaDiem == null)
+            {
+                Console.WriteLine($"Không tìm thấy location cho IdNXCH: {dto.IdNXCH}");
+                var debug = await (from khnx in _context.KHNXCaHocs
+                                   where khnx.IdNXCH == dto.IdNXCH
+                                   select new { khnx.IdKHNX }).FirstOrDefaultAsync();
+
+                Console.WriteLine($"Debug IdKHNX: {debug?.IdKHNX}");
                 return BadRequest("Location information not found for this session");
+            }
+            //if (locationInfo?.diaDiem == null)
+            //    return BadRequest("Location information not found for this session");
 
             var diaDiem = locationInfo.diaDiem;
             var coSo = locationInfo.coSo;
