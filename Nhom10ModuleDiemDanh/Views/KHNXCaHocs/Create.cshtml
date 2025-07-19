@@ -50,9 +50,14 @@
                 <span asp-validation-for="LinkOnline" class="text-danger"></span>
             </div>
 
-            <div class="col-md-6">
+            @*<div class="col-md-6">
                 <label asp-for="DiemDanhTre" class="form-label">Điểm danh trễ</label>
                 <input asp-for="DiemDanhTre" class="form-control" placeholder="VD: 5 phút, 10 phút..." />
+                <span asp-validation-for="DiemDanhTre" class="text-danger"></span>
+            </div>*@
+            <div class="col-md-6">
+                <label asp-for="DiemDanhTre" class="form-label">Điểm danh trễ (phút)</label>
+                <input asp-for="DiemDanhTre" class="form-control" type="number" min="0" placeholder="VD: 5, 10..." />
                 <span asp-validation-for="DiemDanhTre" class="text-danger"></span>
             </div>
 
