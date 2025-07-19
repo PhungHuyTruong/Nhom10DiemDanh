@@ -176,7 +176,7 @@
 
                                 }
                             </td>
-                            <td>@item.DiemDanhTre</td>
+                            <td>@item.DiemDanhTre phút</td>
                             @{
                                 var now = DateTime.Now;
                                 DateTime? start = null;
@@ -280,9 +280,13 @@
                                 <option value="">Chọn tên ca học</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                       @* <div class="col-md-6">
                             <label class="form-label" style="color: black">Điểm danh trễ</label>
                             <input name="DiemDanhTre" class="form-control" value="15 phút" readonly />
+                        </div>*@
+                        <div class="col-md-6">
+                            <label class="form-label" style="color: black">Điểm danh trễ (phút)</label>
+                            <input name="DiemDanhTre" class="form-control" value="15" type="number" min="0" required />
                         </div>
                         @*<div class="col-md-6">
                             <label class="form-label">Trạng thái</label>

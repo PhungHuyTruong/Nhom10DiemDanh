@@ -97,6 +97,7 @@ namespace API.Controllers
             kHNXCaHoc.IdNXCH = Guid.NewGuid();
             kHNXCaHoc.NgayTao = DateTime.Now;
             kHNXCaHoc.NgayCapNhat = DateTime.Now;
+            kHNXCaHoc.TrangThai = 1; // <-- Thêm dòng này để mặc định là 1
 
             _context.KHNXCaHocs.Add(kHNXCaHoc);
 

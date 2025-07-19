@@ -232,7 +232,7 @@ namespace API.Controllers
                 IdDiemDanh = diemDanh.IdDiemDanh,
                 IdNXCH = khnxCaHoc.IdNXCH,
                 ThoiGianDiemDanh = now,
-                NoiDungBuoiHoc = "Buổi học thực hành",
+                NoiDungBuoiHoc = khnxCaHoc.NoiDung ?? "Không có mô tả",
                 HinhThuc = "Online",
                 DiaDiem = diaDiem.TenDiaDiem,
                 GhiChu = isLate ? "Late" : "On-time",

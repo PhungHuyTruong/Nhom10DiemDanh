@@ -11,9 +11,11 @@
             <th>Ca học</th>
             <th>Điểm danh muộn tối đa (phút)</th>
             <th>Nội dung</th>
+            <th>Check in</th>
+            <th>Check out</th>
             <th>Trạng thái đi học</th>
-            <th>Nhóm xưởng</th>
-            <th>Học kỳ</th>
+            @* <th>Nhóm xưởng</th> *@
+            @* <th>Học kỳ</th> *@
         </tr>
     </thead>
     <tbody>
@@ -24,15 +26,39 @@
             {
                 <tr>
                     <td>@stt</td>
-                    <td>@item.NgayHoc</td>
-                    <td>@item.CaHoc</td>
-                    <td>@item.DiemDanhMuonToiDa</td>
-                    <td>@item.NoiDung</td>
                     <td>
-                        @(item.TrangThaiDiHoc == 1 ? "Có mặt" : "Vắng mặt")
+                        @{
+                            DateTime dt;
+                            string showDate = item.NgayHoc?.ToString();
+                            if (DateTime.TryParse(item.NgayHoc?.ToString(), out dt))
+                            {
+                                var today = DateTime.Today;
+                                string prefix = "";
+                                if (dt.Date == today)
+                                    prefix = "Hôm nay - ";
+                                else if (dt.Date == today.AddDays(-1))
+                                    prefix = "Hôm qua - ";
+                                else
+                                    prefix = dt.ToString("dddd", new System.Globalization.CultureInfo("vi-VN")) + " - ";
+
+                                // Ghép giờ bắt đầu - kết thúc
+                                string gioStr = "";
+                                if (!string.IsNullOrEmpty(item.GioBatDau) && !string.IsNullOrEmpty(item.GioKetThuc))
+                                    gioStr = $" {item.GioBatDau} - {item.GioKetThuc}";
+
+                                showDate = prefix + dt.ToString("dd/MM/yyyy") + gioStr;
+                            }
+                        }
+                        @showDate
                     </td>
-                    <td>@item.NhomXuong</td>
-                    <td>@item.HocKy</td>
+                    <td>@item.CaHoc</td>
+                    <td>@(item.DiemDanhMuonToiDa) phút</td>
+                    <td>@item.NoiDung</td>
+                    <td>@item.CheckIn</td>
+                    <td>@item.CheckOut</td>
+                    <td>@item.TrangThai</td>
+                    @* <td>@item.NhomXuong</td> *@
+                    @* <td>@item.HocKy</td> *@
                 </tr>
                 stt++;
             }

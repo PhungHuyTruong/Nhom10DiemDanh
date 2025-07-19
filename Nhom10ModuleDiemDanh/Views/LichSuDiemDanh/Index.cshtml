@@ -50,9 +50,9 @@
                 <button class="btn btn-outline-secondary btn-sm" id="btnExportPDF">
                     <i class="fa fa-file-pdf me-1"></i> Xuất PDF
                 </button>
-                <a class="btn btn-outline-secondary btn-sm" id="btnDownloadTemplate">
-                    <i class="fa fa-download me-1"></i> Tải xuống template
-                </a>
+                @* <a class="btn btn-outline-secondary btn-sm" id="btnDownloadTemplate"> *@
+                @*     <i class="fa fa-download me-1"></i> Tải xuống template *@
+                @* </a> *@
             </div>
         </div>
     </div>
@@ -65,11 +65,13 @@
                     <th>STT</th>
                     <th>Ngày học</th>
                     <th>Ca học</th>
-                    <th>Điểm danh muộn tối đa (phút)</th>
+                    <th>Điểm danh muộn</th>
                     <th>Nội dung</th>
-                    <th>Trạng thái đi học</th>
-                    <th>Nhóm xưởng</th>
-                    <th>Học kỳ</th>
+                    <th>Check in</th>
+                    <th>Check out</th>
+                    <th>Trạng thái</th>
+                    @* <th>Nhóm xưởng</th> *@
+                    @* <th>Học kỳ</th> *@
                 </tr>
             </thead>
             <tbody>
@@ -77,6 +79,25 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Modal hiển thị nội dung -->
+    <div class="modal fade" id="noiDungModal" tabindex="-1" aria-labelledby="noiDungModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="noiDungModalLabel">Nội dung buổi học</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="noiDungContent" class="text-dark"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 @section Scripts {
@@ -111,36 +132,130 @@
             }
 
             // Hàm render dữ liệu ra bảng
-            function renderTable(data) {
-                var tbody = $('#lichSuDiemDanhTable tbody');
-                tbody.empty();
-                if (!data || data.length === 0) {
-                    tbody.append('<tr><td colspan="8" class="text-center">Không có dữ liệu</td></tr>');
-                    return;
-                }
-                $.each(data, function (i, item) {
-                    var trangThai = item.trangThaiDiHoc === 1 ?
-                        '<span class="badge bg-success">Có mặt</span>' :
-                        '<span class="badge bg-danger">Vắng mặt</span>';
-                    var row = `<tr>
-                        <td>${i + 1}</td>
-                        <td>${formatDate(item.ngayHoc)}</td>
-                        <td>${item.caHoc}</td>
-                        <td>${item.diemDanhMuonToiDa}</td>
-                        <td>${item.noiDung || ''}</td>
-                        <td>${trangThai}</td>
-                        <td>${item.nhomXuong}</td>
-                        <td>${item.hocKy}</td>
-                    </tr>`;
-                    tbody.append(row);
-                });
+            // function renderTable(data) {
+            //     var tbody = $('#lichSuDiemDanhTable tbody');
+            //     tbody.empty();
+            //     if (!data || data.length === 0) {
+            //         tbody.append('<tr><td colspan="8" class="text-center">Không có dữ liệu</td></tr>');
+            //         return;
+            //     }
+            //     $.each(data, function (i, item) {
+            //         var trangThai = item.trangThaiDiHoc === 1 ?
+            //             '<span class="badge bg-success">Có mặt</span>' :
+            //             '<span class="badge bg-danger">Vắng mặt</span>';
+            //         var row = `<tr>
+            //             <td>${i + 1}</td>
+            //             <td>${formatDate(item.ngayHoc)}</td>
+            //             <td>${item.caHoc}</td>
+            //             <td>${item.diemDanhMuonToiDa}</td>
+            //             <td>${item.noiDung || ''}</td>
+            //             <td>${item.checkIn ? formatDate(item.checkIn) : ''}</td>
+            //             <td>${item.checkOut ? formatDate(item.checkOut) : ''}</td>
+            //             <td>${trangThai}</td>
+            //             <td>${item.nhomXuong}</td>
+            //             <td>${item.hocKy}</td>
+            //         </tr>`;
+            //         tbody.append(row);
+            //     });
+            // }
+
+                                   function formatNgayHoc(ngayHocStr, gioBatDau, gioKetThuc) {
+            var d = new Date(ngayHocStr);
+            if (isNaN(d.getTime())) return ngayHocStr;
+
+            var thu = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"][d.getDay()];
+            var ngay = d.getDate().toString().padStart(2, '0');
+            var thang = (d.getMonth() + 1).toString().padStart(2, '0');
+            var nam = d.getFullYear();
+
+            // Ghép giờ bắt đầu - kết thúc
+            var gioStr = "";
+            if (gioBatDau && gioKetThuc) {
+                gioStr = ` ${gioBatDau} - ${gioKetThuc}`;
             }
 
+            var today = new Date();
+            today.setHours(0,0,0,0);
+            var d2 = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            var diff = (d2 - today) / (1000*60*60*24);
+
+            if (diff === 0) return `Hôm nay - ${ngay}/${thang}/${nam}${gioStr}`;
+            if (diff === -1) return `Hôm qua - ${ngay}/${thang}/${nam}${gioStr}`;
+            return `${thu} - ${ngay}/${thang}/${nam}${gioStr}`;
+        }
+
+                    function renderTable(data) {
+            var tbody = $('#lichSuDiemDanhTable tbody');
+            tbody.empty();
+            if (!data || data.length === 0) {
+                tbody.append('<tr><td colspan="10" class="text-center">Không có dữ liệu</td></tr>');
+                return;
+            }
+            $.each(data, function (i, item) {
+                // Badge cho ca học
+                var caHocBadge = item.caHoc.split(',').map(ca =>
+                    `<span class="badge rounded-pill bg-light text-primary border border-primary me-1">${ca.trim()}</span>`
+                ).join(' ');
+
+                // Badge cho điểm danh muộn
+                var diemDanhBadge = `<span class="badge rounded-pill bg-warning text-dark border border-warning"><i class="fa fa-clock me-1"></i>${item.diemDanhMuonToiDa}</span>`;
+
+                // Badge cho trạng thái
+                var trangThaiBadge = '';
+                if (item.trangThai === "Có mặt") trangThaiBadge = '<span class="badge bg-success">● Có mặt</span>';
+                else if (item.trangThai === "Vắng mặt") trangThaiBadge = '<span class="badge bg-danger">● Vắng mặt</span>';
+                else if (item.trangThai === "Đang diễn ra") trangThaiBadge = '<span class="badge bg-secondary">● Đang diễn ra</span>';
+                else if (item.trangThai === "Đã check-in") trangThaiBadge = '<span class="badge bg-primary">● Đã check-in</span>';
+                else if (item.trangThai === "Đã check-out") trangThaiBadge = '<span class="badge bg-info text-dark">● Đã check-out</span>';
+                else trangThaiBadge = `<span class="badge bg-light text-dark">${item.trangThai}</span>`;
+
+                // Icon cho checkin/checkout
+                var checkIn = item.checkIn && !item.checkIn.includes("Chưa") ?
+                    `<span class="text-success">●</span> ${item.checkIn}` :
+                    `<span class="text-warning">●</span> ${item.checkIn}`;
+                var checkOut = item.checkOut && !item.checkOut.includes("Chưa") ?
+                    `<span class="text-success">●</span> ${item.checkOut}` :
+                    `<span class="text-danger">●</span> ${item.checkOut}`;
+
+                var row = `<tr>
+                    <td>${i + 1}</td>
+                           <td class="text-start">${
+            formatNgayHoc(
+                item.ngayHoc,
+                item.gioBatDau || "", // hoặc item.caHocObj?.thoiGianBatDau nếu backend trả về
+                item.gioKetThuc || "" // hoặc item.caHocObj?.thoiGianKetThuc nếu backend trả về
+            )
+        }</td>
+                    <td>${caHocBadge}</td>
+                    <td>${diemDanhBadge}</td>
+                    <td class="text-start">
+                        ${item.noiDung && item.noiDung !== 'Không có mô tả' ?
+                            `<button type="button" class="btn btn-link p-0 text-primary text-decoration-none" onclick="showNoiDung('${item.noiDung.replace(/'/g, "\\'")}')">Xem chi tiết</button>` :
+                            item.noiDung || 'Không có mô tả'
+                        }
+                    </td>
+                    <td>${checkIn}</td>
+                    <td>${checkOut}</td>
+                    <td>${trangThaiBadge}</td>
+                    @*<td>${item.nhomXuong}</td>
+                    <td>${item.hocKy}</td>*@
+                </tr>`;
+                tbody.append(row);
+            });
+        }
+
             // Hàm format ngày
+            // function formatDate(dateStr) {
+            //     var d = new Date(dateStr);
+            //     return d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            // }
+
             function formatDate(dateStr) {
+                if (!dateStr || dateStr === "0001-01-01T00:00:00") return "";
                 var d = new Date(dateStr);
                 return d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
             }
+
 
             // Sự kiện lọc
             $('#btnFilter').click(function () {
@@ -197,6 +312,16 @@
 
             // Gọi lần đầu khi load trang
             loadLichSuDiemDanh();
+
+            
         });
+
+            // Hàm hiển thị modal nội dung
+            function showNoiDung(noiDung) {
+                document.getElementById('noiDungContent').textContent = noiDung;
+                var modal = new bootstrap.Modal(document.getElementById('noiDungModal'));
+                modal.show();
+            }
+
     </script>
 }
