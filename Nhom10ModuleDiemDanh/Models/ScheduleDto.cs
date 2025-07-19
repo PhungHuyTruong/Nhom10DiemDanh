@@ -26,5 +26,7 @@
 
         public bool CanCheckOut { get; set; }
         public string Status { get; set; }
+
+        public Guid IdSinhVien { get; set; }
     }
 }

@@ -15,5 +15,6 @@
         public string Status { get; set; }
         public bool HasCheckedIn { get; set; }
         public bool HasCheckedOut { get; set; }
+        public Guid IdSinhVien { get; set; }
     }
 }
