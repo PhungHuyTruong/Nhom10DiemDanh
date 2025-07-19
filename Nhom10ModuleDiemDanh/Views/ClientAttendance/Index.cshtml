@@ -53,9 +53,10 @@
                             }
                             @if (item.CanCheckOut)
                             {
-                                <button class="btn btn-primary check-btn"
+                                <button class="btn btn-danger check-attendance"
                                         data-id="@item.IdNXCH"
-                                        data-type="checkout">
+                                        data-student-id="@item.IdSinhVien"
+                                        data-is-check-in="false">
                                     Check Out
                                 </button>
                             }
@@ -67,9 +68,33 @@
     </tbody>
 </table>
 
+<!-- Face Recognition Modal -->
+<div class="modal fade" id="faceModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Điểm danh bằng khuôn mặt</h5>
+            </div>
+            <div class="modal-body text-center">
+                <video id="videoInput" autoplay muted width="720" height="560"></video>
+                <div id="status" class="mt-2 text-danger"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="~/js/face.js" asp-append-version="true"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+
     <script>
+
         // Global variables to store location
         var currentLatitude = null;
         var currentLongitude = null;
@@ -78,133 +103,181 @@
         $(document).ready(function() {
             // Request location permission on page load
             requestLocationPermission();
+            attachCheckButtonEvents()
 
-            $('.check-btn').click(function() {
-                var id = $(this).data('id');
-                var isCheckIn = $(this).data('type') === 'checkin';
+                    $('.check-btn').click(function () {
+            var id = $(this).data('id');
+            var isCheckIn = $(this).data('type') === 'checkin';
+            var $functionArea = $('#function-' + id);
+            var $btn = $(this);
+            var originalText = $btn.text();
+
+            if (!locationPermissionGranted) {
+                alert('Vui lòng cho phép truy cập vị trí để điểm danh.');
+                requestLocationPermission();
+            attachCheckButtonEvents()
+                return;
+            }
+
+            // Lưu lại thông tin để dùng sau khi nhận diện khuôn mặt
+            window.currentCheckInfo = {
+                idNXCH: id,
+                isCheckIn: isCheckIn,
+                latitude: currentLatitude,
+                longitude: currentLongitude,
+                $functionArea: $functionArea,
+                $btn: $btn,
+                originalText: originalText
+            };
+
+            // Mở modal và bắt đầu nhận diện
+            $('#faceModal').modal('show');
+                            initAttendance("/Face/RecognizeFace", function (matched) {
+            if (!matched) {
+                alert("❌ Không nhận diện được khuôn mặt phù hợp.");
+                $btn.text(originalText).prop('disabled', false);
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("CheckAttendance", "ClientAttendance")',
+                type: 'POST',
+                data: {
+                    idNXCH: window.currentCheckInfo.idNXCH,
+                    isCheckIn: window.currentCheckInfo.isCheckIn,
+                    latitude: window.currentCheckInfo.latitude,
+                    longitude: window.currentCheckInfo.longitude
+                },
+                success: function (result) {
+                    alert(result.message);
+                    if (result.success) {
+                        $('#faceModal').modal('hide'); // Đóng modal khi thành công
+
+                        let msg = window.currentCheckInfo.isCheckIn
+                            ? "Đã check in thành công"
+                            : "Đã check out thành công";
+                        window.currentCheckInfo.$functionArea.html(`<span class="text-success">${msg}</span>`);
+
+                        setTimeout(function () {
+                            $.ajax({
+                                url: '@Url.Action("Index", "ClientAttendance")',
+                                type: 'GET',
+                                success: function (data) {
+                                    var $newTable = $(data).find('.table');
+                                    $('.table').replaceWith($newTable);
+                                    attachCheckButtonEvents();
+                                },
+                                error: function (xhr) {
+                                    alert('Lỗi khi làm mới bảng: ' + xhr.responseText);
+                                }
+                            });
+                        }, 2000);
+                    }
+                },
+                error: function (xhr) {
+                    alert('Lỗi khi điểm danh: ' + xhr.responseText);
+                },
+                complete: function () {
+                    window.currentCheckInfo.$btn.text(window.currentCheckInfo.originalText).prop('disabled', false);
+                }
+            });
+        });
+
+
+        });
+
+
+            // Hàm để gắn sự kiện cho các nút check-in/check-out
+                    function attachCheckButtonEvents() {
+            $('.check-btn, .check-attendance').click(function () {
+                var $btn = $(this);
+                var id = $btn.data("id");
+                var isCheckIn = $btn.hasClass("check-btn"); // phân biệt nút nào
                 var $functionArea = $('#function-' + id);
+                var originalText = $btn.text();
 
-                // Check if we have location permission
                 if (!locationPermissionGranted) {
                     alert('Vui lòng cho phép truy cập vị trí để điểm danh.');
                     requestLocationPermission();
                     return;
                 }
 
-                // Show loading state
-                var originalText = $(this).text();
-                $(this).text('Đang xử lý...').prop('disabled', true);
+                $btn.text("Đang xử lý...").prop("disabled", true);
 
-                $.ajax({
-                    url: '@Url.Action("CheckAttendance", "ClientAttendance")',
-                    type: 'POST',
-                    data: {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    let currentLatitude = position.coords.latitude;
+                    let currentLongitude = position.coords.longitude;
+
+                    window.currentCheckInfo = {
                         idNXCH: id,
                         isCheckIn: isCheckIn,
                         latitude: currentLatitude,
-                        longitude: currentLongitude
-                    },
-                    success: function(result) {
-                        alert(result.message);
-                        if (result.success) {
-                            if (isCheckIn) {
-                                $functionArea.html('<span class="text-success">Đã check in thành công</span>');
-                            } else {
-                                $functionArea.html('<span class="text-success">Đã check out thành công</span>');
-                            }
-                            // Trì hoãn làm mới bảng 2 giây để hiển thị thông báo
-                            setTimeout(function() {
-                                $.ajax({
-                                    url: '@Url.Action("Index", "ClientAttendance")',
-                                    type: 'GET',
-                                    success: function(data) {
-                                        var $newTable = $(data).find('.table');
-                                        $('.table').replaceWith($newTable);
-                                        attachCheckButtonEvents();
-                                    },
-                                    error: function(xhr, status, error) {
-                                        console.error('Error refreshing table:', xhr.responseText);
-                                        alert('Lỗi khi làm mới bảng: ' + xhr.responseText);
-                                    }
-                                });
-                            }, 2000); // 2000ms = 2 giây
+                        longitude: currentLongitude,
+                        $functionArea: $functionArea,
+                        $btn: $btn,
+                        originalText: originalText
+                    };
+
+                    // Mở modal nhận diện
+                    $('#faceModal').modal('show');
+
+                    // Gọi nhận diện khuôn mặt
+                    initAttendance('/Face/RecognizeFace', function (matched) {
+                        if (!matched) {
+                            alert("❌ Không nhận diện được khuôn mặt phù hợp.");
+                            $btn.text(originalText).prop("disabled", false);
+                            return;
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Check attendance error:', xhr.responseText);
-                        alert('Lỗi khi điểm danh: ' + xhr.responseText);
-                    },
-                    complete: function() {
-                        // Restore button state
-                        $(this).text(originalText).prop('disabled', false);
-                    }
+
+                        // Nếu nhận diện đúng thì gửi API điểm danh
+                        $.ajax({
+                            url: '/ClientAttendance/CheckAttendance',
+                            type: 'POST',
+                            data: {
+                                idNXCH: id,
+                                isCheckIn: isCheckIn,
+                                latitude: currentLatitude,
+                                longitude: currentLongitude
+                            },
+                            success: function (result) {
+                                alert(result.message);
+                                if (result.success) {
+                                    $('#faceModal').modal('hide');
+                                    let msg = isCheckIn ? "Đã check in thành công" : "Đã check out thành công";
+                                    $functionArea.html(`<span class="text-success">${msg}</span>`);
+
+                                    // Làm mới bảng
+                                    setTimeout(function () {
+                                        $.ajax({
+                                            url: '/ClientAttendance',
+                                            type: 'GET',
+                                            success: function (data) {
+                                                var $newTable = $(data).find('.table');
+                                                $('.table').replaceWith($newTable);
+                                                attachCheckButtonEvents(); // Gắn lại sự kiện sau khi reload
+                                            },
+                                            error: function (xhr) {
+                                                alert('Lỗi khi làm mới bảng: ' + xhr.responseText);
+                                            }
+                                        });
+                                    }, 2000);
+                                }
+                            },
+                            error: function (xhr) {
+                                alert('Lỗi khi điểm danh: ' + xhr.responseText);
+                            },
+                            complete: function () {
+                                $btn.text(originalText).prop('disabled', false);
+                            }
+                        });
+                    });
+                }, function () {
+                    alert("Không thể lấy vị trí.");
+                    $btn.text(originalText).prop("disabled", false);
                 });
             });
+        }
 
-            // Hàm để gắn sự kiện cho các nút check-in/check-out
-            function attachCheckButtonEvents() {
-                $('.check-btn').off('click').click(function() {
-                    var id = $(this).data('id');
-                    var isCheckIn = $(this).data('type') === 'checkin';
-                    var $functionArea = $('#function-' + id);
-
-                    // Check if we have location permission
-                    if (!locationPermissionGranted) {
-                        alert('Vui lòng cho phép truy cập vị trí để điểm danh.');
-                        requestLocationPermission();
-                        return;
-                    }
-
-                    // Show loading state
-                    var originalText = $(this).text();
-                    $(this).text('Đang xử lý...').prop('disabled', true);
-
-                    $.ajax({
-                        url: '@Url.Action("CheckAttendance", "ClientAttendance")',
-                        type: 'POST',
-                        data: {
-                            idNXCH: id,
-                            isCheckIn: isCheckIn,
-                            latitude: currentLatitude,
-                            longitude: currentLongitude
-                        },
-                        success: function(result) {
-                            alert(result.message);
-                            if (result.success) {
-                                if (isCheckIn) {
-                                    $functionArea.html('<span class="text-success">Đã check in thành công</span>');
-                                } else {
-                                    $functionArea.html('<span class="text-success">Đã check out thành công</span>');
-                                }
-                                // Trì hoãn làm mới bảng 2 giây để hiển thị thông báo
-                                setTimeout(function() {
-                                    $.ajax({
-                                        url: '@Url.Action("Index", "ClientAttendance")',
-                                        type: 'GET',
-                                        success: function(data) {
-                                            var $newTable = $(data).find('.table');
-                                            $('.table').replaceWith($newTable);
-                                            attachCheckButtonEvents();
-                                        },
-                                        error: function(xhr, status, error) {
-                                            console.error('Error refreshing table:', xhr.responseText);
-                                            alert('Lỗi khi làm mới bảng: ' + xhr.responseText);
-                                        }
-                                    });
-                                }, 2000);
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('Check attendance error:', xhr.responseText);
-                            alert('Lỗi khi điểm danh: ' + xhr.responseText);
-                        },
-                        complete: function() {
-                            // Restore button state
-                            $(this).text(originalText).prop('disabled', false);
-                        }
-                    });
-                });
-            }
 
             // Function to request location permission
             function requestLocationPermission() {

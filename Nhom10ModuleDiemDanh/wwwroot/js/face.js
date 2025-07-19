@@ -1,140 +1,148 @@
-﻿window.initAttendance = async function (recognizeUrl) {
-    console.log("🟢 Hàm initAttendance đã được gọi với URL:", recognizeUrl);
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const statusDiv = document.getElementById('status');
-    const resultDiv = document.getElementById('result');
+﻿async function loadModels() {
+    const MODEL_URL = '/models';
+    await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
+    ]);
+    console.log('✅ Models loaded');
+}
 
-    await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-    await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
-    console.log("✅ Models loaded for attendance");
+// === ATTENDANCE ===
+async function initAttendance(apiUrl, callback) {
+    console.log('🟢 Hàm initAttendance đã được gọi với URL:', apiUrl);
+
+    const video = document.getElementById('videoInput');
+    const statusDiv = document.getElementById('status');
+    const studentId = document.getElementById('studentId')?.value;
+
+    console.log('🟢 studentId:', studentId);
+
+    await loadModels();
 
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
         video.srcObject = stream;
-        await new Promise(resolve => video.onloadedmetadata = resolve);
     } catch (err) {
-        statusDiv.innerText = "🚫 Không thể mở camera: " + err.message;
+        console.error('❌ Lỗi khi truy cập camera:', err);
+        statusDiv.innerText = 'Không thể truy cập camera';
+        if (callback) callback(false);
         return;
     }
 
-    const detectOptions = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+    // Đợi video load dữ liệu xong (tránh lỗi canvas)
+    await new Promise(resolve => {
+        if (video.readyState >= 3) {
+            resolve();
+        } else {
+            video.addEventListener('loadeddata', () => resolve(), { once: true });
+        }
+    });
 
-    const loop = async () => {
-        const detection = await faceapi.detectSingleFace(video, detectOptions);
+    // Xóa canvas cũ nếu có
+    const oldCanvas = document.querySelector('canvas');
+    if (oldCanvas) oldCanvas.remove();
+
+    // Tạo canvas sau khi video đã load
+    const canvas = faceapi.createCanvasFromMedia(video);
+    document.body.appendChild(canvas);
+    const displaySize = { width: video.width, height: video.height };
+    faceapi.matchDimensions(canvas, displaySize);
+
+    video.addEventListener('play', async () => {
+        await new Promise(r => setTimeout(r, 3000)); // đợi camera ổn định
+
+        const detection = await faceapi
+            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.4 }))
+            .withFaceLandmarks();
 
         if (!detection) {
-            statusDiv.innerText = "🔍 Không thấy khuôn mặt.";
-            setTimeout(loop, 1000);
+            statusDiv.innerText = '❌ Không phát hiện khuôn mặt nào!';
+            if (callback) callback(false);
             return;
         }
 
-        statusDiv.innerText = "📸 Đang nhận diện...";
+        const resizedDetections = faceapi.resizeResults(detection, displaySize);
+        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        faceapi.draw.drawDetections(canvas, resizedDetections);
 
-        const ctx = canvas.getContext('2d');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // Chụp ảnh và gửi API
+        const faceCanvas = document.createElement('canvas');
+        faceCanvas.width = video.videoWidth;
+        faceCanvas.height = video.videoHeight;
+        faceCanvas.getContext('2d').drawImage(video, 0, 0, faceCanvas.width, faceCanvas.height);
+        const imageBlob = await new Promise(resolve => faceCanvas.toBlob(resolve, 'image/jpeg'));
 
-        canvas.toBlob(async (blob) => {
-            if (!blob) {
-                resultDiv.innerText = "❌ Không thể tạo ảnh.";
+        const formData = new FormData();
+        formData.append('image', imageBlob, 'capture.jpg');
+        if (studentId) formData.append('studentId', studentId);
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                alert("❌ Không nhận diện được khuôn mặt phù hợp.");
+                if (callback) callback(false);
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('image', blob);
+            alert(result.message);
+            if (callback) callback(true);
+        } catch (err) {
+            console.error('❌ Lỗi gửi request:', err);
+            alert('Lỗi gửi dữ liệu điểm danh.');
+            if (callback) callback(false);
+        }
+    }, { once: true });
 
-            try {
-                const res = await fetch(recognizeUrl, {
-                    method: 'POST',
-                    body: formData
-                });
+    // Bắt đầu chạy video
+    video.play();
+}
 
-                const text = await res.text();
-                resultDiv.innerText = text;
 
-                if (res.ok && text.includes("✅")) {
-                    const match = text.match(/sinh viên: (\-?\d+)/);
-                    if (match && match[1]) {
-                        const idHash = match[1];
-                        const res2 = await fetch('/DiemDanh/LuuDiemDanh?idHash=' + idHash, { method: 'POST' });
-                        const msg = await res2.text();
-                        console.log("✅ Đã điểm danh:", msg);
+$('#faceModal').on('shown.bs.modal', function () {
+    initAttendance('/Face/RecognizeFace');
+});
 
-                        // ✅ Dừng vòng lặp tại đây
-                        statusDiv.innerText = "🎉 Đã điểm danh xong!";
-                        return;
-                    }
-                }
-
-                // ❌ Nếu không thành công thì tiếp tục vòng lặp
-                setTimeout(loop, 3000);
-            } catch (err) {
-                resultDiv.innerText = "❌ Lỗi nhận diện: " + err.message;
-                setTimeout(loop, 3000);
-            }
-        }, 'image/jpeg');
-    };
-
-    loop();
-};
-
+// === REGISTRATION ===
 window.addEventListener('DOMContentLoaded', () => {
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const statusDiv = document.getElementById('status');
     const instruction = document.getElementById('instruction');
+    const idSinhVien = document.getElementById('video')?.dataset?.sinhvien || ''; // assume passed via data-sinhvien
+
     let capturedCount = 0;
     const maxCaptures = 5;
-
-    const idSinhVien = '@ViewBag.IdSinhVien';
     const saveUrl = '/Face/SaveFace';
-
     const directions = [
-        "Hãy nhìn THẲNG vào camera",
-        "Quay mặt sang TRÁI",
-        "Quay mặt sang PHẢI",
-        "Nhìn LÊN một chút",
-        "Nhìn XUỐNG nhẹ"
+        'Hãy nhìn THẲNG vào camera',
+        'Quay mặt sang TRÁI',
+        'Quay mặt sang PHẢI',
+        'Nhìn LÊN một chút',
+        'Nhìn XUỐNG nhẹ'
     ];
-    const requiredYaw = [0, -20, 20, 0, 0];  // yaw yêu cầu lớn hơn
-    const tolerance = 5;                    // nghiêm ngặt hơn
-
-
-    async function loadModels() {
-        await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-        await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
-        console.log("✅ Models loaded");
-    }
-
-    async function startCamera() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            video.srcObject = stream;
-            return new Promise(resolve => video.onloadedmetadata = resolve);
-        } catch (error) {
-            statusDiv.innerText = "🚫 Không thể truy cập camera: " + error.message;
-        }
-    }
+    const requiredYaw = [0, -20, 20, 0, 0];
+    const tolerance = 5;
 
     function estimateYaw(landmarks) {
         const leftEye = landmarks.getLeftEye();
         const rightEye = landmarks.getRightEye();
-        const nose = landmarks.positions[30]; // điểm giữa mũi
-
+        const nose = landmarks.positions[30];
         const avgLeftX = leftEye.reduce((sum, p) => sum + p.x, 0) / leftEye.length;
         const avgRightX = rightEye.reduce((sum, p) => sum + p.x, 0) / rightEye.length;
-
         const eyeCenterX = (avgLeftX + avgRightX) / 2;
         const dx = nose.x - eyeCenterX;
-        const eyeDist = Math.max(avgRightX - avgLeftX, 1); // tránh chia 0
-
-        const yaw = (dx / eyeDist) * 100;
-        return yaw;
+        const eyeDist = Math.max(avgRightX - avgLeftX, 1);
+        return (dx / eyeDist) * 100;
     }
 
-    function captureAndSend(idSinhVien, saveUrl) {
+    async function captureAndSend() {
         const ctx = canvas.getContext('2d');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -143,58 +151,50 @@ window.addEventListener('DOMContentLoaded', () => {
         return new Promise(resolve => {
             canvas.toBlob(async (blob) => {
                 if (!blob) {
-                    statusDiv.innerText = "⚠️ Không thể tạo ảnh.";
+                    statusDiv.innerText = '⚠️ Không thể tạo ảnh.';
                     resolve();
                     return;
                 }
-
                 const formData = new FormData();
                 formData.append('image', blob);
                 formData.append('idSinhVien', idSinhVien);
 
                 try {
-                    const res = await fetch(saveUrl, {
-                        method: 'POST',
-                        body: formData
-                    });
+                    const res = await fetch(saveUrl, { method: 'POST', body: formData });
                     const text = await res.text();
-                    console.log("📤 Server:", text);
-
-                    statusDiv.innerText = res.ok ? "✅ Đã lưu ảnh." : "❌ " + text;
+                    statusDiv.innerText = res.ok ? '✅ Đã lưu ảnh.' : '❌ ' + text;
                 } catch (err) {
-                    statusDiv.innerText = "❌ Gửi thất bại: " + err.message;
+                    statusDiv.innerText = '❌ Gửi thất bại: ' + err.message;
                 }
-
                 resolve();
             }, 'image/jpeg');
         });
     }
 
-    window.loopCapture = async function (idSinhVien, saveUrl) {
+    window.loopCapture = async function () {
         await loadModels();
-        await startCamera();
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
 
         const detectOptions = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
 
         const loop = async () => {
             if (capturedCount >= maxCaptures) {
-                instruction.innerText = "";
-                statusDiv.innerText = "✅ Đã lưu đủ ảnh.";
+                instruction.innerText = '';
+                statusDiv.innerText = '✅ Đã lưu đủ ảnh.';
                 return;
             }
 
             const detection = await faceapi.detectSingleFace(video, detectOptions).withFaceLandmarks();
 
             if (!detection) {
-                statusDiv.innerText = "👀 Không thấy khuôn mặt.";
+                statusDiv.innerText = '👀 Không thấy khuôn mặt.';
                 setTimeout(loop, 300);
                 return;
             }
 
             const yaw = estimateYaw(detection.landmarks);
             const expectedYaw = requiredYaw[capturedCount];
-
-            console.log(`🔍 Yaw hiện tại: ${yaw.toFixed(1)} | Yêu cầu: ${expectedYaw}`);
 
             if (Math.abs(yaw - expectedYaw) > tolerance) {
                 instruction.innerText = directions[capturedCount];
@@ -206,9 +206,9 @@ window.addEventListener('DOMContentLoaded', () => {
             instruction.innerText = directions[capturedCount];
             statusDiv.innerText = `📸 Chụp ảnh ${capturedCount + 1}/${maxCaptures} (yaw: ${yaw.toFixed(1)})`;
 
-            await captureAndSend(idSinhVien, saveUrl);
+            await captureAndSend();
             capturedCount++;
-            setTimeout(loop, 2000); // thời gian đổi góc
+            setTimeout(loop, 2000);
         };
 
         loop();

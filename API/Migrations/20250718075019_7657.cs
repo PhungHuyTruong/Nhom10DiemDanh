@@ -6,7 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
+<<<<<<<< HEAD:API/Migrations/20250718075636_haha.cs
     public partial class haha : Migration
+========
+    public partial class _7657 : Migration
+>>>>>>>> origin/FullDIemDanhCheckIn:API/Migrations/20250718075019_7657.cs
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
