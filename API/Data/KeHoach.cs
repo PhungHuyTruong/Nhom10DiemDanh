@@ -10,19 +10,26 @@ namespace API.Data
         [Key]
         public Guid IdKeHoach { get; set; } = Guid.NewGuid();
 
-        [MaxLength(255)]
+        [Required(ErrorMessage = "Tên kế hoạch không được để trống.")]
+        [MaxLength(255, ErrorMessage = "Tên kế hoạch không được vượt quá 255 ký tự.")]
         public string TenKeHoach { get; set; }
 
         public Guid? IdDuAn { get; set; }
 
+        [Required(ErrorMessage = "Nội dung không được để trống.")]
         public string NoiDung { get; set; }
 
+        [Required(ErrorMessage = "Thời gian bắt đầu không được để trống.")]
         public DateTime ThoiGianBatDau { get; set; }
 
+        [Required(ErrorMessage = "Thời gian kết thúc không được để trống.")]
+        [DateGreaterThan(nameof(ThoiGianBatDau), ErrorMessage = "Thời gian kết thúc phải sau thời gian bắt đầu.")]
         public DateTime ThoiGianKetThuc { get; set; }
 
+        [Required(ErrorMessage = "Trạng thái không được để trống.")]
         public int TrangThai { get; set; }
 
+        [Required]
         public DateTime NgayTao { get; set; } = DateTime.Now;
 
         public DateTime? NgayCapNhat { get; set; }
@@ -30,10 +37,17 @@ namespace API.Data
         // Navigation properties
         [ForeignKey(nameof(IdDuAn))]
         public virtual DuAn DuAn { get; set; }
-        public virtual ICollection<KeHoachNhomXuong> KeHoachNhomXuongs { get; set; }
 
+        public virtual ICollection<KeHoachNhomXuong> KeHoachNhomXuongs { get; set; } = new List<KeHoachNhomXuong>();
+
+        // Dùng cho mục đích hiển thị, không nên ghi vào DB
+        [NotMapped]
         public string? TenDuAn { get; set; }
+
+        [NotMapped]
         public string? TenBoMon { get; set; }
+
+        [NotMapped]
         public string? TenCapDoDuAn { get; set; }
     }
 }
