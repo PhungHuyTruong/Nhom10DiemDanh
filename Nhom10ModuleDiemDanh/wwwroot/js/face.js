@@ -115,34 +115,56 @@ window.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('canvas');
     const statusDiv = document.getElementById('status');
     const instruction = document.getElementById('instruction');
-    const idSinhVien = document.getElementById('video')?.dataset?.sinhvien || ''; // assume passed via data-sinhvien
-
     let capturedCount = 0;
     const maxCaptures = 5;
+
+    const idSinhVien = '@ViewBag.IdSinhVien';
     const saveUrl = '/Face/SaveFace';
+
     const directions = [
-        'Hãy nhìn THẲNG vào camera',
-        'Quay mặt sang TRÁI',
-        'Quay mặt sang PHẢI',
-        'Nhìn LÊN một chút',
-        'Nhìn XUỐNG nhẹ'
+        "Hãy nhìn THẲNG vào camera",
+        "Quay mặt sang TRÁI",
+        "Quay mặt sang PHẢI",
+        "Nhìn LÊN một chút",
+        "Nhìn XUỐNG nhẹ"
     ];
-    const requiredYaw = [0, -20, 20, 0, 0];
-    const tolerance = 5;
+    const requiredYaw = [0, -20, 20, 0, 0];  // yaw yêu cầu lớn hơn
+    const tolerance = 5;                    // nghiêm ngặt hơn
+
+
+    async function loadModels() {
+        await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+        await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+        console.log("✅ Models loaded");
+    }
+
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            return new Promise(resolve => video.onloadedmetadata = resolve);
+        } catch (error) {
+            statusDiv.innerText = "🚫 Không thể truy cập camera: " + error.message;
+        }
+    }
 
     function estimateYaw(landmarks) {
         const leftEye = landmarks.getLeftEye();
         const rightEye = landmarks.getRightEye();
-        const nose = landmarks.positions[30];
+        const nose = landmarks.positions[30]; // điểm giữa mũi
+
         const avgLeftX = leftEye.reduce((sum, p) => sum + p.x, 0) / leftEye.length;
         const avgRightX = rightEye.reduce((sum, p) => sum + p.x, 0) / rightEye.length;
+
         const eyeCenterX = (avgLeftX + avgRightX) / 2;
         const dx = nose.x - eyeCenterX;
-        const eyeDist = Math.max(avgRightX - avgLeftX, 1);
-        return (dx / eyeDist) * 100;
+        const eyeDist = Math.max(avgRightX - avgLeftX, 1); // tránh chia 0
+
+        const yaw = (dx / eyeDist) * 100;
+        return yaw;
     }
 
-    async function captureAndSend() {
+    function captureAndSend(idSinhVien, saveUrl) {
         const ctx = canvas.getContext('2d');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -151,50 +173,65 @@ window.addEventListener('DOMContentLoaded', () => {
         return new Promise(resolve => {
             canvas.toBlob(async (blob) => {
                 if (!blob) {
-                    statusDiv.innerText = '⚠️ Không thể tạo ảnh.';
-                    resolve();
+                    statusDiv.innerText = "⚠️ Không thể tạo ảnh.";
+                    resolve(false);
                     return;
                 }
+
                 const formData = new FormData();
                 formData.append('image', blob);
                 formData.append('idSinhVien', idSinhVien);
 
                 try {
-                    const res = await fetch(saveUrl, { method: 'POST', body: formData });
+                    const res = await fetch(saveUrl, {
+                        method: 'POST',
+                        body: formData
+                    });
+
                     const text = await res.text();
-                    statusDiv.innerText = res.ok ? '✅ Đã lưu ảnh.' : '❌ ' + text;
+                    console.log("📤 Server:", text);
+
+                    if (!res.ok && text.includes("❌ Đã đủ 5 ảnh")) {
+                        statusDiv.innerText = text;
+                        return resolve("STOP");  // <- báo hiệu để dừng
+                    }
+
+                    statusDiv.innerText = res.ok ? "✅ Đã lưu ảnh." : "❌ " + text;
+                    resolve(true);
                 } catch (err) {
-                    statusDiv.innerText = '❌ Gửi thất bại: ' + err.message;
+                    statusDiv.innerText = "❌ Gửi thất bại: " + err.message;
+                    resolve(false);
                 }
-                resolve();
             }, 'image/jpeg');
         });
     }
 
-    window.loopCapture = async function () {
+
+    window.loopCapture = async function (idSinhVien, saveUrl) {
         await loadModels();
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
+        await startCamera();
 
         const detectOptions = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
 
         const loop = async () => {
             if (capturedCount >= maxCaptures) {
-                instruction.innerText = '';
-                statusDiv.innerText = '✅ Đã lưu đủ ảnh.';
+                instruction.innerText = "";
+                statusDiv.innerText = "✅ Đã lưu đủ ảnh.";
                 return;
             }
 
             const detection = await faceapi.detectSingleFace(video, detectOptions).withFaceLandmarks();
 
             if (!detection) {
-                statusDiv.innerText = '👀 Không thấy khuôn mặt.';
+                statusDiv.innerText = "👀 Không thấy khuôn mặt.";
                 setTimeout(loop, 300);
                 return;
             }
 
             const yaw = estimateYaw(detection.landmarks);
             const expectedYaw = requiredYaw[capturedCount];
+
+            console.log(`🔍 Yaw hiện tại: ${yaw.toFixed(1)} | Yêu cầu: ${expectedYaw}`);
 
             if (Math.abs(yaw - expectedYaw) > tolerance) {
                 instruction.innerText = directions[capturedCount];
@@ -206,7 +243,13 @@ window.addEventListener('DOMContentLoaded', () => {
             instruction.innerText = directions[capturedCount];
             statusDiv.innerText = `📸 Chụp ảnh ${capturedCount + 1}/${maxCaptures} (yaw: ${yaw.toFixed(1)})`;
 
-            await captureAndSend();
+            const result = await captureAndSend(idSinhVien, saveUrl);
+            if (result === "STOP") return; // Dừng ngay nếu đã đủ ảnh
+            if (result === false) {
+                setTimeout(loop, 1500); // Gửi lỗi -> chờ lại
+                return;
+            }
+
             capturedCount++;
             setTimeout(loop, 2000);
         };
