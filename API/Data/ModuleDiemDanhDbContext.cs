@@ -210,7 +210,7 @@ namespace API.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=GIGABYTE\\SQLEXPRESS;Database=nhom10diemdanh_test;Trusted_Connection=True;TrustServerCertificate=True");
+                optionsBuilder.UseSqlServer("Server=LAPTOP-RV2HHIH4\\SQLEXPRESS;Database=nhom10diemdanh_test12;Trusted_Connection=True;TrustServerCertificate=True");
             }
         }
     }
