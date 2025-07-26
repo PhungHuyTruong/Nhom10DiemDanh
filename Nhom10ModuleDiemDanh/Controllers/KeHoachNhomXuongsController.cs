@@ -27,6 +27,7 @@ namespace Nhom10ModuleDiemDanh.Controllers
                 allData = await client.GetFromJsonAsync<List<KeHoachNhomXuong>>($"{_apiBase}KeHoachNhomXuongs/ByKeHoach/{idKeHoach.Value}");
                 ViewBag.TenKeHoach = allData?.FirstOrDefault()?.KeHoach?.TenKeHoach ?? "Không rõ";
                 ViewBag.IdKeHoach = idKeHoach.Value;
+                await PopulateNhomXuongDropdown(idKeHoach.Value);
             }
             else
             {

@@ -15,9 +15,8 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span class="fw-bold">Chi tiết nhóm xưởng theo kế hoạch</span>
-        <a asp-action="Create" asp-route-idKeHoach="@ViewBag.IdKeHoach" class="btn btn-success">
-            <i class="bi bi-plus-circle me-1"></i> Thêm mới
-        </a>
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreate">+ Thêm mới</button>
+
     </div>
     <div class="card-body p-0">
         <table class="table table-bordered table-hover mb-0 text-center">
@@ -73,3 +72,166 @@
         </table>
     </div>
 </div>
+
+<!-- MODAL THÊM MỚI KẾ HOẠCH - NHÓM XƯỞNG -->
+<div class="modal fade" id="modalCreate" tabindex="-1" aria-labelledby="modalCreateLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        @* modal-lg để modal lớn hơn nếu cần *@
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: forestgreen">
+                <h5 class="modal-title" id="modalCreateLabel" style="color: black">Tạo mới Kế hoạch - Nhóm xưởng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body" id="createPlanModalBody">
+                @* Đã thêm ID cho modal body để JavaScript có thể nhắm mục tiêu nếu cần *@
+                <!-- Nội dung form sẽ được nhúng trực tiếp vào đây -->
+                @await Html.PartialAsync("Create", new API.Data.KeHoachNhomXuong { IdKeHoach = ViewBag.IdKeHoach })
+            </div>
+            @* Nếu bạn muốn có footer cho modal, bạn có thể thêm vào đây, ví dụ:
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+            *@
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" /> @* Đảm bảo bạn có partial này *@
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Lấy tham chiếu đến modal và phần body của modal
+            const keHoachNhomXuongModal = document.getElementById('modalCreate'); // ID của modal Thêm mới Kế hoạch
+            const keHoachNhomXuongModalBody = document.getElementById('createPlanModalBody'); // ID của modal-body
+
+            if (keHoachNhomXuongModal && keHoachNhomXuongModalBody) {
+
+                // Hàm xử lý logic cập nhật Số Sinh Viên khi chọn Nhóm Xưởng
+                function handleSoSinhVienUpdate(selectElement) {
+                    const idNhom = selectElement.value;
+                    // Tìm input #SoSinhVien bên trong modal body
+                    const soSinhVienInput = keHoachNhomXuongModalBody.querySelector('#SoSinhVien');
+
+                    if (!soSinhVienInput) {
+                        console.warn('❌ Không tìm thấy input #SoSinhVien trong modal body.');
+                        return;
+                    }
+
+                    if (idNhom) {
+                        fetch(`/api/SinhVienNhomXuongApi/${idNhom}`)
+                            .then(res => {
+                                if (!res.ok) throw new Error("Lỗi khi lấy dữ liệu sinh viên");
+                                return res.json();
+                            })
+                            .then(data => {
+                                soSinhVienInput.value = data.length; // gán lại số sinh viên
+                                console.log("✅ Cập nhật số sinh viên:", data.length);
+                            })
+                            .catch(err => {
+                                console.error('❌ Lỗi API SinhVienNhomXuongApi:', err);
+                                soSinhVienInput.value = 0;
+                            });
+                    } else {
+                        soSinhVienInput.value = 0;
+                    }
+                }
+
+                // Lắng nghe sự kiện 'shown.bs.modal' của Bootstrap trên modal
+                // Sự kiện này kích hoạt SAU KHI modal đã hoàn tất quá trình hiển thị.
+                keHoachNhomXuongModal.addEventListener('shown.bs.modal', function () {
+                    // Kích hoạt lại client-side validation cho nội dung trong modal
+                    // Cần jQuery và jQuery Validation Unobtrusive để dòng này hoạt động
+                    if (typeof $.validator !== 'undefined' && typeof $.validator.unobtrusive !== 'undefined') {
+                        $.validator.unobtrusive.parse(keHoachNhomXuongModalBody);
+                    } else {
+                        console.warn("jQuery Validation Unobtrusive không được tải hoặc không có sẵn.");
+                    }
+
+                    // Gắn sự kiện 'change' cho dropdown #IdNhomXuong bên trong modal body
+                    // Sử dụng Event Delegation để đảm bảo nó hoạt động với nội dung đã được nhúng
+                    const idNhomXuongSelect = keHoachNhomXuongModalBody.querySelector('#IdNhomXuong');
+                    if (idNhomXuongSelect) {
+                        // Gỡ bỏ handler cũ nếu đã có để tránh gắn nhiều lần
+                        if (idNhomXuongSelect._khnxHandler) { // Sử dụng thuộc tính tùy chỉnh để lưu handler
+                            idNhomXuongSelect.removeEventListener('change', idNhomXuongSelect._khnxHandler);
+                        }
+                        const handler = function() { handleSoSinhVienUpdate(idNhomXuongSelect); };
+                        idNhomXuongSelect.addEventListener('change', handler);
+                        idNhomXuongSelect._khnxHandler = handler; // Lưu handler
+
+                        // Kích hoạt sự kiện change ban đầu nếu có giá trị đã chọn sẵn
+                        if (idNhomXuongSelect.value) {
+                            handleSoSinhVienUpdate(idNhomXuongSelect);
+                        }
+                    }
+                });
+
+                // Xử lý gửi form bên trong modal bằng AJAX (sử dụng Event Delegation)
+                // Lắng nghe sự kiện 'submit' trên modal chính, sau đó lọc theo ID của form
+                keHoachNhomXuongModal.addEventListener('submit', function (e) {
+                    // Tìm form có ID 'keHoachNhomXuongForm' bên trong modal
+                    const form = e.target.closest('#keHoachNhomXuongForm');
+                    if (!form) return; // Đảm bảo sự kiện đến từ form của chúng ta
+
+                    e.preventDefault(); // Ngăn chặn gửi form mặc định
+
+                    // Kiểm tra client-side validation
+                    // Cần jQuery và jQuery Validation Unobtrusive để dòng này hoạt động
+                    if (typeof $.validator !== 'undefined' && typeof $(form).valid === 'function' && !$(form).valid()) {
+                        console.log("Form không hợp lệ (client-side validation).");
+                        return; // Dừng nếu form không hợp lệ
+                    }
+
+                    const formData = new FormData(form);
+                    // Lấy asp-action và asp-controller từ form
+                    const url = form.getAttribute('asp-action') || 'Create';
+                    const controller = form.getAttribute('asp-controller') || 'KeHoachNhomXuong';
+                    const fullUrl = `/${controller}/${url}`;
+
+                    fetch(fullUrl, {
+                        method: 'POST',
+                        body: formData,
+                        // Khi dùng FormData, trình duyệt sẽ tự đặt Content-Type là multipart/form-data
+                    })
+                    .then(res => {
+                        // Kiểm tra nếu phản hồi là JSON (thành công) hay HTML (lỗi validation)
+                        const contentType = res.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return res.json();
+                        } else {
+                            return res.text(); // Trả về HTML nếu có lỗi validation
+                        }
+                    })
+                    .then(response => {
+                        if (typeof response === 'object' && response.success) { // Phản hồi JSON thành công
+                            // Đóng modal bằng cách kích hoạt click vào nút đóng
+                            keHoachNhomXuongModal.querySelector('.btn-close').click();
+                            alert('Kế hoạch đã được tạo thành công!');
+                            location.reload(); // Tải lại trang để cập nhật danh sách
+                        } else { // Phản hồi HTML (có thể là lỗi validation)
+                            keHoachNhomXuongModalBody.innerHTML = response; // Hiển thị lại form với lỗi
+                            // Kích hoạt lại validation cho form mới được render
+                            if (typeof $.validator !== 'undefined' && typeof $.validator.unobtrusive !== 'undefined') {
+                                $.validator.unobtrusive.parse(keHoachNhomXuongModalBody);
+                            }
+                            // Gắn lại sự kiện change cho #IdNhomXuong sau khi form được render lại
+                            const idNhomXuongSelect = keHoachNhomXuongModalBody.querySelector('#IdNhomXuong');
+                            if (idNhomXuongSelect) {
+                                if (idNhomXuongSelect._khnxHandler) {
+                                    idNhomXuongSelect.removeEventListener('change', idNhomXuongSelect._khnxHandler);
+                                }
+                                const handler = function() { handleSoSinhVienUpdate(idNhomXuongSelect); };
+                                idNhomXuongSelect.addEventListener('change', handler);
+                                idNhomXuongSelect._khnxHandler = handler;
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Lỗi AJAX khi gửi form:", err);
+                        alert("Đã xảy ra lỗi khi lưu kế hoạch. Vui lòng thử lại.");
+                    });
+                });
+            }
+        });
+    </script>
+}
