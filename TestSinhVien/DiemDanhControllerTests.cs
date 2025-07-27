@@ -493,95 +493,11 @@ namespace TestSinhVien
             Assert.IsInstanceOf<BadRequestObjectResult>(result);
         }
 
-        
-
-        ////14. Test Check-out hợp lệ → Ok
-        //[Test]
-        //public async Task CheckAttendance_ValidCheckOut_ReturnsOk()
-        //{
-        //    var sv = SeedSinhVien();
-        //    var coSo = SeedCoSo();
-        //    var diaDiem = SeedDiaDiem(coSo.IdCoSo);
-
-        //    var ip = new IP
-        //    {
-        //        IdIP = Guid.NewGuid(),
-        //        IdCoSo = coSo.IdCoSo,
-        //        IP_DaiIP = "1.2.3.4",
-        //        KieuIP = "LAN",
-        //        TrangThai = true
-        //    };
-        //    _context.IPs.Add(ip);
-
-        //    // CaHoc đã kết thúc
-        //    var ca = SeedCaHoc(DateTime.Now.AddHours(-3).TimeOfDay, DateTime.Now.AddHours(-1).TimeOfDay);
-        //    var kh = SeedKHNXCaHoc(idCaHoc: ca.IdCaHoc);
-        //    SaveAll();
-
-        //    var dto = new AttendanceCheckDto
-        //    {
-        //        Email = sv.Email,
-        //        IdNXCH = kh.IdNXCH,
-        //        IsCheckIn = false,
-        //        IPAddress = "1.2.3.4",
-        //        Latitude = 10.123,
-        //        Longitude = 106.123
-        //    };
-
-        //    var result = await _controller.CheckAttendance(dto);
-        //    Assert.IsInstanceOf<OkObjectResult>(result);
-        //}
 
 
-        ////15. Test Sinh viên bị khóa tài khoản → Forbidden
-        //[Test]
-        //public async Task CheckAttendance_StudentDisabled_ReturnsForbidden()
-        //{
-        //    // Sinh viên bị khóa
-        //    var sv = new SinhVien
-        //    {
-        //        IdSinhVien = Guid.NewGuid(),
-        //        Email = "disabled@student.com",
-        //        TrangThai = false,
-        //        MaSinhVien = "SV002",
-        //        TenSinhVien = "Nguyen Van B"
-        //    };
-        //    _context.SinhViens.Add(sv);
+       
 
-        //    var coSo = SeedCoSo();
-        //    var diaDiem = SeedDiaDiem(coSo.IdCoSo);
-
-        //    var ip = new IP
-        //    {
-        //        IdIP = Guid.NewGuid(),
-        //        IdCoSo = coSo.IdCoSo,
-        //        IP_DaiIP = "1.2.3.4",
-        //        KieuIP = "LAN",
-        //        TrangThai = true
-        //    };
-        //    _context.IPs.Add(ip);
-
-        //    var ca = SeedCaHoc(DateTime.Now.AddMinutes(-10).TimeOfDay, DateTime.Now.AddHours(1).TimeOfDay);
-        //    var kh = SeedKHNXCaHoc(idCaHoc: ca.IdCaHoc);
-        //    SaveAll();
-
-        //    var dto = new AttendanceCheckDto
-        //    {
-        //        Email = sv.Email,
-        //        IdNXCH = kh.IdNXCH,
-        //        IsCheckIn = true,
-        //        IPAddress = "1.2.3.4",
-        //        Latitude = 10.123,
-        //        Longitude = 106.123
-        //    };
-
-        //    var result = await _controller.CheckAttendance(dto);
-        //    // Có thể controller trả ForbidResult hoặc BadRequest tùy logic
-        //    Assert.IsInstanceOf<ForbidResult>(result);
-        //}
-
-
-        //16. Test Check-in bằng IP hợp lệ nhưng sai cơ sở → BadRequest
+        //13. Test Check-in bằng IP hợp lệ nhưng sai cơ sở → BadRequest
         [Test]
         public async Task CheckAttendance_WrongCampusIP_ReturnsBadRequest()
         {
@@ -620,7 +536,7 @@ namespace TestSinhVien
         }
 
 
-        //17. est Check-in đúng nhưng ngoài giờ học → BadRequest
+        //14. est Check-in đúng nhưng ngoài giờ học → BadRequest
         [Test]
         public async Task CheckAttendance_OutOfClassTime_ReturnsBadRequest()
         {
@@ -656,6 +572,58 @@ namespace TestSinhVien
             var result = await _controller.CheckAttendance(dto);
             Assert.IsInstanceOf<BadRequestObjectResult>(result);
         }
+
+
+        // ✅ 15. Thiếu IPAddress => BadRequest
+        [Test]
+        public async Task CheckAttendance_MissingIPAddress_ReturnsBadRequest()
+        {
+            // 1️⃣ Seed dữ liệu cần thiết
+            var sv = SeedSinhVien();                 // Sinh viên hợp lệ
+            var coSo = SeedCoSo();                   // Cơ sở
+            var diaDiem = SeedDiaDiem(coSo.IdCoSo);  // Địa điểm trong campus
+
+            // IP hợp lệ (nhưng DTO sẽ thiếu)
+            var ip = new IP
+            {
+                IdIP = Guid.NewGuid(),
+                IdCoSo = coSo.IdCoSo,
+                IP_DaiIP = "1.2.3.4",
+                KieuIP = "LAN",
+                TrangThai = true
+            };
+            _context.IPs.Add(ip);
+
+            // Ca học đang diễn ra → đúng giờ
+            var ca = SeedCaHoc(DateTime.Now.AddMinutes(-10).TimeOfDay, DateTime.Now.AddHours(1).TimeOfDay);
+
+            // Kế hoạch ca học hợp lệ
+            var kh = SeedKHNXCaHoc(idCaHoc: ca.IdCaHoc);
+            SaveAll();
+
+            // 2️⃣ DTO bỏ trống IPAddress
+            var dto = new AttendanceCheckDto
+            {
+                Email = sv.Email,
+                IdNXCH = kh.IdNXCH,
+                IsCheckIn = true,
+                IPAddress = null,       // ❌ Thiếu IP
+                Latitude = 10.123,      // Đúng tọa độ
+                Longitude = 106.123
+            };
+
+            // 3️⃣ Thực thi controller
+            var result = await _controller.CheckAttendance(dto);
+
+            // 4️⃣ Kết quả phải là BadRequest
+            Assert.IsInstanceOf<BadRequestObjectResult>(result);
+        }
+
+
+
+
+
+
 
 
     }
