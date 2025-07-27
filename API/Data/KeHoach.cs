@@ -23,7 +23,7 @@ namespace API.Data
         public DateTime ThoiGianBatDau { get; set; }
 
         [Required(ErrorMessage = "Thời gian kết thúc không được để trống.")]
-        [DateGreaterThan(nameof(ThoiGianBatDau), ErrorMessage = "Thời gian kết thúc phải sau thời gian bắt đầu.")]
+        
         public DateTime ThoiGianKetThuc { get; set; }
 
         [Required(ErrorMessage = "Trạng thái không được để trống.")]

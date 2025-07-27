@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nhom10ModuleDiemDanh", "Nho
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{C1CA09BB-7E3E-4F6A-BF16-6631AC286294}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModuelDiemDanhTest", "ModuelDiemDanhTest\ModuelDiemDanhTest.csproj", "{784ABE06-7C68-40F1-9C77-93DA7E4F5183}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{C1CA09BB-7E3E-4F6A-BF16-6631AC286294}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1CA09BB-7E3E-4F6A-BF16-6631AC286294}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1CA09BB-7E3E-4F6A-BF16-6631AC286294}.Release|Any CPU.Build.0 = Release|Any CPU
+		{784ABE06-7C68-40F1-9C77-93DA7E4F5183}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{784ABE06-7C68-40F1-9C77-93DA7E4F5183}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{784ABE06-7C68-40F1-9C77-93DA7E4F5183}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{784ABE06-7C68-40F1-9C77-93DA7E4F5183}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
