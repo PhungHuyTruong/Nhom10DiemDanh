@@ -35,12 +35,13 @@ namespace API.Controllers
             }
 
             var giangVien = await _context.VaiTroNhanViens
-                .Include(v => v.PhuTrachXuong)
-              
-                .FirstOrDefaultAsync(v =>
-                    (v.PhuTrachXuong.EmailFE == email || v.PhuTrachXuong.EmailFPT == email) &&
-                    v.TrangThai 
-                  );
+      .Include(v => v.PhuTrachXuong)
+      .FirstOrDefaultAsync(v =>
+          v.PhuTrachXuong != null &&
+          // Sửa ở đây: thêm .ToLower() vào cả hai vế
+          (v.PhuTrachXuong.EmailFE.ToLower() == email.ToLower() || v.PhuTrachXuong.EmailFPT.ToLower() == email.ToLower()) &&
+          v.TrangThai
+      );
 
             if (giangVien == null)
             {
@@ -63,26 +64,5 @@ namespace API.Controllers
 
             return Ok(nhomXuongs);
         }
-
-        //[HttpPost("doi-trang-thai")]
-        //public async Task<IActionResult> DoiTrangThai([FromBody] Guid idSinhVien)
-        //{
-        //    Console.WriteLine($"👉 Nhận yêu cầu đổi trạng thái sinh viên: {idSinhVien}");
-
-        //    var sv = await _context.SinhViens.FindAsync(idSinhVien);
-        //    if (sv == null)
-        //    {
-        //        Console.WriteLine("❌ Không tìm thấy sinh viên");
-        //        return NotFound();
-        //    }
-
-        //    sv.TrangThai = !sv.TrangThai;
-        //    sv.NgayCapNhat = DateTime.Now;
-        //    await _context.SaveChangesAsync();
-
-        //    Console.WriteLine($"✅ Trạng thái mới: {sv.TrangThai}");
-        //    return Ok(new { success = true, newStatus = sv.TrangThai });
-        //}
-
     }
 }

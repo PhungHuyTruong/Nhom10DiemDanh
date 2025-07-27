@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.36105.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nhom10ModuleDiemDanh", "Nhom10ModuleDiemDanh\Nhom10ModuleDiemDanh.csproj", "{58EAE4E2-F7B3-4CD4-BFBD-BC141669B0B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nhom10ModuleDiemDanh", "Nhom10ModuleDiemDanh\Nhom10ModuleDiemDanh.csproj", "{58EAE4E2-F7B3-4CD4-BFBD-BC141669B0B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{C1CA09BB-7E3E-4F6A-BF16-6631AC286294}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "API\API.csproj", "{C1CA09BB-7E3E-4F6A-BF16-6631AC286294}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCanBoDaoTao", "TestCanBoDaoTao\TestCanBoDaoTao.csproj", "{2DDDEB58-778F-4151-B09B-22DC4EB1D69A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestCanBoDaoTao", "TestCanBoDaoTao\TestCanBoDaoTao.csproj", "{2DDDEB58-778F-4151-B09B-22DC4EB1D69A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NUnitTest", "NUnitTest\NUnitTest.csproj", "{79427AD2-F02A-4B52-AF3B-E742EDD95725}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nunit Test", "Nunit Test", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
@@ -31,6 +33,10 @@ Global
 		{2DDDEB58-778F-4151-B09B-22DC4EB1D69A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DDDEB58-778F-4151-B09B-22DC4EB1D69A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DDDEB58-778F-4151-B09B-22DC4EB1D69A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79427AD2-F02A-4B52-AF3B-E742EDD95725}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79427AD2-F02A-4B52-AF3B-E742EDD95725}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79427AD2-F02A-4B52-AF3B-E742EDD95725}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79427AD2-F02A-4B52-AF3B-E742EDD95725}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9F4BBB1A-4A0D-41D8-8E83-06A2D12BA4ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9F4BBB1A-4A0D-41D8-8E83-06A2D12BA4ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F4BBB1A-4A0D-41D8-8E83-06A2D12BA4ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
