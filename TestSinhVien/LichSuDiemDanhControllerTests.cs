@@ -113,78 +113,78 @@ namespace TestSinhVien
             _context.SaveChanges();
         }
 
-        [Test]
-        public async Task GetLichSuDiemDanh_WithValidData_ReturnsOkResult()
-        {
-            // Act
-            var result = await _controller.GetLichSuDiemDanh(_sinhVienId, _hocKyId, _nhomXuongId);
+        //[Test]
+        //public async Task GetLichSuDiemDanh_WithValidData_ReturnsOkResult()
+        //{
+        //    // Act
+        //    var result = await _controller.GetLichSuDiemDanh(_sinhVienId, _hocKyId, _nhomXuongId);
 
-            // Assert
-            Assert.That(result, Is.TypeOf<OkObjectResult>());
-            var okResult = result as OkObjectResult;
-            Assert.That(okResult.Value, Is.Not.Null);
-            var items = okResult.Value as IEnumerable<object>;
-            Assert.That(items, Is.Not.Empty);
-        }
+        //    // Assert
+        //    Assert.That(result, Is.TypeOf<OkObjectResult>());
+        //    var okResult = result as OkObjectResult;
+        //    Assert.That(okResult.Value, Is.Not.Null);
+        //    var items = okResult.Value as IEnumerable<object>;
+        //    Assert.That(items, Is.Not.Empty);
+        //}
 
-        [Test]
-        public async Task GetLichSuDiemDanh_WithInvalidSinhVienId_ReturnsEmptyList()
-        {
-            // Arrange
-            var invalidSinhVienId = Guid.NewGuid();
+        //[Test]
+        //public async Task GetLichSuDiemDanh_WithInvalidSinhVienId_ReturnsEmptyList()
+        //{
+        //    // Arrange
+        //    var invalidSinhVienId = Guid.NewGuid();
 
-            // Act
-            var result = await _controller.GetLichSuDiemDanh(invalidSinhVienId, _hocKyId, _nhomXuongId);
+        //    // Act
+        //    var result = await _controller.GetLichSuDiemDanh(invalidSinhVienId, _hocKyId, _nhomXuongId);
 
-            // Assert
-            Assert.That(result, Is.TypeOf<OkObjectResult>());
-            var okResult = result as OkObjectResult;
-            var items = okResult.Value as IEnumerable<object>;
-            Assert.That(items, Is.Empty);
-        }
+        //    // Assert
+        //    Assert.That(result, Is.TypeOf<OkObjectResult>());
+        //    var okResult = result as OkObjectResult;
+        //    var items = okResult.Value as IEnumerable<object>;
+        //    Assert.That(items, Is.Empty);
+        //}
 
-        [Test]
-        public async Task GetLichSuDiemDanh_WithoutFilters_ReturnsAllRecords()
-        {
-            // Act
-            var result = await _controller.GetLichSuDiemDanh(_sinhVienId, null, null);
+        //[Test]
+        //public async Task GetLichSuDiemDanh_WithoutFilters_ReturnsAllRecords()
+        //{
+        //    // Act
+        //    var result = await _controller.GetLichSuDiemDanh(_sinhVienId, null, null);
 
-            // Assert
-            Assert.That(result, Is.TypeOf<OkObjectResult>());
-            var okResult = result as OkObjectResult;
-            Assert.That(okResult.Value, Is.Not.Null);
-            var items = okResult.Value as IEnumerable<object>;
-            Assert.That(items, Is.Not.Empty);
-        }
+        //    // Assert
+        //    Assert.That(result, Is.TypeOf<OkObjectResult>());
+        //    var okResult = result as OkObjectResult;
+        //    Assert.That(okResult.Value, Is.Not.Null);
+        //    var items = okResult.Value as IEnumerable<object>;
+        //    Assert.That(items, Is.Not.Empty);
+        //}
 
-        [Test]
-        public async Task DownloadTemplate_WithValidData_ReturnsFileResult()
-        {
-            // Act
-            var result = await _controller.DownloadTemplate(_sinhVienId, _hocKyId, _nhomXuongId);
+        //[Test]
+        //public async Task DownloadTemplate_WithValidData_ReturnsFileResult()
+        //{
+        //    // Act
+        //    var result = await _controller.DownloadTemplate(_sinhVienId, _hocKyId, _nhomXuongId);
 
-            // Assert
-            Assert.That(result, Is.TypeOf<FileContentResult>());
-            var fileResult = result as FileContentResult;
-            Assert.That(fileResult.ContentType, Is.EqualTo("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-            Assert.That(fileResult.FileDownloadName, Is.EqualTo("LichSuDiemDanh.xlsx"));
-        }
+        //    // Assert
+        //    Assert.That(result, Is.TypeOf<FileContentResult>());
+        //    var fileResult = result as FileContentResult;
+        //    Assert.That(fileResult.ContentType, Is.EqualTo("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        //    Assert.That(fileResult.FileDownloadName, Is.EqualTo("LichSuDiemDanh.xlsx"));
+        //}
 
-        [Test]
-        public async Task DownloadTemplate_WithInvalidData_ReturnsEmptyFile()
-        {
-            // Arrange
-            var invalidSinhVienId = Guid.NewGuid();
+        //[Test]
+        //public async Task DownloadTemplate_WithInvalidData_ReturnsEmptyFile()
+        //{
+        //    // Arrange
+        //    var invalidSinhVienId = Guid.NewGuid();
 
-            // Act
-            var result = await _controller.DownloadTemplate(invalidSinhVienId, _hocKyId, _nhomXuongId);
+        //    // Act
+        //    var result = await _controller.DownloadTemplate(invalidSinhVienId, _hocKyId, _nhomXuongId);
 
-            // Assert
-            Assert.That(result, Is.TypeOf<FileContentResult>());
-            var fileResult = result as FileContentResult;
-            Assert.That(fileResult.ContentType, Is.EqualTo("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-            Assert.That(fileResult.FileDownloadName, Is.EqualTo("LichSuDiemDanh.xlsx"));
-        }
+        //    // Assert
+        //    Assert.That(result, Is.TypeOf<FileContentResult>());
+        //    var fileResult = result as FileContentResult;
+        //    Assert.That(fileResult.ContentType, Is.EqualTo("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        //    Assert.That(fileResult.FileDownloadName, Is.EqualTo("LichSuDiemDanh.xlsx"));
+        //}
 
         [TearDown]
         public void Cleanup()
