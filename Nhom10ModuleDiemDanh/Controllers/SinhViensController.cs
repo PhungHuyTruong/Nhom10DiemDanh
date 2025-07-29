@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Nhom10ModuleDiemDanh.Controllers
 {
+    [Authorize]
     public class SinhViensController : Controller
     {
         public IActionResult Index()
